@@ -52,7 +52,7 @@ export default function AboutPage() {
 
         <h2>Course Instructor</h2>
         <p>
-          <strong className="text-bone-50">Ashish Gahlot</strong> teaches Reverse
+          <strong className="text-bone-50">Ashish Revar</strong> teaches Reverse
           Engineering and Malware Analysis (REMA) across postgraduate and undergraduate
           programmes and delivers training to law-enforcement and government agencies.
           Areas of work include malware analysis, cloud security, and ML-based
