@@ -131,7 +131,6 @@ export default async function ArticleDetailPage({ params }: Props) {
 
       {/* MDX content */}
       <div className="prose-rema">
-        {/* @ts-expect-error Async Server Component */}
         <MDXRemote
           source={article.mdx_content}
           options={{
