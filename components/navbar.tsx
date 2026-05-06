@@ -35,6 +35,7 @@ export function Navbar() {
               priority
             />
           </div>
+          </div>
           <div className="flex flex-col leading-none">
             <span className="font-mono text-base font-bold tracking-tight text-bone-50">
               REMA Club
