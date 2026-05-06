@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     'YARA',
     'incident response',
   ],
-  authors: [{ name: 'Ashish Gahlot' }],
+  authors: [{ name: 'Ashish Revar' }],
   openGraph: {
     title: 'REMA Club — Reverse. Reveal. Respond.',
     description: 'Learning hub for Reverse Engineering & Malware Analysis.',
