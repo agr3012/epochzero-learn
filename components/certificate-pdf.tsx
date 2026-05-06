@@ -274,7 +274,7 @@ export function CertificateDocument({
   issuedDate,
   verifyUrl,
   logoDataUri,
-  instructorName = 'Ashish Gahlot',
+  instructorName = 'Ashish Revar',
 }: CertificateData) {
   return (
     <Document
