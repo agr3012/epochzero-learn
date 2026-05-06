@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         issuedDate,
         verifyUrl,
         logoDataUri,
-      })
+      }) as any
     );
 
     // Upload to Supabase Storage
