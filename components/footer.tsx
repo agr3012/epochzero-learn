@@ -91,7 +91,7 @@ export function Footer() {
             © {new Date().getFullYear()} REMA Club. Educational content for learning purposes.
           </p>
           <p className="font-mono text-xs text-bone-300">
-            Course Instructor: Ashish Gahlot · v1.0
+            Course Instructor: Ashish Revar · v1.0
           </p>
         </div>
       </div>
