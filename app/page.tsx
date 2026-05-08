@@ -173,10 +173,7 @@ export default async function HomePage() {
                       ├── CTF: Unpacking Room ...... <span className="text-gold-500">open</span>
                     </div>
                     <div className="text-bone-200">
-                      ├── Expert Talk: Cloud Sec ... <span className="text-gold-500">soon</span>
-                    </div>
-                    <div className="text-bone-200">
-                      └── Industrial Visit ......... <span className="text-bone-300">tba</span>
+                      └── More CTFs ................ <span className="text-bone-300">tba</span>
                     </div>
                     <div className="text-bone-300 pt-2">
                       <span className="text-gold-500">$</span>{' '}
@@ -233,8 +230,8 @@ export default async function HomePage() {
             },
             {
               icon: Calendar,
-              title: 'Student Events',
-              desc: 'CTFs, expert talks, industrial visits, photo competitions, and cultural events. Register, attend, get certificates.',
+              title: 'CTF Events',
+              desc: 'Capture-the-Flag competitions for our students. Register, compete, win certificates of excellence, achievement, or appreciation.',
               href: '/events',
             },
             {
