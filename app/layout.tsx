@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { JetBrains_Mono, Fraunces, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { Navbar } from '@/components/navbar';
+import { Suspense } from 'react';
 import { Footer } from '@/components/footer';
 import './globals.css';
 
@@ -63,7 +64,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col antialiased">
-        <Navbar />
+        <Suspense fallback={<div className="h-16 border-b border-navy-700 bg-navy-900" />}>
+          <Navbar />
+        </Suspense>
         <main className="flex-1">{children}</main>
         <Footer />
         <Toaster
