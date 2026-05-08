@@ -95,8 +95,8 @@ export default async function HomePage() {
                 <span className="text-gold-500 font-mono text-base">Cloud</span>,{' '}
                 <span className="text-gold-500 font-mono text-base">Cryptography</span>, and{' '}
                 <span className="text-gold-500 font-mono text-base">Web Development</span>.
-                Articles, video lessons, MCQ tests with verifiable certificates, and
-                student events including CTFs, expert talks, and industrial visits.
+                Articles, video lessons, podcast, MCQ tests with verifiable certificates,
+                and CTF events for our students.
               </p>
 
               <div
