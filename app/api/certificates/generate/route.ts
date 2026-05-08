@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import React from 'react';
-import { renderToBuffer } from '@react-pdf/renderer';
+import { renderToBuffefr } from '@react-pdf/renderer';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getResend, FROM_EMAIL } from '@/lib/resend';
 import { CertificateDocument } from '@/components/certificate-pdf';
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     // Generate cert UID via DB function
     const { data: uidData } = await admin.rpc('generate_cert_uid');
-    const cert_uid = (uidData as string) ?? `REMA-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const cert_uid = (uidData as string) ?? `EPZ-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
     // Load logo as base64 data URI
     const logoPath = path.join(process.cwd(), 'public', 'logo.png');
