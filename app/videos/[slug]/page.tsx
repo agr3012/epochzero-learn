@@ -57,15 +57,13 @@ export default async function VideoDetailPage({ params }: Props) {
 
   if (!video) notFound();
 
-  const { data: related } = await supabase
+  const { data: sidebarVideos } = await supabase
     .from('videos')
-    .select('id, slug, youtube_id, title, duration_seconds, malware_family, episode_label')
+    .select('id, slug, youtube_id, title, duration_seconds, episode_label, category')
     .eq('is_published', true)
     .neq('id', video.id)
-    .or(
-      `malware_family.eq.${video.malware_family ?? '__none__'},category.eq.${video.category ?? '__none__'}`
-    )
-    .limit(4);
+    .order('order_index', { ascending: true })
+    .limit(8);
 
   createAdminClient()
     .rpc('increment_video_views', { p_slug: params.slug })
@@ -93,295 +91,290 @@ export default async function VideoDetailPage({ params }: Props) {
   const linkedTest = video.tests as any;
 
   return (
-    <div className="container py-8 lg:py-12">
+    <div className="container py-6 lg:py-8">
       <Link
         href="/videos"
-        className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-bone-300 hover:text-gold-500 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-bone-300 hover:text-gold-500 mb-4 transition-colors"
       >
         <ChevronLeft className="w-3 h-3" /> All videos
       </Link>
 
-      {/* Episode label + title */}
-      <div className="mb-6 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2 mb-3">
-          {video.episode_label && (
-            <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 border border-gold-500/40 px-3 py-1">
-              {video.episode_label}
-            </span>
-          )}
-          {video.malware_family && (
-            <span className="badge-malware">
-              <ShieldAlert className="w-3 h-3" />
-              {video.malware_family}
-            </span>
-          )}
-          {video.category && <span className="badge-tag">{video.category}</span>}
-        </div>
-        <h1 className="font-mono text-2xl lg:text-4xl font-bold text-bone-50 leading-tight">
-          {video.title}
-        </h1>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-8">
+        <div className="min-w-0">
+          <VideoPlayer youtubeId={video.youtube_id} steps={steps} />
 
-      {/* Video player — full width, top */}
-      <div className="max-w-6xl mx-auto mb-8">
-        <VideoPlayer youtubeId={video.youtube_id} steps={steps} />
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {video.episode_label && (
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500 border border-gold-500/40 px-2 py-1">
+                  {video.episode_label}
+                </span>
+              )}
+              {video.malware_family && (
+                <span className="badge-malware">
+                  <ShieldAlert className="w-3 h-3" />
+                  {video.malware_family}
+                </span>
+              )}
+              {video.category && <span className="badge-tag">{video.category}</span>}
+            </div>
+            <h1 className="font-mono text-xl lg:text-2xl font-bold text-bone-50 leading-tight">
+              {video.title}
+            </h1>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-bone-300 mt-4">
-          {video.published_at && (
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 text-gold-500" />
-              {formatDate(video.published_at)}
-            </span>
-          )}
-          {video.duration_seconds && (
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-gold-500" />
-              {formatDuration(video.duration_seconds)}
-            </span>
-          )}
-          {typeof video.view_count === 'number' && (
-            <span>{video.view_count.toLocaleString()} views</span>
-          )}
-        </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-bone-300 mt-3">
+              {video.published_at && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="w-3 h-3 text-gold-500" />
+                  {formatDate(video.published_at)}
+                </span>
+              )}
+              {video.duration_seconds && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="w-3 h-3 text-gold-500" />
+                  {formatDuration(video.duration_seconds)}
+                </span>
+              )}
+              {typeof video.view_count === 'number' && (
+                <span>{video.view_count.toLocaleString()} views</span>
+              )}
+            </div>
 
-        {video.lesson_summary && (
-          <p className="font-serif text-lg text-bone-100 leading-relaxed mt-6">
-            {video.lesson_summary}
-          </p>
-        )}
-      </div>
+            {video.lesson_summary && (
+              <p className="font-serif text-base text-bone-100 leading-relaxed mt-4 pb-4 border-b border-navy-700">
+                {video.lesson_summary}
+              </p>
+            )}
+          </div>
 
-      {/* Tabbed content */}
-      <div className="max-w-5xl">
-        <VideoLessonTabs
-          lessonContent={video.lesson_content ?? ''}
-          steps={steps}
-          referencesList={referencesList}
-          exercises={exercises}
-          youtubeId={video.youtube_id}
-        />
-
-        {video.lesson_content && (
-          <div className="prose-rema mt-8" id="lesson-content-mdx">
-            <MDXRemote
-              source={video.lesson_content}
-              options={{
-                mdxOptions: {
-                  remarkPlugins: [remarkGfm],
-                  rehypePlugins: [rehypeSlug, rehypeHighlight],
-                },
-              }}
+          <div className="mt-6">
+            <VideoLessonTabs
+              lessonContent={video.lesson_content ?? ''}
+              steps={steps}
+              referencesList={referencesList}
+              exercises={exercises}
+              youtubeId={video.youtube_id}
             />
           </div>
-        )}
 
-        {/* Lab notes block - shown after lesson */}
-        {steps.length > 0 && (
-          <section className="mt-16 scroll-mt-32" id="lab-notes">
-            <header className="mb-6 pb-4 border-b border-navy-700 flex items-start gap-4">
-              <div className="w-12 h-12 border-2 border-gold-500 flex items-center justify-center bg-navy-950">
-                <Beaker className="w-5 h-5 text-gold-500" />
-              </div>
-              <div>
-                <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
-                  Section 02
-                </div>
-                <h2 className="font-mono text-2xl text-bone-50 mt-1">Lab Notes</h2>
-                <p className="font-serif text-bone-200 mt-1">
-                  Step-by-step walkthrough — jump to a moment in the video
-                </p>
-              </div>
-            </header>
-            <ol className="space-y-4">
-              {steps.map((s, i) => (
-                <li key={i} className="card-forensic p-5 flex gap-4">
-                  <span className="shrink-0 w-9 h-9 border border-gold-500 flex items-center justify-center font-mono text-xs text-gold-500">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-mono text-base text-bone-50 leading-tight mb-1">
-                      {s.title}
-                    </div>
-                    {s.description && (
-                      <p className="font-serif text-bone-200 leading-relaxed mb-2">
-                        {s.description}
-                      </p>
-                    )}
-                    {typeof s.timestamp_seconds === 'number' && (
-                      <a
-                        href={`https://www.youtube.com/watch?v=${video.youtube_id}&t=${s.timestamp_seconds}s`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-xs text-gold-500 hover:text-gold-400 underline decoration-dotted underline-offset-4"
-                      >
-                        Watch from {formatDuration(s.timestamp_seconds)}
-                      </a>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </section>
-        )}
-
-        {/* References block */}
-        {referencesList.length > 0 && (
-          <section className="mt-16 scroll-mt-32" id="references">
-            <header className="mb-6 pb-4 border-b border-navy-700 flex items-start gap-4">
-              <div className="w-12 h-12 border-2 border-gold-500 flex items-center justify-center bg-navy-950">
-                <Globe className="w-5 h-5 text-gold-500" />
-              </div>
-              <div>
-                <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
-                  Section 03
-                </div>
-                <h2 className="font-mono text-2xl text-bone-50 mt-1">References</h2>
-                <p className="font-serif text-bone-200 mt-1">
-                  External resources to deepen the topic
-                </p>
-              </div>
-            </header>
-            <div className="grid md:grid-cols-2 gap-3">
-              {referencesList.map((r, i) => (
-                <a
-                  key={i}
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
-                >
-                  <Globe className="w-4 h-4 text-gold-500 mt-1 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <span className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors leading-tight">
-                        {r.title}
-                      </span>
-                      <ExternalLink className="w-3 h-3 text-bone-300 shrink-0 mt-0.5" />
-                    </div>
-                    {r.note && (
-                      <p className="font-serif text-sm text-bone-200 leading-relaxed mb-2">
-                        {r.note}
-                      </p>
-                    )}
-                    {r.source_type && (
-                      <span className="badge-tag text-[10px]">{r.source_type}</span>
-                    )}
-                  </div>
-                </a>
-              ))}
+          {video.lesson_content && (
+            <div className="prose-rema mt-6" id="lesson-content-mdx">
+              <MDXRemote
+                source={video.lesson_content}
+                options={{
+                  mdxOptions: {
+                    remarkPlugins: [remarkGfm],
+                    rehypePlugins: [rehypeSlug, rehypeHighlight],
+                  },
+                }}
+              />
             </div>
-          </section>
-        )}
+          )}
 
-        {/* Exercises block */}
-        {exercises.length > 0 && (
-          <section className="mt-16 scroll-mt-32" id="exercises">
-            <header className="mb-6 pb-4 border-b border-navy-700 flex items-start gap-4">
-              <div className="w-12 h-12 border-2 border-gold-500 flex items-center justify-center bg-navy-950">
-                <BookOpen className="w-5 h-5 text-gold-500" />
-              </div>
-              <div>
-                <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
-                  Section 04
+          {steps.length > 0 && (
+            <section className="mt-12 scroll-mt-32" id="lab-notes">
+              <header className="mb-5 pb-3 border-b border-navy-700 flex items-start gap-3">
+                <div className="w-10 h-10 border-2 border-gold-500 flex items-center justify-center bg-navy-950 shrink-0">
+                  <Beaker className="w-4 h-4 text-gold-500" />
                 </div>
-                <h2 className="font-mono text-2xl text-bone-50 mt-1">Exercises</h2>
-                <p className="font-serif text-bone-200 mt-1">
-                  Hands-on practice. Try each in your analysis VM.
-                </p>
-              </div>
-            </header>
-            <div className="space-y-3">
-              {exercises.map((e, i) => (
-                <div key={i} className="card-forensic p-5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-mono text-xs text-gold-500">
-                      EX.{String(i + 1).padStart(2, '0')}
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500">
+                    Section 02
+                  </div>
+                  <h2 className="font-mono text-xl text-bone-50 mt-0.5">Lab Notes</h2>
+                </div>
+              </header>
+              <ol className="space-y-3">
+                {steps.map((s, i) => (
+                  <li key={i} className="card-forensic p-4 flex gap-3">
+                    <span className="shrink-0 w-8 h-8 border border-gold-500 flex items-center justify-center font-mono text-xs text-gold-500">
+                      {String(i + 1).padStart(2, '0')}
                     </span>
-                    {e.difficulty && (
-                      <span className="badge-tag text-[10px] uppercase">{e.difficulty}</span>
-                    )}
-                  </div>
-                  <h3 className="font-mono text-base text-bone-50 mb-2 leading-tight">
-                    {e.title}
-                  </h3>
-                  <p className="font-serif text-bone-200 leading-relaxed">{e.description}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Test your knowledge CTA */}
-        {linkedTest && (
-          <section className="mt-16 card-forensic p-8 lg:p-10 border-2">
-            <div className="flex items-start gap-5">
-              <div className="shrink-0 w-14 h-14 border-2 border-gold-500 bg-gold-500/10 flex items-center justify-center">
-                <ListChecks className="w-6 h-6 text-gold-500" />
-              </div>
-              <div className="flex-1">
-                <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-2">
-                  Quadrant 4 · Self-Assessment
-                </div>
-                <h3 className="font-mono text-xl lg:text-2xl text-bone-50 mb-2">
-                  Test your knowledge
-                </h3>
-                <p className="font-serif text-bone-200 mb-5 leading-relaxed">
-                  Take the assessment for this lesson. Pass the bar — receive a verifiable
-                  PDF certificate by email.
-                </p>
-                <div className="flex flex-wrap items-center gap-4 mb-6 font-mono text-xs text-bone-300">
-                  <span>{linkedTest.total_questions} questions</span>
-                  <span>·</span>
-                  <span>{linkedTest.duration_minutes} min</span>
-                  <span>·</span>
-                  <span>Pass: {linkedTest.passing_score}%</span>
-                </div>
-                <Link href={`/tests/${linkedTest.slug}`} className="btn-primary">
-                  <Award className="w-4 h-4" />
-                  Begin assessment <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Related videos */}
-        {related && related.length > 0 && (
-          <section className="mt-16">
-            <h2 className="font-mono text-xl uppercase tracking-wider text-bone-50 mb-6">
-              Continue learning
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {related.map((r) => (
-                <Link key={r.id} href={`/videos/${r.slug}`} className="group">
-                  <div className="relative aspect-video overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
-                    <Image
-                      src={getYouTubeThumbnail(r.youtube_id, 'maxres')}
-                      alt={r.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {r.duration_seconds && (
-                      <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-navy-950/90 border border-navy-700 font-mono text-[10px] text-bone-100">
-                        {formatDuration(r.duration_seconds)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-3">
-                    {r.episode_label && (
-                      <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold-500 mb-1">
-                        {r.episode_label}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-mono text-sm text-bone-50 leading-tight mb-1">
+                        {s.title}
                       </div>
-                    )}
-                    <div className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors leading-tight line-clamp-2">
-                      {r.title}
+                      {s.description && (
+                        <p className="font-serif text-sm text-bone-200 leading-relaxed mb-2">
+                          {s.description}
+                        </p>
+                      )}
+                      {typeof s.timestamp_seconds === 'number' && (
+                        <a
+                          href={`https://www.youtube.com/watch?v=${video.youtube_id}&t=${s.timestamp_seconds}s`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-gold-500 hover:text-gold-400 underline decoration-dotted underline-offset-4"
+                        >
+                          Watch from {formatDuration(s.timestamp_seconds)}
+                        </a>
+                      )}
                     </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {referencesList.length > 0 && (
+            <section className="mt-12 scroll-mt-32" id="references">
+              <header className="mb-5 pb-3 border-b border-navy-700 flex items-start gap-3">
+                <div className="w-10 h-10 border-2 border-gold-500 flex items-center justify-center bg-navy-950 shrink-0">
+                  <Globe className="w-4 h-4 text-gold-500" />
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500">
+                    Section 03
                   </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+                  <h2 className="font-mono text-xl text-bone-50 mt-0.5">References</h2>
+                </div>
+              </header>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {referencesList.map((r, i) => (
+                  <a
+                    key={i}
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 p-3 border border-navy-700 hover:border-gold-500 transition-colors group"
+                  >
+                    <Globe className="w-4 h-4 text-gold-500 mt-1 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <span className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors leading-tight">
+                          {r.title}
+                        </span>
+                        <ExternalLink className="w-3 h-3 text-bone-300 shrink-0 mt-0.5" />
+                      </div>
+                      {r.note && (
+                        <p className="font-serif text-xs text-bone-200 leading-relaxed mb-1">
+                          {r.note}
+                        </p>
+                      )}
+                      {r.source_type && (
+                        <span className="badge-tag text-[10px]">{r.source_type}</span>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {exercises.length > 0 && (
+            <section className="mt-12 scroll-mt-32" id="exercises">
+              <header className="mb-5 pb-3 border-b border-navy-700 flex items-start gap-3">
+                <div className="w-10 h-10 border-2 border-gold-500 flex items-center justify-center bg-navy-950 shrink-0">
+                  <BookOpen className="w-4 h-4 text-gold-500" />
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500">
+                    Section 04
+                  </div>
+                  <h2 className="font-mono text-xl text-bone-50 mt-0.5">Exercises</h2>
+                </div>
+              </header>
+              <div className="space-y-3">
+                {exercises.map((e, i) => (
+                  <div key={i} className="card-forensic p-4">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="font-mono text-xs text-gold-500">
+                        EX.{String(i + 1).padStart(2, '0')}
+                      </span>
+                      {e.difficulty && (
+                        <span className="badge-tag text-[10px] uppercase">{e.difficulty}</span>
+                      )}
+                    </div>
+                    <h3 className="font-mono text-sm text-bone-50 mb-1.5 leading-tight">
+                      {e.title}
+                    </h3>
+                    <p className="font-serif text-sm text-bone-200 leading-relaxed">
+                      {e.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {linkedTest && (
+            <section className="mt-12 card-forensic p-6 lg:p-8 border-2">
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 w-12 h-12 border-2 border-gold-500 bg-gold-500/10 flex items-center justify-center">
+                  <ListChecks className="w-5 h-5 text-gold-500" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500 mb-1">
+                    Self-Assessment
+                  </div>
+                  <h3 className="font-mono text-lg lg:text-xl text-bone-50 mb-2">
+                    Test your knowledge
+                  </h3>
+                  <p className="font-serif text-sm text-bone-200 mb-4 leading-relaxed">
+                    Take the assessment for this lesson. Pass — receive a verifiable PDF
+                    certificate by email.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 mb-4 font-mono text-xs text-bone-300">
+                    <span>{linkedTest.total_questions} questions</span>
+                    <span>·</span>
+                    <span>{linkedTest.duration_minutes} min</span>
+                    <span>·</span>
+                    <span>Pass: {linkedTest.passing_score}%</span>
+                  </div>
+                  <Link href={`/tests/${linkedTest.slug}`} className="btn-primary">
+                    <Award className="w-4 h-4" />
+                    Begin assessment <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
+        </div>
+
+        <aside className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1">
+          <h2 className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
+            // Up Next
+          </h2>
+          <div className="space-y-3">
+            {sidebarVideos?.map((r) => (
+              <Link
+                key={r.id}
+                href={`/videos/${r.slug}`}
+                className="flex gap-3 group items-start"
+              >
+                <div className="relative aspect-video w-40 shrink-0 overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
+                  <Image
+                    src={getYouTubeThumbnail(r.youtube_id, 'mqdefault')}
+                    alt={r.title}
+                    fill
+                    sizes="160px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {r.duration_seconds && (
+                    <span className="absolute bottom-1 right-1 px-1 py-0.5 bg-navy-950/90 border border-navy-700 font-mono text-[9px] text-bone-100">
+                      {formatDuration(r.duration_seconds)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {r.episode_label && (
+                    <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-gold-500 mb-0.5">
+                      {r.episode_label}
+                    </div>
+                  )}
+                  <div className="font-mono text-xs text-bone-50 group-hover:text-gold-500 transition-colors leading-snug line-clamp-3">
+                    {r.title}
+                  </div>
+                  {r.category && (
+                    <div className="font-mono text-[10px] text-bone-300 mt-1 uppercase tracking-wide">
+                      {r.category}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </aside>
       </div>
     </div>
   );
