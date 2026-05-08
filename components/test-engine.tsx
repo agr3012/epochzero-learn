@@ -296,7 +296,7 @@ export function TestEngine({ testId, testTitle }: Props) {
   if (step === 'taking') {
     const q = questions[currentIdx];
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         {/* Sticky timer + progress */}
         <div className="sticky top-16 z-30 -mx-6 px-6 py-3 bg-navy-900/90 backdrop-blur-md border-b border-navy-700 flex items-center justify-between">
           <div className="flex items-center gap-4 font-mono text-sm">
@@ -324,15 +324,15 @@ export function TestEngine({ testId, testTitle }: Props) {
         </div>
 
         {/* Question card */}
-        <div className="card-forensic p-8">
-          <div className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500 mb-4">
+        <div className="card-forensic p-5 lg:p-6">
+          <div className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500 mb-2">
             Q{currentIdx + 1}
           </div>
-          <h3 className="font-serif text-xl lg:text-2xl text-bone-50 leading-relaxed mb-8">
+          <h3 className="font-serif text-lg lg:text-xl text-bone-50 leading-relaxed mb-5">
             {q.question_text}
           </h3>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {q.options.map((opt, i) => {
               const selected = answers[q.id] === i;
               return (
@@ -340,7 +340,7 @@ export function TestEngine({ testId, testTitle }: Props) {
                   key={i}
                   onClick={() => setAnswers((a) => ({ ...a, [q.id]: i }))}
                   className={cn(
-                    'w-full text-left flex items-start gap-4 p-4 border-2 transition-colors',
+                    'w-full text-left flex items-center gap-3 px-3 py-2 border-2 transition-colors',
                     selected
                       ? 'border-gold-500 bg-gold-500/5 text-bone-50'
                       : 'border-navy-700 text-bone-200 hover:border-navy-600'
@@ -348,7 +348,7 @@ export function TestEngine({ testId, testTitle }: Props) {
                 >
                   <span
                     className={cn(
-                      'shrink-0 w-7 h-7 border-2 flex items-center justify-center font-mono text-sm uppercase',
+                      'shrink-0 w-6 h-6 border-2 flex items-center justify-center font-mono text-xs uppercase',
                       selected
                         ? 'border-gold-500 bg-gold-500 text-navy-900'
                         : 'border-navy-600 text-bone-300'
@@ -356,7 +356,7 @@ export function TestEngine({ testId, testTitle }: Props) {
                   >
                     {String.fromCharCode(65 + i)}
                   </span>
-                  <span className="font-serif text-base leading-relaxed pt-0.5">
+                  <span className="font-serif text-sm leading-snug">
                     {opt}
                   </span>
                 </button>
