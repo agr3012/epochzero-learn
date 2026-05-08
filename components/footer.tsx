@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Github, Youtube, Instagram, Mail, Globe } from 'lucide-react';
 
 const FOOTER_LINKS = {
@@ -32,7 +31,6 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-4">
-              <Image src="/logo.png" alt="EpochZero Learn" width={48} height={48} />
               <div>
                 <div className="font-mono text-lg font-bold text-bone-50">EpochZero Learn</div>
                 <div className="font-mono text-xs tracking-[0.3em] text-gold-500 uppercase">
