@@ -175,3 +175,22 @@
     background: rgba(255, 200, 87, 0.5);
   }
 }
+/* Custom scrollbar — matches site theme */
+.scrollbar-themed::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-themed::-webkit-scrollbar-track {
+  background: rgb(15 23 42);
+  border-left: 1px solid rgb(30 41 59);
+}
+.scrollbar-themed::-webkit-scrollbar-thumb {
+  background: rgb(255 200 87 / 0.4);
+  border-radius: 0;
+}
+.scrollbar-themed::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 200 87 / 0.7);
+}
+.scrollbar-themed {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 200 87 / 0.4) rgb(15 23 42);
+}
