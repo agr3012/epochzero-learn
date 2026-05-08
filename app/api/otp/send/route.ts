@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
     const resend = getResend();
     await resend.emails.send({
       from: FROM_EMAIL,
-      to: email,
-      subject: `REMA Club — Verification code: ${otp}`,
+      to: email,      
+      subject: `EpochZero Learn — Verification code: ${otp}`,
       html: otpEmailHtml({ name: full_name, otp, testTitle: test.title }),
     });
 
@@ -127,8 +127,8 @@ function otpEmailHtml({
     <tr><td align="center" style="padding:40px 20px">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#11203B;border:1px solid #1A2D4D">
         <tr><td style="padding:32px;border-bottom:1px solid #1A2D4D">
-          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:#FFC857;text-transform:uppercase">REMA Club</div>
-          <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:#A8A498;margin-top:4px">Reverse · Reveal · Respond</div>
+          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:#FFC857;text-transform:uppercase">EpochZero Learn</div>
+          <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:#A8A498;margin-top:4px">Multi-Domain Tech Learning Hub</div>
         </td></tr>
         <tr><td style="padding:32px">
           <h1 style="margin:0 0 16px;font-family:'Courier New',monospace;font-size:22px;color:#F5F1E6">Your verification code</h1>
@@ -143,7 +143,7 @@ function otpEmailHtml({
           <p style="margin:0;font-size:13px;color:#A8A498">If you didn't request this, ignore this email.</p>
         </td></tr>
         <tr><td style="padding:24px 32px;border-top:1px solid #1A2D4D;background:#0A1628">
-          <p style="margin:0;font-family:'Courier New',monospace;font-size:11px;color:#A8A498;letter-spacing:1px">REMA CLUB — INDEPENDENT LEARNING INITIATIVE</p>
+          <p style="margin:0;font-family:'Courier New',monospace;font-size:11px;color:#A8A498;letter-spacing:1px">EPOCHZERO LEARN — INDEPENDENT LEARNING PLATFORM</p>
         </td></tr>
       </table>
     </td></tr>
