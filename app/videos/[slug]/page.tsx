@@ -102,7 +102,7 @@ export default async function VideoDetailPage({ params }: Props) {
       </Link>
 
       {/* Episode label + title */}
-      <div className="mb-6 max-w-5xl">
+      <div className="mb-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-2 mb-3">
           {video.episode_label && (
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 border border-gold-500/40 px-3 py-1">
@@ -123,7 +123,7 @@ export default async function VideoDetailPage({ params }: Props) {
       </div>
 
       {/* Video player — full width, top */}
-      <div className="max-w-5xl mb-8">
+      <div className="max-w-6xl mx-auto mb-8">
         <VideoPlayer youtubeId={video.youtube_id} steps={steps} />
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-bone-300 mt-4">
