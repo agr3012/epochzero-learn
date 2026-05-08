@@ -44,15 +44,6 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-14 h-14 transition-transform group-hover:scale-105">
-            <Image
-              src="/logo.png"
-              alt="EpochZero Learn"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
           <div className="flex flex-col leading-none">
             <span className="font-mono text-base font-bold tracking-tight text-bone-50">
               EpochZero Learn
