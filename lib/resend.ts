@@ -10,4 +10,4 @@ export function getResend(): Resend {
 }
 
 export const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL ?? 'REMA Club <noreply@rema.epochzero.net>';
+  process.env.RESEND_FROM_EMAIL ?? 'EpochZero Learn <noreply@learn.epochzero.net>';
