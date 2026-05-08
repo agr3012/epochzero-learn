@@ -9,12 +9,12 @@ import {
   Headphones,
   Award,
   Terminal,
-  ShieldAlert,
+  Calendar,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 
-export const revalidate = 60; // ISR every 60s
+export const revalidate = 60;
 
 async function getLatestContent() {
   const supabase = createClient();
@@ -28,7 +28,7 @@ async function getLatestContent() {
       .limit(3),
     supabase
       .from('videos')
-      .select('id, slug, youtube_id, title, malware_family, duration_seconds, published_at')
+      .select('id, slug, youtube_id, title, episode_label, duration_seconds, published_at')
       .eq('is_published', true)
       .order('published_at', { ascending: false })
       .limit(3),
@@ -54,9 +54,7 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-navy-700">
-        {/* Grid background */}
         <div className="absolute inset-0 border-grid opacity-40" aria-hidden />
-        {/* Gold radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -65,17 +63,15 @@ export default async function HomePage() {
           }}
           aria-hidden
         />
-        {/* Scanlines overlay */}
         <div className="absolute inset-0 bg-scanlines pointer-events-none opacity-50" aria-hidden />
 
         <div className="container relative py-24 lg:py-32">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7">
-              {/* Terminal-style status line */}
               <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-gold-500/30 bg-gold-500/5 mb-8 animate-fade-up">
                 <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse" />
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500">
-                  Sample 0x00 — Live Learning Hub
+                  EpochZero Learn — Live Platform
                 </span>
               </div>
 
@@ -83,23 +79,24 @@ export default async function HomePage() {
                 className="font-mono text-5xl lg:text-7xl font-bold leading-[0.95] tracking-tight text-bone-50 mb-6 animate-fade-up text-balance"
                 style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
               >
-                Reverse.
+                Learn.
                 <br />
-                <span className="text-gold-500">Reveal.</span>
+                <span className="text-gold-500">Compete.</span>
                 <br />
-                Respond.
+                Get Certified.
               </h1>
 
               <p
                 className="font-serif text-xl text-bone-200 max-w-2xl leading-relaxed mb-10 animate-fade-up"
                 style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
               >
-                A learning hub for serious students of malware. Walk through real samples like{' '}
-                <span className="text-gold-500 font-mono text-base">njRAT</span>,{' '}
-                <span className="text-gold-500 font-mono text-base">Jigsaw</span>, and{' '}
-                <span className="text-gold-500 font-mono text-base">Qakbot</span> — backed by
-                articles, video analyses, an eBook, and a 360-question bank. Earn verifiable
-                certificates by passing the MCQ assessments.
+                A multi-domain learning and event hub for{' '}
+                <span className="text-gold-500 font-mono text-base">REMA</span>,{' '}
+                <span className="text-gold-500 font-mono text-base">Cloud</span>,{' '}
+                <span className="text-gold-500 font-mono text-base">Cryptography</span>, and{' '}
+                <span className="text-gold-500 font-mono text-base">Web Development</span>.
+                Articles, video lessons, MCQ tests with verifiable certificates, and
+                student events including CTFs, expert talks, and industrial visits.
               </p>
 
               <div
@@ -108,23 +105,22 @@ export default async function HomePage() {
               >
                 <Link href="/learn" className="btn-primary">
                   <GraduationCap className="w-4 h-4" />
-                  Browse 4Q Courses
+                  Browse Courses
                 </Link>
                 <Link href="/videos" className="btn-ghost">
                   <Video className="w-4 h-4" />
-                  Watch Walkthroughs
+                  Watch Lessons
                 </Link>
               </div>
 
-              {/* Stats */}
               <div
                 className="mt-16 grid grid-cols-3 gap-8 max-w-xl animate-fade-up"
                 style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
               >
                 {[
-                  { label: 'MCQs in Bank', value: '120+' },
+                  { label: 'Domains', value: '4+' },
+                  { label: 'Video Lessons', value: '10+' },
                   { label: 'Question Pool', value: '360' },
-                  { label: 'Malware Families', value: '15+' },
                 ].map((s) => (
                   <div key={s.label} className="border-l-2 border-gold-500 pl-4">
                     <div className="font-mono text-3xl text-bone-50 font-bold">{s.value}</div>
@@ -143,7 +139,6 @@ export default async function HomePage() {
             >
               <div className="relative">
                 <div className="card-forensic border-2 p-1">
-                  {/* Terminal chrome */}
                   <div className="flex items-center justify-between px-4 py-2 border-b border-navy-700 bg-navy-950">
                     <div className="flex gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full bg-crimson-500" />
@@ -151,38 +146,37 @@ export default async function HomePage() {
                       <span className="w-2.5 h-2.5 rounded-full bg-bone-300/40" />
                     </div>
                     <span className="font-mono text-[10px] uppercase tracking-wider text-bone-300">
-                      rema://analyst.session
+                      epochzero://session
                     </span>
                   </div>
 
-                  {/* Terminal body */}
                   <div className="p-6 bg-navy-950 font-mono text-sm leading-relaxed space-y-2">
                     <div className="text-bone-300">
-                      <span className="text-gold-500">$</span> file njrat_sample.exe
+                      <span className="text-gold-500">$</span> ez courses --list
                     </div>
                     <div className="text-bone-200">
-                      njrat_sample.exe: PE32 executable, .NET assembly
-                    </div>
-                    <div className="text-bone-300">
-                      <span className="text-gold-500">$</span> yara rules/njrat.yar njrat_sample.exe
-                    </div>
-                    <div className="text-crimson-400">
-                      [<span className="text-crimson-500">!</span>] njRAT_v0.7d : njrat_sample.exe
-                    </div>
-                    <div className="text-bone-300">
-                      <span className="text-gold-500">$</span> rema analyze --static
+                      ├── REMA ........... <span className="text-gold-500">10 lessons</span>
                     </div>
                     <div className="text-bone-200">
-                      ├── PE entropy ......... 7.84 / 8.0
+                      ├── Cloud .......... <span className="text-bone-300">coming soon</span>
                     </div>
                     <div className="text-bone-200">
-                      ├── Suspicious imports . VirtualAlloc, WriteProcessMemory
+                      ├── Crypto ......... <span className="text-bone-300">coming soon</span>
                     </div>
                     <div className="text-bone-200">
-                      ├── C2 indicator ....... 192.168.1.7:5552
+                      └── Web Dev ........ <span className="text-bone-300">coming soon</span>
+                    </div>
+                    <div className="text-bone-300 pt-2">
+                      <span className="text-gold-500">$</span> ez events --upcoming
                     </div>
                     <div className="text-bone-200">
-                      └── Verdict ............ <span className="text-crimson-400">RAT</span>
+                      ├── CTF: Unpacking Room ...... <span className="text-gold-500">open</span>
+                    </div>
+                    <div className="text-bone-200">
+                      ├── Expert Talk: Cloud Sec ... <span className="text-gold-500">soon</span>
+                    </div>
+                    <div className="text-bone-200">
+                      └── Industrial Visit ......... <span className="text-bone-300">tba</span>
                     </div>
                     <div className="text-bone-300 pt-2">
                       <span className="text-gold-500">$</span>{' '}
@@ -191,9 +185,8 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                {/* Floating badge */}
                 <div className="absolute -top-3 -right-3 px-3 py-1.5 bg-gold-500 text-navy-900 font-mono text-[10px] uppercase tracking-[0.2em] font-bold">
-                  Hands-on
+                  Multi-Domain
                 </div>
               </div>
             </div>
@@ -205,10 +198,10 @@ export default async function HomePage() {
       <section className="container py-24">
         <div className="text-center mb-16">
           <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-            // What you'll find here
+            // What you&apos;ll find here
           </div>
           <h2 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 max-w-3xl mx-auto leading-tight text-balance">
-            A complete lab notebook for malware analysis.
+            Learning, assessments, and events — under one roof.
           </h2>
         </div>
 
@@ -217,37 +210,37 @@ export default async function HomePage() {
             {
               icon: BookOpen,
               title: 'Articles & Writeups',
-              desc: 'In-depth malware writeups: HTML smuggling chains, DLL side-loading, packing techniques, MITRE ATT&CK mappings.',
+              desc: 'In-depth technical writeups across malware analysis, cloud security, cryptography, and modern web development.',
               href: '/articles',
             },
             {
               icon: Video,
-              title: 'Video Walkthroughs',
-              desc: 'Step-by-step analyses of njRAT, Jigsaw, Qakbot and more — embedded YouTube player with synchronized lab notes.',
+              title: 'Video Lessons',
+              desc: 'Step-by-step lessons with synchronised lab notes, references, and exercises. YouTube-embedded for one-click viewing.',
               href: '/videos',
             },
             {
               icon: GraduationCap,
               title: 'MCQ Tests + Certificates',
-              desc: 'Validated question bank. Pass the test, receive a verifiable PDF certificate by email. No registration paywall.',
+              desc: 'Validated question banks across every domain. Pass the test, receive a verifiable PDF certificate by email.',
               href: '/tests',
             },
             {
               icon: FileText,
-              title: 'eBook & Cheatsheet',
-              desc: 'REMA eBook 2026 (~135 pages), Question Bank (360 Q), and cheatsheet — all downloadable, all free.',
+              title: 'eBooks & Cheatsheets',
+              desc: 'Course textbooks, cheatsheets, and question banks — downloadable, all free.',
               href: '/resources',
             },
             {
-              icon: Headphones,
-              title: 'Audio Podcast',
-              desc: 'On-the-go discussions on threat actors, current campaigns, and reverse engineering tradecraft.',
-              href: '/podcast',
+              icon: Calendar,
+              title: 'Student Events',
+              desc: 'CTFs, expert talks, industrial visits, photo competitions, and cultural events. Register, attend, get certificates.',
+              href: '/events',
             },
             {
-              icon: ShieldAlert,
+              icon: Award,
               title: 'Verifiable Credentials',
-              desc: 'Every certificate has a public verification URL. Employers can validate authenticity instantly.',
+              desc: 'Every certificate has a public verification URL. Employers and institutions can validate authenticity instantly.',
               href: '/verify',
             },
           ].map(({ icon: Icon, title, desc, href }) => (
@@ -317,10 +310,10 @@ export default async function HomePage() {
           <div className="flex items-end justify-between mb-12">
             <div>
               <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-                // Recent walkthroughs
+                // Recent lessons
               </div>
               <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
-                Video analyses
+                Video lessons
               </h2>
             </div>
             <Link
@@ -342,9 +335,9 @@ export default async function HomePage() {
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-transparent to-transparent" />
-                  {v.malware_family && (
-                    <span className="absolute top-3 left-3 badge-malware">
-                      {v.malware_family}
+                  {v.episode_label && (
+                    <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500 border border-gold-500/40 px-2 py-1 bg-navy-950/80">
+                      {v.episode_label}
                     </span>
                   )}
                 </div>
@@ -377,9 +370,8 @@ export default async function HomePage() {
                 Earn a certificate.
               </h2>
               <p className="font-serif text-lg text-bone-200 mb-8 leading-relaxed">
-                Pick a test, enter your email, prove you can identify the indicators.
-                Pass the bar — receive a PDF certificate with a unique verification ID.
-                No paywall. No catch.
+                Pick a test, enter your email, prove what you know. Pass the bar — receive
+                a PDF certificate with a unique verification ID. No paywall. No catch.
               </p>
               <Link href="/tests" className="btn-primary">
                 Browse Tests <ArrowRight className="w-4 h-4" />
@@ -416,11 +408,7 @@ export default async function HomePage() {
               ) : (
                 <div className="p-8 border border-dashed border-navy-700 text-center">
                   <p className="font-mono text-sm text-bone-300">
-                    Tests coming soon. Add them via{' '}
-                    <Link href="/admin/tests" className="text-gold-500 underline">
-                      admin panel
-                    </Link>
-                    .
+                    Tests coming soon.
                   </p>
                 </div>
               )}
