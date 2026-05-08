@@ -8,29 +8,6 @@ import {
   Font,
 } from '@react-pdf/renderer';
 
-// Register fonts (uses Google Fonts — works in serverless)
-Font.register({
-  family: 'JetBrains Mono',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4xD0Tg.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/jetbrainsmono/v18/tDba2o-flEEny0FZhsfKuT_PmZqVAA.ttf',
-      fontWeight: 700,
-    },
-  ],
-});
-
-Font.register({
-  family: 'Fraunces',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/fraunces/v32/6NUu8FOOZAAEzbm5n7p-Whu_BAmsHA.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/fraunces/v32/6NUu8FOOZAAEzbm5n7p-Whu_DAmsHA.ttf', fontWeight: 700 },
-  ],
-});
-
 const NAVY = '#0A1628';
 const NAVY_DARK = '#050D1A';
 const GOLD = '#FFC857';
@@ -42,7 +19,7 @@ const styles = StyleSheet.create({
   page: {
     backgroundColor: NAVY,
     padding: 0,
-    fontFamily: 'Fraunces',
+    fontFamily: 'Times-Roman',
     color: BONE,
     position: 'relative',
   },
@@ -102,7 +79,7 @@ const styles = StyleSheet.create({
   logo: { width: 80, height: 80 },
 
   brandLine: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 9,
     letterSpacing: 4,
     color: GOLD,
@@ -110,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   brandSub: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 7,
     letterSpacing: 3,
     color: BONE_DIM,
@@ -119,7 +96,7 @@ const styles = StyleSheet.create({
   },
 
   certTitle: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 22,
     fontWeight: 700,
     color: BONE,
@@ -128,7 +105,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   certSubtitle: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 11,
     color: GOLD,
     letterSpacing: 3,
@@ -137,14 +114,14 @@ const styles = StyleSheet.create({
   },
 
   presentedTo: {
-    fontFamily: 'Fraunces',
+    fontFamily: 'Times-Roman',
     fontSize: 12,
     color: BONE_DIM,
     fontStyle: 'italic',
     marginBottom: 12,
   },
   studentName: {
-    fontFamily: 'Fraunces',
+    fontFamily: 'Times-Roman',
     fontSize: 36,
     fontWeight: 700,
     color: GOLD,
@@ -159,14 +136,14 @@ const styles = StyleSheet.create({
   },
 
   forCompletion: {
-    fontFamily: 'Fraunces',
+    fontFamily: 'Times-Roman',
     fontSize: 12,
     color: BONE_DIM,
     fontStyle: 'italic',
     marginBottom: 8,
   },
   testTitle: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 16,
     color: BONE,
     textAlign: 'center',
@@ -175,7 +152,7 @@ const styles = StyleSheet.create({
     maxWidth: 480,
   },
   scoreLine: {
-    fontFamily: 'Fraunces',
+    fontFamily: 'Times-Roman',
     fontSize: 14,
     color: BONE,
     marginBottom: 32,
@@ -197,7 +174,7 @@ const styles = StyleSheet.create({
   },
   footerCol: { flexDirection: 'column' },
   footerLabel: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 7,
     letterSpacing: 2,
     color: BONE_DIM,
@@ -205,7 +182,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   footerValue: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 9,
     color: BONE,
   },
@@ -214,7 +191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signature: {
-    fontFamily: 'Fraunces',
+    fontFamily: 'Times-Roman',
     fontSize: 14,
     color: BONE,
     fontStyle: 'italic',
@@ -225,7 +202,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   signatureLabel: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 7,
     color: BONE_DIM,
     letterSpacing: 2,
@@ -248,7 +225,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   verifyText: {
-    fontFamily: 'JetBrains Mono',
+    fontFamily: 'Courier',
     fontSize: 7,
     color: BONE_DIM,
     letterSpacing: 1,
