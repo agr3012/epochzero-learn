@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Times-Roman',
     fontSize: 12,
     color: BONE_DIM,
-    fontStyle: 'italic',
     marginBottom: 12,
   },
   studentName: {
@@ -139,7 +138,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Times-Roman',
     fontSize: 12,
     color: BONE_DIM,
-    fontStyle: 'italic',
     marginBottom: 8,
   },
   testTitle: {
@@ -194,7 +192,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Times-Roman',
     fontSize: 14,
     color: BONE,
-    fontStyle: 'italic',
     marginBottom: 4,
     borderBottomWidth: 0.5,
     borderBottomColor: BONE_DIM,
