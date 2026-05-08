@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     locale: 'en_IN',
   },
   robots: { index: true, follow: true },
-  icons: { icon: '/logo.png', apple: '/logo.png' },
+  icons: { icon: '/EpochZero-favicon1.png', apple: '/EpochZero-favicon1.png' },
 };
 
 export default function RootLayout({
