@@ -25,25 +25,25 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'REMA Club — Reverse. Reveal. Respond.',
-    template: '%s — REMA Club',
+    default: 'EpochZero Learn — Multi-Domain Tech Learning Hub',
+    template: '%s — EpochZero Learn',
   },
   description:
-    'A learning hub for Reverse Engineering & Malware Analysis. Articles, video walkthroughs, MCQ tests with certificates, eBook and question bank — built for serious students of malware.',
+    'A learning and event platform for Reverse Engineering, Malware Analysis, Cloud, Cryptography, Web Development, and more. Articles, videos, tests with certificates, and event registrations.',
   keywords: [
     'malware analysis',
     'reverse engineering',
+    'cloud security',
+    'cryptography',
+    'web development',
     'cybersecurity education',
-    'REMA',
-    'static analysis',
-    'dynamic analysis',
-    'YARA',
-    'incident response',
+    'CTF',
+    'student events',
   ],
   authors: [{ name: 'Ashish Revar' }],
   openGraph: {
-    title: 'REMA Club — Reverse. Reveal. Respond.',
-    description: 'Learning hub for Reverse Engineering & Malware Analysis.',
+    title: 'EpochZero Learn — Multi-Domain Tech Learning Hub',
+    description: 'Learning and event platform for tech students.',
     type: 'website',
     locale: 'en_IN',
   },
