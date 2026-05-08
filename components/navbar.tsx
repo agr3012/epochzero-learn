@@ -29,7 +29,7 @@ export function Navbar() {
           <div className="relative w-14 h-14 transition-transform group-hover:scale-105">
             <Image
               src="/logo.png"
-              alt="REMA Club"
+              alt="EpochZero Learn"
               fill
               className="object-contain"
               priority
@@ -37,10 +37,10 @@ export function Navbar() {
           </div>
           <div className="flex flex-col leading-none">
             <span className="font-mono text-base font-bold tracking-tight text-bone-50">
-              REMA Club
+              EpochZero Learn
             </span>
             <span className="font-mono text-[10px] tracking-[0.3em] text-gold-500 uppercase">
-              Reverse · Reveal · Respond
+              Multi-Domain Tech Learning Hub
             </span>
           </div>
         </Link>
