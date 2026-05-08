@@ -344,7 +344,7 @@ export default async function VideoDetailPage({ params }: Props) {
               >
                 <div className="relative aspect-video w-40 shrink-0 overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
                   <Image
-                    src={getYouTubeThumbnail(r.youtube_id, 'mqdefault')}
+                    src={getYouTubeThumbnail(r.youtube_id, 'hq')}
                     alt={r.title}
                     fill
                     sizes="160px"
