@@ -330,8 +330,8 @@ export default async function VideoDetailPage({ params }: Props) {
             </section>
           )}
         </div>
-
-        <aside className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1">
+        
+        <aside className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1 scrollbar-themed">
           <h2 className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
             // Up Next
           </h2>
