@@ -12,18 +12,16 @@ const FOOTER_LINKS = {
   ],
   Connect: [
     { href: '/podcast', label: 'Podcast' },
-    { href: '/reels', label: 'Instagram Reels' },
     { href: '/about', label: 'About' },
     { href: '/verify', label: 'Verify Certificate' },
   ],
 };
 
 const SOCIALS = [
-  { href: 'https://www.youtube.com/@epochzero', icon: Youtube, label: 'YouTube' },
+  { href: 'https://www.youtube.com/@EpochZeroNet', icon: Youtube, label: 'YouTube' },
   { href: 'https://www.instagram.com/epochzero.net', icon: Instagram, label: 'Instagram' },
-  { href: 'https://epochzero.net', icon: Globe, label: 'EpochZero Blog' },
-  { href: 'https://github.com', icon: Github, label: 'GitHub' },
-  { href: 'mailto:contact@epochzero.net', icon: Mail, label: 'Email' },
+  { href: 'https://github.com/agr3012', icon: Github, label: 'GitHub' },
+  { href: 'mailto:epochzero.net@gmail.com', icon: Mail, label: 'Email' },
 ];
 
 export function Footer() {
@@ -34,20 +32,19 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-4">
-              <Image src="/logo.png" alt="REMA Club" width={48} height={48} />
+              <Image src="/logo.png" alt="EpochZero Learn" width={48} height={48} />
               <div>
-                <div className="font-mono text-lg font-bold text-bone-50">REMA Club</div>
+                <div className="font-mono text-lg font-bold text-bone-50">EpochZero Learn</div>
                 <div className="font-mono text-xs tracking-[0.3em] text-gold-500 uppercase">
-                  Reverse · Reveal · Respond
+                  Multi-Domain Tech Learning Hub
                 </div>
               </div>
             </Link>
             <p className="font-serif text-bone-200 max-w-sm leading-relaxed">
-              A learning hub for Reverse Engineering and Malware Analysis. Articles,
-              video walkthroughs, MCQ tests with verifiable certificates — built
-              for serious students of malware.
+              A learning and event platform for Reverse Engineering, Malware Analysis,
+              Cloud, Cryptography, and Web Development. Articles, video lessons, tests
+              with verifiable certificates, and student events.
             </p>
-
             <div className="mt-6 flex items-center gap-3">
               {SOCIALS.map(({ href, icon: Icon, label }) => (
                 <a
@@ -63,7 +60,6 @@ export function Footer() {
               ))}
             </div>
           </div>
-
           {/* Links */}
           {Object.entries(FOOTER_LINKS).map(([heading, links]) => (
             <div key={heading}>
@@ -85,10 +81,9 @@ export function Footer() {
             </div>
           ))}
         </div>
-
         <div className="mt-12 pt-6 border-t border-navy-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <p className="font-mono text-xs text-bone-300">
-            © {new Date().getFullYear()} REMA Club. Educational content for learning purposes.
+            © {new Date().getFullYear()} EpochZero Learn. Educational content for learning purposes.
           </p>
           <p className="font-mono text-xs text-bone-300">
             Course Instructor: Ashish Revar · v1.0
