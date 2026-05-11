@@ -4,8 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 const schema = z.object({
   attempt_id: z.string().uuid(),
-  // Map of question_id -> { selected_display_index, option_permutation }
-  // Permutation is echoed back from the verify call so we can map display->original.
   answers: z.array(
     z.object({
       question_id: z.string().uuid(),
@@ -57,37 +55,74 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Test not found' }, { status: 404 });
     }
 
-    // Load correct answers for the questions in this attempt
+    // Load full question rows (for review data + correct_index)
     const { data: questions } = await admin
       .from('test_questions')
-      .select('id, correct_index')
+      .select('id, question_text, options, correct_index, ebook_reference')
       .in('id', attempt.question_ids as string[]);
     if (!questions) {
       return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
-    const correctMap = new Map(questions.map((q) => [q.id, q.correct_index]));
+    const questionMap = new Map(questions.map((q) => [q.id, q]));
 
-    // Score
+    // Build per-answer maps and review payload
     let correct_count = 0;
     const total_count = (attempt.question_ids as string[]).length;
     const answersJson: Record<string, number | null> = {};
 
-    for (const ans of answers) {
-      const correctOriginalIdx = correctMap.get(ans.question_id);
-      if (correctOriginalIdx === undefined) continue;
-      // Map display index -> original index
+    // Index answers by question_id so we preserve display order from attempt.question_ids
+    const answerByQ = new Map(answers.map((a) => [a.question_id, a]));
+
+    const review: {
+      question_text: string;
+      options: string[];
+      user_answer_index: number | null;
+      correct_answer_index: number;
+      is_correct: boolean;
+      ebook_reference: string | null;
+    }[] = [];
+
+    for (const qid of attempt.question_ids as string[]) {
+      const q = questionMap.get(qid);
+      const ans = answerByQ.get(qid);
+      if (!q || !ans) continue;
+
+      const correctOriginalIdx = q.correct_index;
+
+      // Map display index -> original index using the permutation echoed by client
       const selectedOriginalIdx =
         ans.selected_index === null
           ? null
           : ans.option_permutation[ans.selected_index];
-      answersJson[ans.question_id] = selectedOriginalIdx;
-      if (selectedOriginalIdx === correctOriginalIdx) correct_count++;
+
+      answersJson[qid] = selectedOriginalIdx;
+
+      const isCorrect = selectedOriginalIdx === correctOriginalIdx;
+      if (isCorrect) correct_count++;
+
+      // Reorder options into the display order the student saw,
+      // and translate correct/user indices into that same display order.
+      const originalOptions = (q.options as string[]) ?? [];
+      const permutation = ans.option_permutation;
+      const displayedOptions = permutation.map((origIdx) => originalOptions[origIdx]);
+
+      const correctDisplayIdx = permutation.indexOf(correctOriginalIdx);
+      const userDisplayIdx = ans.selected_index; // already a display index
+
+      review.push({
+        question_text: q.question_text,
+        options: displayedOptions,
+        user_answer_index: userDisplayIdx,
+        correct_answer_index: correctDisplayIdx,
+        is_correct: isCorrect,
+        ebook_reference: q.ebook_reference ?? null,
+      });
     }
 
     const score = Math.round((correct_count / total_count) * 100);
     const passed = score >= test.passing_score;
 
-    // Determine first-pass: only if email hasn't already received a cert for this test
+    // First-pass detection
     let isFirstPass = false;
     if (passed) {
       const { data: prior } = await admin
@@ -107,7 +142,6 @@ export async function POST(req: NextRequest) {
       (Date.now() - new Date(attempt.started_at).getTime()) / 1000
     );
 
-    // Update attempt
     const { error: updErr } = await admin
       .from('attempts')
       .update({
@@ -126,7 +160,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
 
-    // Increment test attempt count (best-effort, non-blocking)
+    // Increment test attempt count (best-effort)
     admin
       .from('tests')
       .update({ attempt_count: (test.attempt_count ?? 0) + 1 })
@@ -138,7 +172,6 @@ export async function POST(req: NextRequest) {
 
     let cert_uid: string | null = null;
     if (isFirstPass) {
-      // Generate certificate (PDF + email is handled in a separate route to keep this fast)
       const certRes = await fetch(
         `${process.env.NEXT_PUBLIC_SITE_URL}/api/certificates/generate`,
         {
@@ -166,6 +199,7 @@ export async function POST(req: NextRequest) {
       is_first_pass: isFirstPass,
       cert_uid,
       passing_score: test.passing_score,
+      review,
     });
   } catch (err) {
     console.error('submit error:', err);
