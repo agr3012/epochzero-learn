@@ -13,7 +13,7 @@ export const revalidate = 30;
 export async function generateMetadata({ params }: Props) {
   return {
     title: `Verify ${params.uid}`,
-    description: 'Verify a REMA Club certificate',
+    description: 'Verify a EpochZero Learn certificate',
   };
 }
 
@@ -65,22 +65,19 @@ export default async function VerifyPage({ params }: Props) {
 
       <div className="card-forensic p-8 lg:p-10">
         <div className="flex items-start gap-6 mb-8">
-          <div className="relative w-16 h-16 shrink-0">
-            <Image src="/logo.png" alt="REMA Club" fill className="object-contain" />
-          </div>
           <div>
             <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-1">
-              REMA Club
+              EpochZero Learn
             </div>
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-bone-300">
-              Reverse · Reveal · Respond
+              Multi-Domain Tech Learning Hub
             </div>
           </div>
         </div>
 
         <h1 className="font-mono text-2xl text-bone-50 mb-1">Certificate of Completion</h1>
         <p className="font-serif text-bone-300 mb-8">
-          Issued by REMA Club — independent learning initiative
+          Issued by EpochZero Learn — multi-domain tech learning hub
         </p>
 
         <dl className="space-y-6">
