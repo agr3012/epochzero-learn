@@ -4,12 +4,9 @@ import {
   Text,
   View,
   StyleSheet,
-  Image,
-  Font,
 } from '@react-pdf/renderer';
 
 const NAVY = '#0A1628';
-const NAVY_DARK = '#050D1A';
 const GOLD = '#FFC857';
 const BONE = '#F5F1E6';
 const BONE_DIM = '#A8A498';
@@ -23,26 +20,18 @@ const styles = StyleSheet.create({
     color: BONE,
     position: 'relative',
   },
-  // Outer frame
   frame: {
     position: 'absolute',
-    top: 24,
-    left: 24,
-    right: 24,
-    bottom: 24,
+    top: 24, left: 24, right: 24, bottom: 24,
     borderWidth: 2,
     borderColor: GOLD,
   },
   innerFrame: {
     position: 'absolute',
-    top: 32,
-    left: 32,
-    right: 32,
-    bottom: 32,
+    top: 32, left: 32, right: 32, bottom: 32,
     borderWidth: 0.5,
     borderColor: NAVY_BORDER,
   },
-  // Corner ornaments
   cornerTL: {
     position: 'absolute', top: 24, left: 24,
     width: 48, height: 48,
@@ -71,12 +60,6 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     alignItems: 'center',
   },
-
-  logoWrap: {
-    width: 80, height: 80,
-    marginBottom: 16,
-  },
-  logo: { width: 80, height: 80 },
 
   brandLine: {
     fontFamily: 'Courier',
@@ -153,14 +136,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Times-Roman',
     fontSize: 14,
     color: BONE,
-    marginBottom: 32,
+    marginBottom: 8,
   },
   scoreValue: {
     color: GOLD,
     fontWeight: 700,
   },
+  appreciation: {
+    fontFamily: 'Times-Roman',
+    fontSize: 11,
+    color: BONE_DIM,
+    textAlign: 'center',
+    marginTop: 16,
+    paddingHorizontal: 80,
+  },
 
-  // Footer with metadata
   footer: {
     position: 'absolute',
     bottom: 64,
@@ -207,7 +197,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Bottom verification strip
   verifyStrip: {
     position: 'absolute',
     bottom: 32,
@@ -234,9 +223,9 @@ export interface CertificateData {
   testTitle: string;
   score: number;
   certUid: string;
-  issuedDate: string;          // formatted, e.g. "5 May 2026"
-  verifyUrl: string;           // e.g. https://rema.../verify/REMA-2026-A7F3K9
-  logoDataUri: string;         // base64-encoded PNG/JPEG of REMA Club logo
+  issuedDate: string;
+  verifyUrl: string;
+  logoDataUri?: string;        // kept in interface for future use, not rendered
   instructorName?: string;
 }
 
@@ -247,13 +236,12 @@ export function CertificateDocument({
   certUid,
   issuedDate,
   verifyUrl,
-  logoDataUri,
   instructorName = 'Ashish Revar',
 }: CertificateData) {
   return (
     <Document
-      title={`REMA Club Certificate - ${certUid}`}
-      author="REMA Club"
+      title={`EpochZero Learn Certificate - ${certUid}`}
+      author="EpochZero Learn"
       subject={`Certificate of Completion for ${testTitle}`}
     >
       <Page size="A4" orientation="landscape" style={styles.page}>
@@ -266,13 +254,9 @@ export function CertificateDocument({
         <View style={styles.cornerBR} />
 
         <View style={styles.content}>
-          {/* Logo */}
-          <View style={styles.logoWrap}>
-            <Image src={logoDataUri} style={styles.logo} />
-          </View>
-
-          <Text style={styles.brandLine}>REMA CLUB</Text>
-          <Text style={styles.brandSub}>Reverse · Reveal · Respond</Text>
+          {/* Branding — no logo until added later */}
+          <Text style={styles.brandLine}>EpochZero Learn</Text>
+          <Text style={styles.brandSub}>Multi-Domain Tech Learning Hub</Text>
 
           <Text style={styles.certTitle}>Certificate</Text>
           <Text style={styles.certSubtitle}>of Completion</Text>
@@ -286,6 +270,10 @@ export function CertificateDocument({
 
           <Text style={styles.scoreLine}>
             with a score of <Text style={styles.scoreValue}>{score}%</Text>
+          </Text>
+
+          <Text style={styles.appreciation}>
+            Your effort and curiosity in pursuing this assessment is recognised and appreciated.
           </Text>
         </View>
 
@@ -310,7 +298,7 @@ export function CertificateDocument({
         {/* Verification strip */}
         <View style={styles.verifyStrip}>
           <Text style={styles.verifyText}>VERIFY: {verifyUrl}</Text>
-          <Text style={styles.verifyText}>REMA CLUB · INDEPENDENT LEARNING INITIATIVE</Text>
+          <Text style={styles.verifyText}>EPOCHZERO LEARN · learn.epochzero.net</Text>
         </View>
       </Page>
     </Document>
