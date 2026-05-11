@@ -123,8 +123,8 @@ export async function POST(req: NextRequest) {
       const resend = getResend();
       await resend.emails.send({
         from: FROM_EMAIL,
-        to: attempt.email,
-        subject: `Your REMA Club certificate — ${(attempt.tests as any).title}`,
+        to: attempt.email,        
+        subject: `Your EpochZero Learn certificate — ${(attempt.tests as any).title}`,
         html: certificateEmailHtml({
           name: attempt.full_name,
           testTitle: (attempt.tests as any).title,
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
         }),
         attachments: [
           {
-            filename: `REMA-Club-Certificate-${cert_uid}.pdf`,
+            filename: `EpochZero-Learn-Certificate-${cert_uid}.pdf`,
             content: pdfBuffer,
           },
         ],
@@ -179,9 +179,8 @@ function certificateEmailHtml({
     <tr><td align="center" style="padding:40px 20px">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#11203B;border:1px solid #1A2D4D">
         <tr><td style="padding:32px;border-bottom:1px solid #1A2D4D">
-          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:#FFC857;text-transform:uppercase">REMA Club</div>
-          <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:#A8A498;margin-top:4px">Reverse · Reveal · Respond</div>
-        </td></tr>
+          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:#FFC857;text-transform:uppercase">EpochZero Learn</div>
+          <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;color:#A8A498;margin-top:4px">Multi-Domain Tech Learning Hub</div>        </td></tr>
         <tr><td style="padding:32px">
           <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-size:26px;color:#FFC857">Congratulations, ${esc(name)}.</h1>
           <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#D4CFC2">
@@ -201,12 +200,12 @@ function certificateEmailHtml({
             Save the PDF for your records.
           </p>
           <p style="margin:0;font-size:13px;line-height:1.6;color:#A8A498">
-            Continue learning at <a href="${esc(process.env.NEXT_PUBLIC_SITE_URL ?? '')}" style="color:#FFC857">REMA Club</a> —
-            new walkthroughs and tests are added regularly.
+            Continue learning at <a href="${esc(process.env.NEXT_PUBLIC_SITE_URL ?? '')}" style="color:#FFC857">EpochZero Learn</a> —
+            new walkthroughs and tests are added regularly.    
           </p>
         </td></tr>
         <tr><td style="padding:24px 32px;border-top:1px solid #1A2D4D;background:#0A1628">
-          <p style="margin:0;font-family:'Courier New',monospace;font-size:11px;color:#A8A498;letter-spacing:1px">REMA CLUB — INDEPENDENT LEARNING INITIATIVE</p>
+          <p style="margin:0;font-family:'Courier New',monospace;font-size:11px;color:#A8A498;letter-spacing:1px">EPOCHZERO LEARN — MULTI-DOMAIN TECH LEARNING HUB</p>          
         </td></tr>
       </table>
     </td></tr>
