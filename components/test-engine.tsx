@@ -14,6 +14,7 @@ import {
   Award,
   Download,
   Clock,
+  BookOpen,
 } from 'lucide-react';
 import { cn, formatDuration } from '@/lib/utils';
 
@@ -24,6 +25,15 @@ interface Question {
   question_text: string;
   options: string[];
   option_permutation: number[];
+}
+
+interface ReviewItem {
+  question_text: string;
+  options: string[];
+  user_answer_index: number | null;
+  correct_answer_index: number;
+  is_correct: boolean;
+  ebook_reference: string | null;
 }
 
 interface Props {
@@ -51,6 +61,7 @@ export function TestEngine({ testId, testTitle }: Props) {
     passed: boolean;
     is_first_pass: boolean;
     cert_uid: string | null;
+    review: ReviewItem[];
   } | null>(null);
 
   const submittedRef = useRef(false);
@@ -510,6 +521,80 @@ export function TestEngine({ testId, testTitle }: Props) {
               You've already received a certificate for this test on a previous
               attempt — only the first passing attempt issues a new certificate.
             </p>
+          </div>
+        )}
+
+        {/* ---- Study References (all questions) ---- */}
+        {result.review && result.review.length > 0 && (
+          <div className="border border-navy-700 p-6 mb-8">
+            <div className="flex items-center gap-2 mb-2">
+              <BookOpen className="w-5 h-5 text-gold-500" />
+              <h3 className="font-mono text-lg uppercase tracking-wider text-gold-500">
+                Study References
+              </h3>
+            </div>
+            <p className="font-serif text-sm text-bone-300 mb-6">
+              Each question below shows your answer, the correct answer, and the
+              section of the REMA eBook 2026 where the topic is covered. Use this
+              to revise the areas where your answer was incorrect.
+            </p>
+
+            <ol className="space-y-5">
+              {result.review.map((r, idx) => (
+                <li
+                  key={idx}
+                  className={cn(
+                    'border-l-2 pl-4 py-1',
+                    r.is_correct ? 'border-gold-500/40' : 'border-crimson-500'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <span className="font-serif text-bone-100 text-sm leading-snug">
+                      <span className="font-mono text-xs text-gold-500 mr-2">
+                        Q{idx + 1}.
+                      </span>
+                      {r.question_text}
+                    </span>
+                    <span
+                      className={cn(
+                        'shrink-0 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border',
+                        r.is_correct
+                          ? 'border-gold-500/40 text-gold-500'
+                          : 'border-crimson-500 text-crimson-400'
+                      )}
+                    >
+                      {r.is_correct ? 'Correct' : 'Incorrect'}
+                    </span>
+                  </div>
+
+                  <div className="font-mono text-xs space-y-1 mb-2 pl-1">
+                    {r.user_answer_index !== null && !r.is_correct && (
+                      <div className="text-crimson-400">
+                        Your answer: (
+                        {String.fromCharCode(65 + r.user_answer_index)}){' '}
+                        {r.options[r.user_answer_index]}
+                      </div>
+                    )}
+                    {r.user_answer_index === null && (
+                      <div className="text-bone-300 italic">
+                        You did not answer this question.
+                      </div>
+                    )}
+                    <div className="text-gold-500">
+                      Correct answer: (
+                      {String.fromCharCode(65 + r.correct_answer_index)}){' '}
+                      {r.options[r.correct_answer_index]}
+                    </div>
+                  </div>
+
+                  {r.ebook_reference && (
+                    <div className="font-mono text-xs text-bone-300 italic pl-1">
+                      Study: {r.ebook_reference}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
           </div>
         )}
 
