@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import React from 'react';
-import { renderToBuffefr } from '@react-pdf/renderer';
+import { renderToBuffer } from '@react-pdf/renderer';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getResend, FROM_EMAIL } from '@/lib/resend';
 import { CertificateDocument } from '@/components/certificate-pdf';
