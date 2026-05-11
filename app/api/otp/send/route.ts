@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
     const resend = getResend();
     await resend.emails.send({
       from: FROM_EMAIL,
-      to: email,      
-      subject: `EpochZero Learn — Verification code: ${otp}`,
+      to: email,            
+      subject: `EpochZero Learn — Verify your email to begin the test`,
       html: otpEmailHtml({ name: full_name, otp, testTitle: test.title }),
     });
 
