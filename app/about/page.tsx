@@ -84,9 +84,7 @@ export default function AboutPage() {
           across teaching, research, and applied cybersecurity practice. He teaches
           Reverse Engineering, Malware Analysis, Cloud, and Cybersecurity courses to
           undergraduate and postgraduate students, and delivers training to
-          law-enforcement, defence, and government agencies. PhD research focuses on
-          machine-learning-based automatic YARA rule generation for cloud malware
-          detection.
+          law-enforcement, defence, and government agencies.
         </p>
 
         <h2>Open vs. internal access</h2>
