@@ -51,7 +51,6 @@ export default async function ResourceReaderPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top toolbar */}
       <div className="border-b border-navy-700 bg-navy-950 sticky top-0 z-10">
         <div className="container py-3 flex items-center gap-3 flex-wrap">
           <Link
@@ -74,7 +73,7 @@ export default async function ResourceReaderPage({ params }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
-            <a
+            
               href={external}
               target="_blank"
               rel="noopener noreferrer"
@@ -84,7 +83,7 @@ export default async function ResourceReaderPage({ params }: Props) {
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Open</span>
             </a>
-            <a
+            
               href={download}
               target="_blank"
               rel="noopener noreferrer"
@@ -98,7 +97,6 @@ export default async function ResourceReaderPage({ params }: Props) {
         </div>
       </div>
 
-      {/* PDF viewer */}
       <div className="flex-1 bg-navy-950">
         <iframe
           src={preview}
