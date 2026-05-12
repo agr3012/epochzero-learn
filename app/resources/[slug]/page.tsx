@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: Props) {
   return { title: data.title, description: data.description };
 }
 
-function isDriveFileId(value: string): boolean {
-  return /^[A-Za-z0-9_-]{20,60}$/.test(value);
+function isDriveId(v: string) {
+  return /^[A-Za-z0-9_-]{20,60}$/.test(v);
 }
 
-function buildDriveUrls(fileUrl: string) {
-  if (isDriveFileId(fileUrl)) {
+function urls(fileUrl: string) {
+  if (isDriveId(fileUrl)) {
     return {
       preview: `https://drive.google.com/file/d/${fileUrl}/preview`,
       download: `https://drive.google.com/uc?export=download&id=${fileUrl}`,
@@ -38,16 +38,16 @@ function buildDriveUrls(fileUrl: string) {
 
 export default async function ResourceReaderPage({ params }: Props) {
   const supabase = createClient();
-  const { data: resource } = await supabase
+  const { data: r } = await supabase
     .from('resources')
     .select('*')
     .eq('slug', params.slug)
     .eq('is_published', true)
     .single();
 
-  if (!resource) notFound();
+  if (!r) notFound();
 
-  const { preview, download, external } = buildDriveUrls(resource.file_url);
+  const { preview, download, external } = urls(r.file_url);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -58,37 +58,30 @@ export default async function ResourceReaderPage({ params }: Props) {
             className="font-mono text-xs uppercase tracking-wider text-bone-300 hover:text-gold-500 transition-colors inline-flex items-center gap-1.5"
           >
             <ChevronLeft className="w-4 h-4" />
-            Back to Resources
+            Back
           </Link>
-
           <div className="hidden md:block w-px h-5 bg-navy-700" />
-
           <div className="flex-1 min-w-0">
             <div className="font-mono text-[10px] uppercase tracking-wider text-gold-500">
-              {resource.type}
+              {r.type}
             </div>
-            <div className="font-mono text-sm text-bone-50 truncate">
-              {resource.title}
-            </div>
+            <div className="font-mono text-sm text-bone-50 truncate">{r.title}</div>
           </div>
-
           <div className="flex items-center gap-2">
-            
+            <a
               href={external}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-ghost text-xs px-3 py-1.5"
-              title="Open in new tab"
+              className="btn-ghost text-xs px-3 py-1.5 inline-flex items-center gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Open</span>
             </a>
-            
+            <a
               href={download}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary text-xs px-3 py-1.5"
-              title="Download PDF"
+              className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Download</span>
@@ -96,11 +89,10 @@ export default async function ResourceReaderPage({ params }: Props) {
           </div>
         </div>
       </div>
-
       <div className="flex-1 bg-navy-950">
         <iframe
           src={preview}
-          title={resource.title}
+          title={r.title}
           className="w-full h-[calc(100vh-65px)]"
           allow="autoplay"
         />
