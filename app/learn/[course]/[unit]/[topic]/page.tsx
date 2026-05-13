@@ -322,38 +322,6 @@ export default async function TopicPage({ params }: Props) {
                 </div>
               </div>
             )}
-
-            {resources.length > 0 && (
-              <div>
-                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
-                  Downloadable resources
-                </h4>
-                <div className="space-y-3">
-                  {resources.map((r: any) => (
-                    <a
-                      key={r.id}
-                      href={r.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
-                    >
-                      <div className="w-10 h-10 border border-gold-500/40 flex items-center justify-center shrink-0">
-                        <Download className="w-4 h-4 text-gold-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors">
-                          {r.title}
-                        </div>
-                        <div className="font-mono text-xs text-bone-300 mt-0.5">
-                          {r.type} · {r.page_count ? `${r.page_count} pages` : ''}{' '}
-                          {r.version ? `· v${r.version}` : ''}
-                        </div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </Quadrant>
