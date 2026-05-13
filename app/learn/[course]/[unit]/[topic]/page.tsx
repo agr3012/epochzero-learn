@@ -121,6 +121,9 @@ export default async function TopicPage({ params }: Props) {
   const webLinks = linksRes.data ?? [];
   const tests = (testsRes.data ?? []).map((r: any) => r.tests).filter(Boolean);
 
+  // Q3 total count for header badge
+  const q3Count = resources.length + webLinks.length;
+
   // Adjacent topics for nav
   const { data: siblingTopics } = await supabase
     .from('topics')
@@ -215,7 +218,7 @@ export default async function TopicPage({ params }: Props) {
           </a>
           <a
             href="#q2"
-            className={`px-3 py-1.5 border transition-colors ${              
+            className={`px-3 py-1.5 border transition-colors ${
               articles.length > 0
                 ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
                 : 'border-navy-700 text-bone-300 opacity-50'
@@ -225,13 +228,13 @@ export default async function TopicPage({ params }: Props) {
           </a>
           <a
             href="#q3"
-            className={`px-3 py-1.5 border transition-colors ${              
-              resources.length + webLinks.length > 0
+            className={`px-3 py-1.5 border transition-colors ${
+              q3Count > 0
                 ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
                 : 'border-navy-700 text-bone-300 opacity-50'
             }`}
-          >            
-            Q3 · Web Resources ({resources.length + webLinks.length})
+          >
+            Q3 · Web Resources ({q3Count})
           </a>
           <a
             href="#q4"
@@ -293,42 +296,35 @@ export default async function TopicPage({ params }: Props) {
         {articles.length === 0 ? (
           <EmptyQuadrant text="No reading material linked to this topic yet." />
         ) : (
-          <div className="space-y-8">
-            {articles.length > 0 && (
-              <div>
-                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
-                  Articles
-                </h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {articles.map((a: any) => (
-                    <Link key={a.id} href={`/articles/${a.slug}`} className="card-forensic p-5 group">
-                      {a.category && <span className="badge-tag mb-3 inline-block">{a.category}</span>}
-                      <h5 className="font-mono text-base text-bone-50 mb-2 group-hover:text-gold-500 transition-colors leading-tight">
-                        {a.title}
-                      </h5>
-                      {a.excerpt && (
-                        <p className="font-serif text-sm text-bone-200 leading-relaxed line-clamp-2 mb-3">
-                          {a.excerpt}
-                        </p>
-                      )}
-                      {a.reading_time && (
-                        <span className="font-mono text-xs text-bone-300 inline-flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {a.reading_time} min read
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {articles.map((a: any) => (
+                <Link key={a.id} href={`/articles/${a.slug}`} className="card-forensic p-5 group">
+                  {a.category && <span className="badge-tag mb-3 inline-block">{a.category}</span>}
+                  <h5 className="font-mono text-base text-bone-50 mb-2 group-hover:text-gold-500 transition-colors leading-tight">
+                    {a.title}
+                  </h5>
+                  {a.excerpt && (
+                    <p className="font-serif text-sm text-bone-200 leading-relaxed line-clamp-2 mb-3">
+                      {a.excerpt}
+                    </p>
+                  )}
+                  {a.reading_time && (
+                    <span className="font-mono text-xs text-bone-300 inline-flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {a.reading_time} min read
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </Quadrant>
 
       {/* ============== Q3 — WEB RESOURCES ============== */}
       <Quadrant id="q3" number="3" title="Web Resources" subtitle="Downloadable reference material and curated external links" icon={Globe}>
-        {resources.length === 0 && webLinks.length === 0 ? (
+        {q3Count === 0 ? (
           <EmptyQuadrant text="No web resources linked to this topic yet." />
         ) : (
           <div className="space-y-8">
@@ -339,7 +335,7 @@ export default async function TopicPage({ params }: Props) {
                 </h4>
                 <div className="space-y-3">
                   {resources.map((r: any) => (
-                    
+                    <a
                       key={r.id}
                       href={r.file_url}
                       target="_blank"
@@ -363,7 +359,7 @@ export default async function TopicPage({ params }: Props) {
                 </div>
               </div>
             )}
-      
+
             {webLinks.length > 0 && (
               <div>
                 <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
@@ -371,7 +367,7 @@ export default async function TopicPage({ params }: Props) {
                 </h4>
                 <div className="grid md:grid-cols-2 gap-3">
                   {webLinks.map((link: any) => (
-                    
+                    <a
                       key={link.id}
                       href={link.url}
                       target="_blank"
