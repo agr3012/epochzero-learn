@@ -215,23 +215,23 @@ export default async function TopicPage({ params }: Props) {
           </a>
           <a
             href="#q2"
-            className={`px-3 py-1.5 border transition-colors ${
-              articles.length + resources.length > 0
+            className={`px-3 py-1.5 border transition-colors ${              
+              articles.length > 0
                 ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
                 : 'border-navy-700 text-bone-300 opacity-50'
             }`}
           >
-            Q2 · e-Content ({articles.length + resources.length})
+            Q2 · e-Content ({articles.length})
           </a>
           <a
             href="#q3"
-            className={`px-3 py-1.5 border transition-colors ${
-              webLinks.length > 0
+            className={`px-3 py-1.5 border transition-colors ${              
+              resources.length + webLinks.length > 0
                 ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
                 : 'border-navy-700 text-bone-300 opacity-50'
             }`}
-          >
-            Q3 · Web Resources ({webLinks.length})
+          >            
+            Q3 · Web Resources ({resources.length + webLinks.length})
           </a>
           <a
             href="#q4"
@@ -289,8 +289,8 @@ export default async function TopicPage({ params }: Props) {
       </Quadrant>
 
       {/* ============== Q2 — e-CONTENT ============== */}
-      <Quadrant id="q2" number="2" title="e-Content" subtitle="Articles, eBook chapters, and case studies" icon={BookOpen}>
-        {articles.length === 0 && resources.length === 0 ? (
+      <Quadrant id="q2" number="2" title="e-Content" subtitle="Articles and case studies" icon={BookOpen}>
+        {articles.length === 0 ? (
           <EmptyQuadrant text="No reading material linked to this topic yet." />
         ) : (
           <div className="space-y-8">
@@ -327,38 +327,79 @@ export default async function TopicPage({ params }: Props) {
       </Quadrant>
 
       {/* ============== Q3 — WEB RESOURCES ============== */}
-      <Quadrant id="q3" number="3" title="Web Resources" subtitle="Curated external references" icon={Globe}>
-        {webLinks.length === 0 ? (
+      <Quadrant id="q3" number="3" title="Web Resources" subtitle="Downloadable reference material and curated external links" icon={Globe}>
+        {resources.length === 0 && webLinks.length === 0 ? (
           <EmptyQuadrant text="No web resources linked to this topic yet." />
         ) : (
-          <div className="grid md:grid-cols-2 gap-3">
-            {webLinks.map((link: any) => (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-start gap-3 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
-              >
-                <Globe className="w-4 h-4 text-gold-500 mt-1 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors leading-tight">
-                      {link.title}
-                    </span>
-                    <ExternalLink className="w-3 h-3 text-bone-300 shrink-0 mt-0.5" />
-                  </div>
-                  {link.description && (
-                    <p className="font-serif text-sm text-bone-200 leading-relaxed mb-2">
-                      {link.description}
-                    </p>
-                  )}
-                  {link.source_type && (
-                    <span className="badge-tag text-[10px]">{link.source_type}</span>
-                  )}
+          <div className="space-y-8">
+            {resources.length > 0 && (
+              <div>
+                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
+                  Downloadable reference material
+                </h4>
+                <div className="space-y-3">
+                  {resources.map((r: any) => (
+                    
+                      key={r.id}
+                      href={r.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
+                    >
+                      <div className="w-10 h-10 border border-gold-500/40 flex items-center justify-center shrink-0">
+                        <Download className="w-4 h-4 text-gold-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors">
+                          {r.title}
+                        </div>
+                        <div className="font-mono text-xs text-bone-300 mt-0.5">
+                          {r.type} · {r.page_count ? `${r.page_count} pages` : ''}{' '}
+                          {r.version ? `· v${r.version}` : ''}
+                        </div>
+                      </div>
+                    </a>
+                  ))}
                 </div>
-              </a>
-            ))}
+              </div>
+            )}
+      
+            {webLinks.length > 0 && (
+              <div>
+                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
+                  External links
+                </h4>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {webLinks.map((link: any) => (
+                    
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-3 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
+                    >
+                      <Globe className="w-4 h-4 text-gold-500 mt-1 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <span className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors leading-tight">
+                            {link.title}
+                          </span>
+                          <ExternalLink className="w-3 h-3 text-bone-300 shrink-0 mt-0.5" />
+                        </div>
+                        {link.description && (
+                          <p className="font-serif text-sm text-bone-200 leading-relaxed mb-2">
+                            {link.description}
+                          </p>
+                        )}
+                        {link.source_type && (
+                          <span className="badge-tag text-[10px]">{link.source_type}</span>
+                        )}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Quadrant>
