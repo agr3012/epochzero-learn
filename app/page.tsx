@@ -6,7 +6,6 @@ import {
   Video,
   GraduationCap,
   FileText,
-  Headphones,
   Award,
   Terminal,
   Calendar,
@@ -14,12 +13,28 @@ import {
 import { createClient } from '@/lib/supabase/server';
 import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 
-export const revalidate = 60;
+// Revalidates every hour — new courses, tests, questions surface automatically
+export const revalidate = 3600;
 
-async function getLatestContent() {
+// ── Coming-soon courses (static until DB rows exist) ──────────────────────
+const COMING_SOON = ['Cloud', 'Crypto', 'Web Dev'];
+
+// ── Data fetching ──────────────────────────────────────────────────────────
+async function getHomeData() {
   const supabase = createClient();
 
-  const [articles, videos, tests] = await Promise.all([
+  const [
+    articlesRes,
+    videosRes,
+    testsRes,
+    coursesRes,
+    videoCountRes,
+    assessmentCountRes,
+    questionCountRes,
+    articleCountRes,
+    podcastCountRes,
+    topicCountRes,
+  ] = await Promise.all([
     supabase
       .from('articles')
       .select('id, slug, title, excerpt, category, published_at, reading_time')
@@ -38,35 +53,104 @@ async function getLatestContent() {
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(3),
+    // Published courses for terminal + domains count
+    supabase
+      .from('courses')
+      .select('id, title, slug, short_title')
+      .eq('is_published', true)
+      .order('created_at', { ascending: true }),
+    // Videos total count
+    supabase.from('videos').select('*', { count: 'exact', head: true }).eq('is_published', true),
+    // Tests count
+    supabase.from('tests').select('*', { count: 'exact', head: true }).eq('is_published', true),
+    // Total MCQ questions across published tests
+    supabase
+      .from('test_questions')
+      .select('id, tests!inner(is_published)', { count: 'exact', head: true }),
+    // Articles count
+    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('is_published', true),
+    // Podcast episodes count
+    supabase.from('podcasts').select('*', { count: 'exact', head: true }).eq('is_published', true),
+    // Content topics count (exclude knowledge-check topics)
+    supabase
+      .from('topics')
+      .select('id', { count: 'exact', head: true })
+      .not('slug', 'like', 'unit-%-knowledge-check'),
   ]);
 
+  // Per-course video count for terminal block
+  const courses = coursesRes.data ?? [];
+  const courseVideoCounts = await Promise.all(
+    courses.map(async (course) => {
+      const { count } = await supabase
+        .from('topic_videos')
+        .select('video_id', { count: 'exact', head: true })
+        .in(
+          'topic_id',
+          await supabase
+            .from('topics')
+            .select('id')
+            .in(
+              'unit_id',
+              (await supabase.from('units').select('id').eq('course_id', course.id)).data?.map((u: { id: string }) => u.id) ?? []
+            )
+            .then((r) => r.data?.map((t: { id: string }) => t.id) ?? [])
+        );
+      return { ...course, video_count: count ?? 0 };
+    })
+  );
+
+  // Simpler fallback: use total video count for REMA (only published course)
+  // This avoids the deeply nested query above which may be slow
+  const coursesWithCount = courses.map((c) => ({
+    ...c,
+    video_count: videoCountRes.count ?? 0,
+  }));
+
   return {
-    articles: articles.data ?? [],
-    videos: videos.data ?? [],
-    tests: tests.data ?? [],
+    articles: articlesRes.data ?? [],
+    videos: videosRes.data ?? [],
+    tests: testsRes.data ?? [],
+    courses: coursesWithCount,
+    stats: {
+      domains: courses.length,
+      video_lessons: videoCountRes.count ?? 0,
+      assessments: assessmentCountRes.count ?? 0,
+      total_questions: questionCountRes.count ?? 0,
+      articles: articleCountRes.count ?? 0,
+      podcast_episodes: podcastCountRes.count ?? 0,
+      content_topics: topicCountRes.count ?? 0,
+    },
   };
 }
 
+// ── Page ───────────────────────────────────────────────────────────────────
 export default async function HomePage() {
-  const { articles, videos, tests } = await getLatestContent();
+  const { articles, videos, tests, courses, stats } = await getHomeData();
+
+  const statBlocks = [
+    { label: 'Domains',       value: `${stats.domains}+`          },
+    { label: 'Video Lessons', value: `${stats.video_lessons}+`    },
+    { label: 'Assessments',   value: `${stats.assessments}`       },
+    { label: 'MCQ Questions', value: `${stats.total_questions}+`  },
+  ];
 
   return (
     <>
-      {/* HERO */}
+      {/* ── HERO ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-navy-700">
         <div className="absolute inset-0 border-grid opacity-40" aria-hidden />
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(800px circle at 30% 20%, rgba(255,200,87,0.08), transparent 50%)',
-          }}
+          style={{ background: 'radial-gradient(800px circle at 30% 20%, rgba(255,200,87,0.08), transparent 50%)' }}
           aria-hidden
         />
         <div className="absolute inset-0 bg-scanlines pointer-events-none opacity-50" aria-hidden />
 
         <div className="container relative py-24 lg:py-32">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
+
+            {/* Left col */}
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-gold-500/30 bg-gold-500/5 mb-8 animate-fade-up">
                 <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse" />
@@ -90,13 +174,12 @@ export default async function HomePage() {
                 className="font-serif text-xl text-bone-200 max-w-2xl leading-relaxed mb-10 animate-fade-up"
                 style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
               >
-                A multi-domain learning and event hub for{' '}
+                A multi-domain learning hub for{' '}
                 <span className="text-gold-500 font-mono text-base">REMA</span>,{' '}
                 <span className="text-gold-500 font-mono text-base">Cloud</span>,{' '}
                 <span className="text-gold-500 font-mono text-base">Cryptography</span>, and{' '}
                 <span className="text-gold-500 font-mono text-base">Web Development</span>.
-                Articles, video lessons, podcast, MCQ tests with verifiable certificates,
-                and CTF events for our students.
+                Articles, video lessons, podcast, MCQ tests with verifiable certificates, and CTF events.
               </p>
 
               <div
@@ -113,17 +196,16 @@ export default async function HomePage() {
                 </Link>
               </div>
 
+              {/* Dynamic stats — 4 blocks */}
               <div
-                className="mt-16 grid grid-cols-3 gap-8 max-w-xl animate-fade-up"
+                className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-xl animate-fade-up"
                 style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
               >
-                {[
-                  { label: 'Domains', value: '4+' },
-                  { label: 'Video Lessons', value: '10+' },
-                  { label: 'Question Pool', value: '360' },
-                ].map((s) => (
+                {statBlocks.map((s) => (
                   <div key={s.label} className="border-l-2 border-gold-500 pl-4">
-                    <div className="font-mono text-3xl text-bone-50 font-bold">{s.value}</div>
+                    <div className="font-mono text-3xl text-bone-50 font-bold tabular-nums">
+                      {s.value}
+                    </div>
                     <div className="font-mono text-xs uppercase tracking-wider text-bone-300 mt-1">
                       {s.label}
                     </div>
@@ -132,58 +214,74 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Hero illustration / terminal mockup */}
+            {/* Right col — terminal */}
             <div
               className="lg:col-span-5 animate-fade-up"
               style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
             >
-              <div className="relative">
-                <div className="card-forensic border-2 p-1">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-navy-700 bg-navy-950">
-                    <div className="flex gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-crimson-500" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-gold-500" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-bone-300/40" />
-                    </div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-bone-300">
-                      epochzero://session
-                    </span>
+              <div className="card-forensic border-2 p-1">
+                {/* Title bar */}
+                <div className="flex items-center justify-between px-4 py-2 border-b border-navy-700 bg-navy-950">
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-crimson-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-gold-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-bone-300/40" />
                   </div>
-
-                  <div className="p-6 bg-navy-950 font-mono text-sm leading-relaxed space-y-2">
-                    <div className="text-bone-300">
-                      <span className="text-gold-500">$</span> ez courses --list
-                    </div>
-                    <div className="text-bone-200">
-                      ├── REMA ........... <span className="text-gold-500">10 lessons</span>
-                    </div>
-                    <div className="text-bone-200">
-                      ├── Cloud .......... <span className="text-bone-300">coming soon</span>
-                    </div>
-                    <div className="text-bone-200">
-                      ├── Crypto ......... <span className="text-bone-300">coming soon</span>
-                    </div>
-                    <div className="text-bone-200">
-                      └── Web Dev ........ <span className="text-bone-300">coming soon</span>
-                    </div>
-                    <div className="text-bone-300 pt-2">
-                      <span className="text-gold-500">$</span> ez events --upcoming
-                    </div>
-                    <div className="text-bone-200">
-                      ├── CTF: Unpacking Room ...... <span className="text-gold-500">open</span>
-                    </div>
-                    <div className="text-bone-200">
-                      └── More CTFs ................ <span className="text-bone-300">tba</span>
-                    </div>
-                    <div className="text-bone-300 pt-2">
-                      <span className="text-gold-500">$</span>{' '}
-                      <span className="inline-block w-2 h-4 bg-gold-500 animate-pulse" />
-                    </div>
-                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-bone-300">
+                    epochzero://session
+                  </span>
                 </div>
 
-                <div className="absolute -top-3 -right-3 px-3 py-1.5 bg-gold-500 text-navy-900 font-mono text-[10px] uppercase tracking-[0.2em] font-bold">
-                  Multi-Domain
+                <div className="p-6 bg-navy-950 font-mono text-sm leading-relaxed space-y-1">
+                  {/* Courses block */}
+                  <div className="text-bone-300 pb-1">
+                    <span className="text-gold-500">$</span> ez courses --list
+                  </div>
+                  {courses.map((course, i) => {
+                    const allItems = [...courses, ...COMING_SOON];
+                    const isLast = i === allItems.length - 1 && COMING_SOON.length === 0;
+                    const prefix = isLast ? '└──' : '├──';
+                    const label = course.short_title ?? course.title;
+                    return (
+                      <div key={course.slug} className="text-bone-200">
+                        {prefix} {label}{' '}
+                        <span className="text-gold-500">{course.video_count} lessons</span>
+                      </div>
+                    );
+                  })}
+                  {COMING_SOON.map((label, i) => {
+                    const isLast = i === COMING_SOON.length - 1;
+                    const prefix = isLast ? '└──' : '├──';
+                    return (
+                      <div key={label} className="text-bone-200">
+                        {prefix} {label}{' '}
+                        <span className="text-bone-300">coming soon</span>
+                      </div>
+                    );
+                  })}
+
+                  {/* Stats block */}
+                  <div className="text-bone-300 pt-3 pb-1">
+                    <span className="text-gold-500">$</span> ez stats --live
+                  </div>
+                  <div className="text-bone-200">
+                    ├── articles <span className="text-gold-500">{stats.articles}</span>
+                  </div>
+                  <div className="text-bone-200">
+                    ├── podcasts <span className="text-gold-500">{stats.podcast_episodes} episodes</span>
+                  </div>
+                  <div className="text-bone-200">
+                    ├── questions <span className="text-gold-500">{stats.total_questions} MCQs</span>
+                  </div>
+                  <div className="text-bone-200">
+                    └── topics <span className="text-gold-500">{stats.content_topics} covered</span>
+                  </div>
+
+                  {/* Cursor */}
+                  <div className="text-bone-300 pt-3">
+                    <span className="text-gold-500">$</span>{' '}
+                    <span className="inline-block w-2 h-4 bg-gold-500 animate-pulse" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -191,13 +289,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* WHAT YOU'LL FIND */}
-      <section className="container py-24">
-        <div className="text-center mb-16">
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-            // What you&apos;ll find here
+      {/* ── FEATURES GRID ───────────────────────────────────────────── */}
+      <section className="container py-24 border-t border-navy-700">
+        <div className="mb-16">
+          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+            Multi-Domain
           </div>
-          <h2 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 max-w-3xl mx-auto leading-tight text-balance">
+          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+            // What you'll find here
+          </div>
+          <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
             Learning, assessments, and events — under one roof.
           </h2>
         </div>
@@ -231,7 +332,7 @@ export default async function HomePage() {
             {
               icon: Calendar,
               title: 'CTF Events',
-              desc: 'Capture-the-Flag competitions for our students. Register, compete, win certificates of excellence, achievement, or appreciation.',
+              desc: 'Capture-the-Flag competitions for our students. Register, compete, and win verifiable certificates.',
               href: '/events',
             },
             {
@@ -241,11 +342,7 @@ export default async function HomePage() {
               href: '/verify',
             },
           ].map(({ icon: Icon, title, desc, href }) => (
-            <Link
-              key={title}
-              href={href}
-              className="card-forensic p-8 group"
-            >
+            <Link key={title} href={href} className="card-forensic p-8 group">
               <Icon className="w-8 h-8 text-gold-500 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="font-mono text-lg uppercase tracking-wider text-bone-50 mb-3">
                 {title}
@@ -259,7 +356,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* LATEST ARTICLES */}
+      {/* ── LATEST ARTICLES ─────────────────────────────────────────── */}
       {articles.length > 0 && (
         <section className="container py-16 border-t border-navy-700">
           <div className="flex items-end justify-between mb-12">
@@ -282,9 +379,7 @@ export default async function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             {articles.map((a) => (
               <Link key={a.id} href={`/articles/${a.slug}`} className="card-forensic p-6 group">
-                {a.category && (
-                  <span className="badge-tag mb-4">{a.category}</span>
-                )}
+                {a.category && <span className="badge-tag mb-4">{a.category}</span>}
                 <h3 className="font-mono text-xl text-bone-50 mb-3 group-hover:text-gold-500 transition-colors">
                   {a.title}
                 </h3>
@@ -301,7 +396,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* LATEST VIDEOS */}
+      {/* ── LATEST VIDEOS ───────────────────────────────────────────── */}
       {videos.length > 0 && (
         <section className="container py-16 border-t border-navy-700">
           <div className="flex items-end justify-between mb-12">
@@ -347,15 +442,12 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* CALL TO TESTS */}
+      {/* ── TESTS CTA ───────────────────────────────────────────────── */}
       <section className="container py-24 border-t border-navy-700">
         <div className="card-forensic relative overflow-hidden p-12 lg:p-16 border-2">
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(600px circle at 80% 50%, rgba(255,200,87,0.08), transparent 60%)',
-            }}
+            style={{ background: 'radial-gradient(600px circle at 80% 50%, rgba(255,200,87,0.08), transparent 60%)' }}
             aria-hidden
           />
           <div className="relative grid lg:grid-cols-2 gap-12 items-center">
@@ -404,9 +496,7 @@ export default async function HomePage() {
                 ))
               ) : (
                 <div className="p-8 border border-dashed border-navy-700 text-center">
-                  <p className="font-mono text-sm text-bone-300">
-                    Tests coming soon.
-                  </p>
+                  <p className="font-mono text-sm text-bone-300">Tests coming soon.</p>
                 </div>
               )}
             </div>
