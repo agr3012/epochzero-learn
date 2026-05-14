@@ -63,49 +63,71 @@ async function getHomeData() {
     supabase.from('videos').select('*', { count: 'exact', head: true }).eq('is_published', true),
     // Tests count
     supabase.from('tests').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    // Total MCQ questions across published tests
+    // Total MCQ questions — correct join via test_id filter on published tests
+    // PostgREST !inner syntax is unreliable for counts; use a subquery approach:
+    // First fetch published test IDs, then count questions in those tests.
+    // We do this after Promise.all using the assessmentCountRes ids, so
+    // use a placeholder here and fix below.
     supabase
-      .from('test_questions')
-      .select('id, tests!inner(is_published)', { count: 'exact', head: true }),
+      .from('tests')
+      .select('id')
+      .eq('is_published', true),
     // Articles count
     supabase.from('articles').select('*', { count: 'exact', head: true }).eq('is_published', true),
     // Podcast episodes count
     supabase.from('podcasts').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    // Content topics count (exclude knowledge-check topics)
+    // Content topics count — exclude any knowledge-check slug pattern
     supabase
       .from('topics')
       .select('id', { count: 'exact', head: true })
-      .not('slug', 'like', 'unit-%-knowledge-check'),
+      .not('slug', 'ilike', '%knowledge-check%'),
   ]);
 
-  // Per-course video count for terminal block
+  // Fix: count MCQ questions using the published test IDs from above
+  const publishedTestIds = (questionCountRes.data ?? []).map(
+    (t: { id: string }) => t.id
+  );
+  let totalQuestions = 0;
+  if (publishedTestIds.length > 0) {
+    const { count } = await supabase
+      .from('test_questions')
+      .select('*', { count: 'exact', head: true })
+      .in('test_id', publishedTestIds);
+    totalQuestions = count ?? 0;
+  }
+
+  // Per-course video count: use topic_videos → topics → units → course chain
+  // Done sequentially per course (only 1 published course right now)
   const courses = coursesRes.data ?? [];
-  const courseVideoCounts = await Promise.all(
+  const coursesWithCount = await Promise.all(
     courses.map(async (course) => {
-      const { count } = await supabase
+      // Step 1: get all unit IDs for this course
+      const { data: unitRows } = await supabase
+        .from('units')
+        .select('id')
+        .eq('course_id', course.id);
+      const unitIds = (unitRows ?? []).map((u: { id: string }) => u.id);
+      if (unitIds.length === 0) return { ...course, video_count: 0 };
+
+      // Step 2: get all topic IDs for those units
+      const { data: topicRows } = await supabase
+        .from('topics')
+        .select('id')
+        .in('unit_id', unitIds);
+      const topicIds = (topicRows ?? []).map((t: { id: string }) => t.id);
+      if (topicIds.length === 0) return { ...course, video_count: 0 };
+
+      // Step 3: count distinct videos linked to those topics
+      const { data: videoRows } = await supabase
         .from('topic_videos')
-        .select('video_id', { count: 'exact', head: true })
-        .in(
-          'topic_id',
-          await supabase
-            .from('topics')
-            .select('id')
-            .in(
-              'unit_id',
-              (await supabase.from('units').select('id').eq('course_id', course.id)).data?.map((u: { id: string }) => u.id) ?? []
-            )
-            .then((r) => r.data?.map((t: { id: string }) => t.id) ?? [])
-        );
-      return { ...course, video_count: count ?? 0 };
+        .select('video_id')
+        .in('topic_id', topicIds);
+      const distinctVideos = new Set(
+        (videoRows ?? []).map((r: { video_id: string }) => r.video_id)
+      );
+      return { ...course, video_count: distinctVideos.size };
     })
   );
-
-  // Simpler fallback: use total video count for REMA (only published course)
-  // This avoids the deeply nested query above which may be slow
-  const coursesWithCount = courses.map((c) => ({
-    ...c,
-    video_count: videoCountRes.count ?? 0,
-  }));
 
   return {
     articles: articlesRes.data ?? [],
@@ -116,7 +138,7 @@ async function getHomeData() {
       domains: courses.length,
       video_lessons: videoCountRes.count ?? 0,
       assessments: assessmentCountRes.count ?? 0,
-      total_questions: questionCountRes.count ?? 0,
+      total_questions: totalQuestions,
       articles: articleCountRes.count ?? 0,
       podcast_episodes: podcastCountRes.count ?? 0,
       content_topics: topicCountRes.count ?? 0,
