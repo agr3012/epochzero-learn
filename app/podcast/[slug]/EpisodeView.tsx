@@ -166,25 +166,24 @@ export default function EpisodeView({ ep, prev, next, allEpisodes }: Props) {
         {/* ── LEFT: Main content ─────────────────────────────────────── */}
         <div className="min-w-0">
 
-          {/* Cover image — object-contain so full image always visible */}
+          {/* Cover image — natural size, no letterboxing */}
           {ep.cover_image && (
-            <div className="relative w-full bg-navy-950 border border-navy-700 mb-8 overflow-hidden"
-              style={{ aspectRatio: 'auto' }}
-            >
-              {/* We use a natural-size container via padding trick:
-                  Next.js Image with fill needs a positioned parent.
-                  Use a fixed tall aspect ratio that fits most cover arts. */}
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <Image
-                  src={ep.cover_image}
-                  alt={`${ep.title} cover art`}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, calc(100vw - 360px)"
-                  className="object-contain"
-                />
-              </div>
-              {/* Badges */}
+            <div className="relative w-full border border-navy-700 mb-8 overflow-hidden">
+              {/*
+                Use next/image with width+height=0 and style width/height auto
+                so the image renders at its natural aspect ratio with no padding trick.
+                This eliminates all empty space above/below.
+              */}
+              <Image
+                src={ep.cover_image}
+                alt={`${ep.title} cover art`}
+                width={0}
+                height={0}
+                sizes="(max-width: 1024px) 100vw, calc(100vw - 360px)"
+                className="w-full h-auto"
+                priority
+              />
+              {/* Badges — positioned over the image bottom-left */}
               <div className="absolute bottom-4 left-4 flex gap-2">
                 {ep.topic_tag && (
                   <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-navy-900/90 border border-gold-500/60 text-gold-500">
