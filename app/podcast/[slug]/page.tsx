@@ -1,9 +1,8 @@
-
 // app/podcast/[slug]/page.tsx  — SERVER COMPONENT
-// Fetches data server-side, passes to EpisodeView client component.
 
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import EpisodeView from './EpisodeView';
 
 export const revalidate = 60;
@@ -13,6 +12,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
+  // generateMetadata runs in request scope — server client is fine here
   const supabase = createClient();
   const { data: ep } = await supabase
     .from('podcasts')
@@ -25,7 +25,9 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export async function generateStaticParams() {
-  const supabase = createClient();
+  // generateStaticParams runs at BUILD TIME — no request scope, no cookies.
+  // Must use the browser/anon client which does not call cookies().
+  const supabase = createBrowserClient();
   const { data } = await supabase
     .from('podcasts')
     .select('slug')
