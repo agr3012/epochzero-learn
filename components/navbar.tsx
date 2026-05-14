@@ -14,33 +14,46 @@ const DOMAINS = [
   { slug: 'webdev', label: 'Web Development' },
 ];
 
+// Podcast has its own tag-based filter — separate from DOMAINS
+const PODCAST_TAGS = [
+  { slug: 'all', label: 'All Episodes' },
+  { slug: 'REMA', label: 'REMA' },
+  { slug: 'cloud', label: 'Cloud' },
+];
+
 const NAV_LINKS: Array<{
   href: string;
   label: string;
   hasDropdown?: boolean;
+  dropdownType?: 'domain' | 'podcast';
 }> = [
-  { href: '/learn', label: 'Learn', hasDropdown: true },
-  { href: '/articles', label: 'Articles', hasDropdown: true },
-  { href: '/videos', label: 'Videos', hasDropdown: true },
-  { href: '/tests', label: 'Tests', hasDropdown: true },
-  { href: '/resources', label: 'Resources', hasDropdown: true },
-  { href: '/podcast', label: 'Podcast' },
-  { href: '/about', label: 'About' },
+  { href: '/learn',     label: 'Learn',     hasDropdown: true, dropdownType: 'domain' },
+  { href: '/articles',  label: 'Articles',  hasDropdown: true, dropdownType: 'domain' },
+  { href: '/videos',    label: 'Videos',    hasDropdown: true, dropdownType: 'domain' },
+  { href: '/tests',     label: 'Tests',     hasDropdown: true, dropdownType: 'domain' },
+  { href: '/resources', label: 'Resources', hasDropdown: true, dropdownType: 'domain' },
+  { href: '/podcast',   label: 'Podcast',   hasDropdown: true, dropdownType: 'podcast' },
+  { href: '/about',     label: 'About' },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentDomain = searchParams.get('domain') ?? 'all';
+  const currentTag    = searchParams.get('tag')    ?? 'all';
   const [open, setOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  const buildHref = (base: string, domain: string) =>
+  const buildDomainHref = (base: string, domain: string) =>
     domain === 'all' ? base : `${base}?domain=${domain}`;
+
+  const buildTagHref = (base: string, tag: string) =>
+    tag === 'all' ? base : `${base}?tag=${encodeURIComponent(tag)}`;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-navy-700 bg-navy-900/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
+
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex flex-col leading-none">
@@ -60,6 +73,7 @@ export function Navbar() {
               pathname === link.href ||
               (link.href !== '/' && pathname.startsWith(link.href));
 
+            // No dropdown
             if (!link.hasDropdown) {
               return (
                 <Link
@@ -76,6 +90,24 @@ export function Navbar() {
                 </Link>
               );
             }
+
+            // With dropdown
+            const isPodcast = link.dropdownType === 'podcast';
+            const items = isPodcast
+              ? PODCAST_TAGS.map((t) => ({
+                  label: t.label,
+                  href: buildTagHref(link.href, t.slug),
+                  active: active && (
+                    t.slug === 'all'
+                      ? currentTag === 'all'
+                      : currentTag === t.slug
+                  ),
+                }))
+              : DOMAINS.map((d) => ({
+                  label: d.label,
+                  href: buildDomainHref(link.href, d.slug),
+                  active: active && currentDomain === d.slug,
+                }));
 
             return (
               <div
@@ -96,20 +128,21 @@ export function Navbar() {
                   {link.label}
                   <ChevronDown className="w-3 h-3" />
                 </Link>
+
                 {openDropdown === link.href && (
-                  <div className="absolute top-full left-0 min-w-[200px] bg-navy-900 border border-navy-700 shadow-xl py-2">
-                    {DOMAINS.map((d) => (
+                  <div className="absolute top-full left-0 min-w-[180px] bg-navy-900 border border-navy-700 shadow-xl py-2">
+                    {items.map((item) => (
                       <Link
-                        key={d.slug}
-                        href={buildHref(link.href, d.slug)}
+                        key={item.href}
+                        href={item.href}
                         className={cn(
                           'block px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
-                          active && currentDomain === d.slug
+                          item.active
                             ? 'text-gold-500 bg-navy-800'
                             : 'text-bone-200 hover:text-gold-500 hover:bg-navy-800'
                         )}
                       >
-                        {d.label}
+                        {item.label}
                       </Link>
                     ))}
                   </div>
@@ -137,6 +170,18 @@ export function Navbar() {
               const active =
                 pathname === link.href ||
                 (link.href !== '/' && pathname.startsWith(link.href));
+
+              const isPodcast = link.dropdownType === 'podcast';
+              const mobileItems = isPodcast
+                ? PODCAST_TAGS.map((t) => ({
+                    label: t.label,
+                    href: buildTagHref(link.href, t.slug),
+                  }))
+                : DOMAINS.map((d) => ({
+                    label: d.label,
+                    href: buildDomainHref(link.href, d.slug),
+                  }));
+
               return (
                 <div key={link.href}>
                   <Link
@@ -153,19 +198,17 @@ export function Navbar() {
                   </Link>
                   {link.hasDropdown && active && (
                     <div className="pl-6 mt-1 mb-2">
-                      {DOMAINS.map((d) => (
+                      {mobileItems.map((item) => (
                         <Link
-                          key={d.slug}
-                          href={buildHref(link.href, d.slug)}
+                          key={item.href}
+                          href={item.href}
                           onClick={() => setOpen(false)}
                           className={cn(
                             'block px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors',
-                            currentDomain === d.slug
-                              ? 'text-gold-500'
-                              : 'text-bone-300 hover:text-gold-500'
+                            'text-bone-300 hover:text-gold-500'
                           )}
                         >
-                          {d.label}
+                          {item.label}
                         </Link>
                       ))}
                     </div>
