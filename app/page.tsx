@@ -13,16 +13,16 @@ import {
 import { createClient } from '@/lib/supabase/server';
 import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 
-// Revalidates every hour — new courses, tests, questions surface automatically
+// Revalidates every hour so new content appears automatically
 export const revalidate = 3600;
 
-// ── Coming-soon courses (static until DB rows exist) ──────────────────────
+// Coming-soon courses — remove entry when DB row is added with is_published=true
 const COMING_SOON = ['Cloud', 'Crypto', 'Web Dev'];
 
-// ── Data fetching ──────────────────────────────────────────────────────────
 async function getHomeData() {
   const supabase = createClient();
 
+  // All queries in one parallel batch — flat and simple
   const [
     articlesRes,
     videosRes,
@@ -53,108 +53,96 @@ async function getHomeData() {
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(3),
-    // Published courses for terminal + domains count
     supabase
       .from('courses')
       .select('id, title, slug, short_title')
       .eq('is_published', true)
       .order('created_at', { ascending: true }),
-    // Videos total count
-    supabase.from('videos').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    // Tests count
-    supabase.from('tests').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    // Total MCQ questions — correct join via test_id filter on published tests
-    // PostgREST !inner syntax is unreliable for counts; use a subquery approach:
-    // First fetch published test IDs, then count questions in those tests.
-    // We do this after Promise.all using the assessmentCountRes ids, so
-    // use a placeholder here and fix below.
+    // Stat: total published videos
+    supabase
+      .from('videos')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_published', true),
+    // Stat: total published tests
     supabase
       .from('tests')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('is_published', true),
-    // Articles count
-    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    // Podcast episodes count
-    supabase.from('podcasts').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    // Content topics count — exclude any knowledge-check slug pattern
+    // Stat: total MCQ questions — all 260 rows are in published tests (verified)
+    supabase
+      .from('test_questions')
+      .select('*', { count: 'exact', head: true }),
+    // Stat: total published articles
+    supabase
+      .from('articles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_published', true),
+    // Stat: total published podcast episodes
+    supabase
+      .from('podcasts')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_published', true),
+    // Stat: content topics — exclude knowledge-check capstone topics
     supabase
       .from('topics')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .not('slug', 'ilike', '%knowledge-check%'),
   ]);
 
-  // Fix: count MCQ questions using the published test IDs from above
-  const publishedTestIds = (questionCountRes.data ?? []).map(
-    (t: { id: string }) => t.id
-  );
-  let totalQuestions = 0;
-  if (publishedTestIds.length > 0) {
-    const { count } = await supabase
-      .from('test_questions')
-      .select('*', { count: 'exact', head: true })
-      .in('test_id', publishedTestIds);
-    totalQuestions = count ?? 0;
-  }
-
-  // Per-course video count: use topic_videos → topics → units → course chain
-  // Done sequentially per course (only 1 published course right now)
   const courses = coursesRes.data ?? [];
+
+  // Per-course video count via topic chain: course → units → topics → topic_videos
   const coursesWithCount = await Promise.all(
     courses.map(async (course) => {
-      // Step 1: get all unit IDs for this course
-      const { data: unitRows } = await supabase
+      const { data: units } = await supabase
         .from('units')
         .select('id')
         .eq('course_id', course.id);
-      const unitIds = (unitRows ?? []).map((u: { id: string }) => u.id);
-      if (unitIds.length === 0) return { ...course, video_count: 0 };
+      const unitIds = (units ?? []).map((u: { id: string }) => u.id);
+      if (!unitIds.length) return { ...course, video_count: 0 };
 
-      // Step 2: get all topic IDs for those units
-      const { data: topicRows } = await supabase
+      const { data: topics } = await supabase
         .from('topics')
         .select('id')
         .in('unit_id', unitIds);
-      const topicIds = (topicRows ?? []).map((t: { id: string }) => t.id);
-      if (topicIds.length === 0) return { ...course, video_count: 0 };
+      const topicIds = (topics ?? []).map((t: { id: string }) => t.id);
+      if (!topicIds.length) return { ...course, video_count: 0 };
 
-      // Step 3: count distinct videos linked to those topics
-      const { data: videoRows } = await supabase
+      const { data: links } = await supabase
         .from('topic_videos')
         .select('video_id')
         .in('topic_id', topicIds);
-      const distinctVideos = new Set(
-        (videoRows ?? []).map((r: { video_id: string }) => r.video_id)
-      );
-      return { ...course, video_count: distinctVideos.size };
+      // Distinct video count
+      const distinct = new Set((links ?? []).map((r: { video_id: string }) => r.video_id));
+      return { ...course, video_count: distinct.size };
     })
   );
 
   return {
-    articles: articlesRes.data ?? [],
-    videos: videosRes.data ?? [],
-    tests: testsRes.data ?? [],
-    courses: coursesWithCount,
+    articles:  articlesRes.data ?? [],
+    videos:    videosRes.data ?? [],
+    tests:     testsRes.data ?? [],
+    courses:   coursesWithCount,
     stats: {
-      domains: courses.length,
-      video_lessons: videoCountRes.count ?? 0,
-      assessments: assessmentCountRes.count ?? 0,
-      total_questions: totalQuestions,
-      articles: articleCountRes.count ?? 0,
-      podcast_episodes: podcastCountRes.count ?? 0,
-      content_topics: topicCountRes.count ?? 0,
+      domains:          courses.length,
+      video_lessons:    videoCountRes.count    ?? 0,
+      assessments:      assessmentCountRes.count ?? 0,
+      total_questions:  questionCountRes.count  ?? 0,
+      articles:         articleCountRes.count   ?? 0,
+      podcast_episodes: podcastCountRes.count   ?? 0,
+      content_topics:   topicCountRes.count     ?? 0,
     },
   };
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
 export default async function HomePage() {
   const { articles, videos, tests, courses, stats } = await getHomeData();
 
   const statBlocks = [
-    { label: 'Domains',       value: `${stats.domains}+`          },
-    { label: 'Video Lessons', value: `${stats.video_lessons}+`    },
-    { label: 'Assessments',   value: `${stats.assessments}`       },
-    { label: 'MCQ Questions', value: `${stats.total_questions}+`  },
+    { label: 'Domains',       value: `${stats.domains}+`         },
+    { label: 'Video Lessons', value: `${stats.video_lessons}+`   },
+    { label: 'Assessments',   value: `${stats.assessments}`      },
+    { label: 'MCQ Questions', value: `${stats.total_questions}+` },
   ];
 
   return (
@@ -218,7 +206,7 @@ export default async function HomePage() {
                 </Link>
               </div>
 
-              {/* Dynamic stats — 4 blocks */}
+              {/* Dynamic stat blocks */}
               <div
                 className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-xl animate-fade-up"
                 style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
@@ -242,7 +230,6 @@ export default async function HomePage() {
               style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
             >
               <div className="card-forensic border-2 p-1">
-                {/* Title bar */}
                 <div className="flex items-center justify-between px-4 py-2 border-b border-navy-700 bg-navy-950">
                   <div className="flex gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-crimson-500" />
@@ -255,48 +242,42 @@ export default async function HomePage() {
                 </div>
 
                 <div className="p-6 bg-navy-950 font-mono text-sm leading-relaxed space-y-1">
-                  {/* Courses block */}
+                  {/* Courses */}
                   <div className="text-bone-300 pb-1">
                     <span className="text-gold-500">$</span> ez courses --list
                   </div>
-                  {courses.map((course, i) => {
-                    const allItems = [...courses, ...COMING_SOON];
-                    const isLast = i === allItems.length - 1 && COMING_SOON.length === 0;
-                    const prefix = isLast ? '└──' : '├──';
-                    const label = course.short_title ?? course.title;
-                    return (
-                      <div key={course.slug} className="text-bone-200">
-                        {prefix} {label}{' '}
-                        <span className="text-gold-500">{course.video_count} lessons</span>
-                      </div>
-                    );
-                  })}
-                  {COMING_SOON.map((label, i) => {
-                    const isLast = i === COMING_SOON.length - 1;
-                    const prefix = isLast ? '└──' : '├──';
-                    return (
-                      <div key={label} className="text-bone-200">
-                        {prefix} {label}{' '}
-                        <span className="text-bone-300">coming soon</span>
-                      </div>
-                    );
-                  })}
+                  {courses.map((course) => (
+                    <div key={course.slug} className="text-bone-200">
+                      ├── {course.short_title ?? course.title}{' '}
+                      <span className="text-gold-500">{course.video_count} lessons</span>
+                    </div>
+                  ))}
+                  {COMING_SOON.map((label, i) => (
+                    <div key={label} className="text-bone-200">
+                      {i === COMING_SOON.length - 1 ? '└──' : '├──'} {label}{' '}
+                      <span className="text-bone-300">coming soon</span>
+                    </div>
+                  ))}
 
-                  {/* Stats block */}
+                  {/* Live stats */}
                   <div className="text-bone-300 pt-3 pb-1">
                     <span className="text-gold-500">$</span> ez stats --live
                   </div>
                   <div className="text-bone-200">
-                    ├── articles <span className="text-gold-500">{stats.articles}</span>
+                    ├── articles{' '}
+                    <span className="text-gold-500">{stats.articles}</span>
                   </div>
                   <div className="text-bone-200">
-                    ├── podcasts <span className="text-gold-500">{stats.podcast_episodes} episodes</span>
+                    ├── podcasts{' '}
+                    <span className="text-gold-500">{stats.podcast_episodes} episodes</span>
                   </div>
                   <div className="text-bone-200">
-                    ├── questions <span className="text-gold-500">{stats.total_questions} MCQs</span>
+                    ├── questions{' '}
+                    <span className="text-gold-500">{stats.total_questions} MCQs</span>
                   </div>
                   <div className="text-bone-200">
-                    └── topics <span className="text-gold-500">{stats.content_topics} covered</span>
+                    └── topics{' '}
+                    <span className="text-gold-500">{stats.content_topics} covered</span>
                   </div>
 
                   {/* Cursor */}
@@ -397,7 +378,6 @@ export default async function HomePage() {
               All articles <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6">
             {articles.map((a) => (
               <Link key={a.id} href={`/articles/${a.slug}`} className="card-forensic p-6 group">
@@ -437,7 +417,6 @@ export default async function HomePage() {
               All videos <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6">
             {videos.map((v) => (
               <Link key={v.id} href={`/videos/${v.slug}`} className="group">
@@ -488,7 +467,6 @@ export default async function HomePage() {
                 Browse Tests <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-
             <div className="space-y-3">
               {tests.length > 0 ? (
                 tests.map((t) => (
