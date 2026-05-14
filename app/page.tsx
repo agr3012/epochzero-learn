@@ -17,7 +17,7 @@ import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 export const revalidate = 3600;
 
 // Coming-soon courses — remove entry when DB row is added with is_published=true
-const COMING_SOON = ['Cloud', 'Crypto', 'Web Dev'];
+const COMING_SOON = ['Crypto', 'Web Dev'];
 
 async function getHomeData() {
   const supabase = createClient();
