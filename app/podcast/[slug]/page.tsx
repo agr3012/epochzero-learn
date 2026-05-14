@@ -12,7 +12,6 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-  // generateMetadata runs in request scope — server client is fine here
   const supabase = createClient();
   const { data: ep } = await supabase
     .from('podcasts')
@@ -25,8 +24,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export async function generateStaticParams() {
-  // generateStaticParams runs at BUILD TIME — no request scope, no cookies.
-  // Must use the browser/anon client which does not call cookies().
+  // Uses browser client — no cookies(), safe at build time
   const supabase = createBrowserClient();
   const { data } = await supabase
     .from('podcasts')
@@ -47,9 +45,10 @@ export default async function EpisodePage({ params }: Props) {
 
   if (!ep) notFound();
 
+  // Fetch all episodes for sidebar + prev/next
   const { data: allEps } = await supabase
     .from('podcasts')
-    .select('episode_number, slug, title')
+    .select('episode_number, slug, title, cover_image, topic_tag, duration_seconds')
     .eq('is_published', true)
     .order('episode_number', { ascending: true });
 
@@ -58,5 +57,12 @@ export default async function EpisodePage({ params }: Props) {
   const prev = idx > 0 ? eps[idx - 1] : null;
   const next = idx < eps.length - 1 ? eps[idx + 1] : null;
 
-  return <EpisodeView ep={ep} prev={prev} next={next} />;
+  return (
+    <EpisodeView
+      ep={ep}
+      prev={prev}
+      next={next}
+      allEpisodes={eps}
+    />
+  );
 }
