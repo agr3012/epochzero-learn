@@ -1,4 +1,4 @@
-import { Headphones, Calendar, Radio, AudioLines } from 'lucide-react';
+import { Headphones, Calendar, AudioLines, Radio, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
@@ -15,16 +15,14 @@ export default async function PodcastPage({ searchParams }: Props) {
   const supabase = createClient();
   const activeTag = searchParams.tag ?? null;
 
-  // Fetch all published episodes
   const { data: allEpisodes } = await supabase
     .from('podcasts')
-    .select('*')
+    .select('id, slug, title, description, episode_number, cover_image, topic_tag, published_at, duration_seconds, audio_url')
     .eq('is_published', true)
     .order('episode_number', { ascending: false });
 
   const episodes = allEpisodes ?? [];
 
-  // Derive unique tags from published episodes (dynamic)
   const tags = Array.from(
     new Set(
       episodes
@@ -33,7 +31,6 @@ export default async function PodcastPage({ searchParams }: Props) {
     )
   ).sort();
 
-  // Filter by active tag
   const filtered = activeTag
     ? episodes.filter((ep) => ep.topic_tag === activeTag)
     : episodes;
@@ -56,7 +53,7 @@ export default async function PodcastPage({ searchParams }: Props) {
         other corners of modern technology.
       </p>
 
-      {/* Chips filter — only shown if there are tags */}
+      {/* Tag filter chips */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-10">
           <Link
@@ -98,11 +95,12 @@ export default async function PodcastPage({ searchParams }: Props) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filtered.map((ep) => (
-            <article
+            <Link
               key={ep.id}
-              className="card-forensic flex flex-col hover:border-gold-500/40 transition-colors overflow-hidden"
+              href={`/podcast/${ep.slug}`}
+              className="card-forensic flex flex-col hover:border-gold-500/40 transition-colors overflow-hidden group"
             >
-              {/* Cover image — full width top */}
+              {/* Cover image */}
               {ep.cover_image ? (
                 <div className="relative w-full h-48 bg-navy-950 overflow-hidden">
                   <Image
@@ -110,12 +108,19 @@ export default async function PodcastPage({ searchParams }: Props) {
                     alt={`${ep.title} cover art`}
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  {/* Tag chip overlay */}
+                  {/* Tag chip */}
                   {ep.topic_tag && (
                     <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-navy-900/90 border border-gold-500/60 text-gold-500">
                       {ep.topic_tag}
+                    </span>
+                  )}
+                  {/* Duration chip */}
+                  {ep.duration_seconds && (
+                    <span className="absolute bottom-3 right-3 font-mono text-[10px] px-2 py-0.5 bg-navy-950/90 border border-navy-700 text-bone-100 inline-flex items-center gap-1">
+                      <AudioLines className="w-2.5 h-2.5" />
+                      {formatDuration(ep.duration_seconds)}
                     </span>
                   )}
                 </div>
@@ -134,66 +139,39 @@ export default async function PodcastPage({ searchParams }: Props) {
               <div className="flex flex-col flex-1 p-5">
                 {/* Meta row */}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 font-mono text-xs text-bone-300">
-                  {ep.episode_number !== null &&
-                    ep.episode_number !== undefined && (
-                      <span className="text-gold-500">
-                        EP {String(ep.episode_number).padStart(2, '0')}
-                      </span>
-                    )}
+                  {ep.episode_number != null && (
+                    <span className="text-gold-500">
+                      EP {String(ep.episode_number).padStart(2, '0')}
+                    </span>
+                  )}
                   {ep.published_at && (
                     <span className="inline-flex items-center gap-1.5">
                       <Calendar className="w-3 h-3" />
                       {formatDate(ep.published_at)}
                     </span>
                   )}
-                  {ep.duration_seconds && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <AudioLines className="w-3 h-3" />
-                      {formatDuration(ep.duration_seconds)}
-                    </span>
-                  )}
                 </div>
 
-                <h2 className="font-mono text-lg text-bone-50 mb-2 leading-tight">
+                <h2 className="font-mono text-lg text-bone-50 mb-2 leading-tight group-hover:text-gold-500 transition-colors">
                   {ep.title}
                 </h2>
 
                 {ep.description && (
-                  <p className="font-serif text-sm text-bone-200 leading-relaxed mb-4 line-clamp-3">
+                  <p className="font-serif text-sm text-bone-200 leading-relaxed line-clamp-3 mb-4">
                     {ep.description}
                   </p>
                 )}
 
-                {/* Spacer to push player to bottom */}
                 <div className="flex-1" />
 
-                {/* Audio player */}
-                <div className="bg-navy-950 border border-navy-700 p-2.5 flex items-center gap-2 mb-3">
-                  <Headphones className="w-3.5 h-3.5 text-gold-500 shrink-0" />
-                  <audio
-                    controls
-                    preload="none"
-                    src={ep.audio_url}
-                    className="w-full h-8"
-                  >
-                    Your browser does not support the audio element.
-                  </audio>
+                {/* Listen CTA */}
+                <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-gold-500 group-hover:gap-3 transition-all">
+                  <Headphones className="w-3.5 h-3.5" />
+                  <span>Listen to episode</span>
+                  <ArrowRight className="w-3 h-3" />
                 </div>
-
-                {/* Show notes */}
-                {ep.show_notes && (
-                  <details className="group">
-                    <summary className="cursor-pointer font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors list-none">
-                      <span className="group-open:hidden">Show notes ▾</span>
-                      <span className="hidden group-open:inline">Hide notes ▴</span>
-                    </summary>
-                    <div className="mt-3 font-serif text-xs text-bone-200 leading-relaxed whitespace-pre-line border-l-2 border-gold-500/30 pl-3">
-                      {ep.show_notes}
-                    </div>
-                  </details>
-                )}
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       )}
