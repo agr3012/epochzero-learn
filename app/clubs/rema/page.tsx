@@ -486,10 +486,9 @@ export default async function REMAClubPage() {
               {/* Training highlights */}
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
                 {[
-                  { label: 'Research interests', value: 'Machine Learning, Malware Analysis, Cloud Security' },
-                  { label: 'Training engagements', value: 'Bharat NCX, SEBI, MHA, Gujarat Police, Nepal Police (ITEC)' },
-                  { label: 'Teaching domains',  value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev' },
-                  { label: 'Institution',       value: 'SITAICS, Rashtriya Raksha University, Gandhinagar' },
+                  { label: 'Research interests',    value: 'Machine Learning, Malware Analysis, Cloud Security'         },
+                  { label: 'Training engagements', value: 'Bharat NCX, SEBI, MHA, Gujarat Police, Nepal Police (ITEC)'  },
+                  { label: 'Teaching domains',     value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev'     },
                 ].map(({ label, value }) => (
                   <div key={label} className="border-l-2 border-gold-500/30 pl-4">
                     <div className="font-mono text-[10px] uppercase tracking-wider text-bone-400 mb-1">
@@ -539,7 +538,7 @@ export default async function REMAClubPage() {
             <ol className="space-y-4">
               {[
                 { n: '01', text: 'Submit the form with your RRU email address.' },
-                { n: '02', text: 'The club mentor reviews your application within 5-7 working days.' },
+                { n: '02', text: 'The club mentor reviews your application within 1-2 working days.' },
                 { n: '03', text: 'You receive an approval email on your RRU address.' },
                 { n: '04', text: 'Approved members are added to the club group and invited to the next session.' },
               ].map(({ n, text }) => (
