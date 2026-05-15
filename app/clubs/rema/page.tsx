@@ -463,10 +463,10 @@ export default async function REMAClubPage() {
               </div>
               <div className="flex flex-col gap-1.5 font-mono text-[10px] uppercase tracking-wider text-bone-400">
                 <span className="px-2 py-0.5 border border-navy-600 bg-navy-900">
-                  PhD Scholar — PDEU
+                  Researcher · ML &amp; Malware Analysis
                 </span>
                 <span className="px-2 py-0.5 border border-navy-600 bg-navy-900">
-                  Club Founder & Mentor
+                  Club Founder &amp; Mentor
                 </span>
               </div>
             </div>
@@ -478,19 +478,18 @@ export default async function REMAClubPage() {
               </div>
               <p className="font-serif text-bone-200 leading-relaxed mb-6 text-lg">
                 Founder and mentor of the REMA Club at SITAICS, Rashtriya Raksha University.
-                PhD Scholar at Pandit Deendayal Energy University (PDEU) researching
-                ML-based automatic YARA rule generation for cloud malware detection —
-                the RUDRA framework. Teaches Reverse Engineering and Malware Analysis
-                across B.Tech, M.Sc., and M.Tech programmes.
+                An active researcher in the areas of machine learning and malware analysis,
+                with a focus on automated detection and cloud security. Teaches Reverse
+                Engineering and Malware Analysis across B.Tech, M.Sc., and M.Tech programmes.
               </p>
 
-              {/* Research + training highlights */}
+              {/* Training highlights */}
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
                 {[
-                  { label: 'Research area',   value: 'ML-based YARA rule generation for cloud malware (RUDRA)' },
-                  { label: 'Supervisors',      value: 'Dr. Shakti Mishra & Dr. Rutvij Jhaveri, PDEU'          },
+                  { label: 'Research interests', value: 'Machine Learning, Malware Analysis, Cloud Security' },
                   { label: 'Training engagements', value: 'Bharat NCX, SEBI, MHA, Gujarat Police, Nepal Police (ITEC)' },
-                  { label: 'Domains',          value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev' },
+                  { label: 'Teaching domains',  value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev' },
+                  { label: 'Institution',       value: 'SITAICS, Rashtriya Raksha University, Gandhinagar' },
                 ].map(({ label, value }) => (
                   <div key={label} className="border-l-2 border-gold-500/30 pl-4">
                     <div className="font-mono text-[10px] uppercase tracking-wider text-bone-400 mb-1">
@@ -528,78 +527,66 @@ export default async function REMAClubPage() {
           RRU email once approved.
         </p>
 
-        {/* Two-column layout: form left, info panel right */}
-        <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
+        {/* Registration form — full width */}
+        <ClubRegistrationForm clubId={club.id} clubName={club.name} />
 
-          {/* Form */}
-          <div>
-            <ClubRegistrationForm clubId={club.id} clubName={club.name} />
+        {/* 3-column info blocks below the form */}
+        <div className="grid md:grid-cols-3 gap-6 mt-16 pt-12 border-t border-navy-700">
+          <div className="border border-navy-700 bg-navy-900 p-6">
+            <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
+              What happens next
+            </div>
+            <ol className="space-y-4">
+              {[
+                { n: '01', text: 'Submit the form with your RRU email address.' },
+                { n: '02', text: 'The club mentor reviews your application within 5-7 working days.' },
+                { n: '03', text: 'You receive an approval email on your RRU address.' },
+                { n: '04', text: 'Approved members are added to the club group and invited to the next session.' },
+              ].map(({ n, text }) => (
+                <li key={n} className="flex gap-3">
+                  <span className="font-mono text-base text-gold-500/40 font-bold shrink-0 leading-tight">{n}</span>
+                  <span className="font-serif text-sm text-bone-200 leading-relaxed">{text}</span>
+                </li>
+              ))}
+            </ol>
           </div>
 
-          {/* Right info panel — sticky */}
-          <aside className="lg:sticky lg:top-24 space-y-4">
-
-            {/* What to expect */}
-            <div className="border border-navy-700 bg-navy-900 p-6">
-              <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
-                What happens next
-              </div>
-              <ol className="space-y-4">
-                {[
-                  { n: '01', text: 'Submit this form with your RRU email address.' },
-                  { n: '02', text: 'The club mentor reviews your application within 5-7 working days.' },
-                  { n: '03', text: 'You receive an approval or follow-up email on your RRU email.' },
-                  { n: '04', text: 'Approved members are added to the club WhatsApp group and invited to the next session.' },
-                ].map(({ n, text }) => (
-                  <li key={n} className="flex gap-4">
-                    <span className="font-mono text-lg text-gold-500/40 font-bold shrink-0 leading-tight">
-                      {n}
-                    </span>
-                    <span className="font-serif text-sm text-bone-200 leading-relaxed">{text}</span>
-                  </li>
-                ))}
-              </ol>
+          <div className="border border-navy-700 bg-navy-900 p-6">
+            <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
+              As a member you get
             </div>
+            <ul className="space-y-2 font-serif text-sm text-bone-200">
+              {[
+                'Access to exclusive CTF challenges',
+                'Hands-on malware analysis lab sessions',
+                'Mentorship from faculty and senior researchers',
+                'Participation in REMA CTF events',
+                'Certificate of membership and participation',
+                'Networking with cybersecurity professionals',
+              ].map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span className="text-gold-500 shrink-0">·</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            {/* Club activities */}
-            <div className="border border-navy-700 bg-navy-900 p-6">
-              <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
-                As a member you get
-              </div>
-              <ul className="space-y-2 font-serif text-sm text-bone-200">
-                {[
-                  'Access to exclusive CTF challenges',
-                  'Hands-on malware analysis lab sessions',
-                  'Mentorship from faculty and senior researchers',
-                  'Participation in REMA CTF events',
-                  'Certificate of membership and participation',
-                  'Networking with cybersecurity professionals',
-                ].map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="text-gold-500 shrink-0">·</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="border border-navy-700 bg-navy-900 p-6">
+            <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
+              Questions?
             </div>
-
-            {/* Contact */}
-            <div className="border border-navy-700 bg-navy-900 p-6">
-              <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-3">
-                Questions?
-              </div>
-              <p className="font-serif text-sm text-bone-200 leading-relaxed">
-                Contact the club mentor directly at SITAICS, RRU Gandhinagar, or reach
-                out through the EpochZero platform.
-              </p>
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors mt-3"
-              >
-                Contact <ChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </aside>
+            <p className="font-serif text-sm text-bone-200 leading-relaxed mb-4">
+              Contact the club mentor directly at SITAICS, RRU Gandhinagar, or reach
+              out through the EpochZero platform.
+            </p>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors"
+            >
+              Contact <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
       </section>
     </div>
