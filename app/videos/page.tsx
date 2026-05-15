@@ -1,44 +1,119 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Play, ShieldAlert, Clock } from 'lucide-react';
+import { Play, ShieldAlert, Video } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils';
 
 export const revalidate = 60;
-export const metadata = { title: 'Video Walkthroughs' };
+export const metadata = { title: 'Video Lessons' };
 
-export default async function VideosPage() {
+// Domain display labels — matches the `domain` column values in the videos table
+const DOMAIN_LABELS: Record<string, string> = {
+  rema:  'REMA',
+  cloud: 'Cloud',
+  crypto: 'Cryptography',
+  webdev: 'Web Dev',
+};
+
+interface Props {
+  searchParams: { domain?: string };
+}
+
+export default async function VideosPage({ searchParams }: Props) {
   const supabase = createClient();
-  const { data: videos } = await supabase
+  const activeDomain = searchParams.domain ?? null;
+
+  // Fetch all published videos
+  const { data: allVideos } = await supabase
     .from('videos')
-    .select('id, slug, youtube_id, title, description, malware_family, category, duration_seconds, difficulty, view_count, published_at')
+    .select(
+      'id, slug, youtube_id, title, description, malware_family, category, domain, duration_seconds, difficulty, view_count, episode_label, published_at'
+    )
     .eq('is_published', true)
-    .order('order_index', { ascending: true })
-    .order('published_at', { ascending: false });
+    .order('domain', { ascending: true })
+    .order('order_index', { ascending: true });
+
+  const videos = allVideos ?? [];
+
+  // Derive unique domains present in published videos (dynamic — no hardcoding)
+  const domains = Array.from(
+    new Set(videos.map((v) => v.domain).filter((d): d is string => !!d))
+  ).sort();
+
+  // Filter by active domain
+  const filtered = activeDomain
+    ? videos.filter((v) => v.domain === activeDomain)
+    : videos;
 
   return (
     <div className="container py-16 lg:py-24">
-      <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-        // Walkthroughs
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <Video className="w-5 h-5 text-gold-500" />
+        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
+          // Lessons
+        </div>
       </div>
+
       <h1 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 mb-4 leading-tight">
-        Video analyses
+        Video Lessons
       </h1>
-      <p className="font-serif text-xl text-bone-200 max-w-3xl leading-relaxed mb-12">
-        Step-by-step reverse engineering and malware analysis sessions on real
-        samples. Each video is paired with synchronized lab notes and follow-up
-        resources.
+      <p className="font-serif text-xl text-bone-200 max-w-3xl leading-relaxed mb-8">
+        Step-by-step lessons across Reverse Engineering, Malware Analysis, Cloud
+        Security, and more. Each episode pairs with articles, resources, and
+        follow-up MCQ assessments in the 4Q course view.
       </p>
 
-      {!videos || videos.length === 0 ? (
+      {/* Domain filter chips — dynamic from DB */}
+      {domains.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-10">
+          <Link
+            href="/videos"
+            className={`font-mono text-xs uppercase tracking-wider px-4 py-1.5 border transition-colors ${
+              !activeDomain
+                ? 'border-gold-500 bg-gold-500/10 text-gold-500'
+                : 'border-navy-700 text-bone-300 hover:border-navy-600 hover:text-bone-100'
+            }`}
+          >
+            All Domains
+          </Link>
+          {domains.map((domain) => (
+            <Link
+              key={domain}
+              href={`/videos?domain=${encodeURIComponent(domain)}`}
+              className={`font-mono text-xs uppercase tracking-wider px-4 py-1.5 border transition-colors ${
+                activeDomain === domain
+                  ? 'border-gold-500 bg-gold-500/10 text-gold-500'
+                  : 'border-navy-700 text-bone-300 hover:border-navy-600 hover:text-bone-100'
+              }`}
+            >
+              {DOMAIN_LABELS[domain] ?? domain}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Count label */}
+      {filtered.length > 0 && (
+        <p className="font-mono text-xs text-bone-400 mb-6 uppercase tracking-wider">
+          {filtered.length} {filtered.length === 1 ? 'lesson' : 'lessons'}
+          {activeDomain ? ` in ${DOMAIN_LABELS[activeDomain] ?? activeDomain}` : ' across all domains'}
+        </p>
+      )}
+
+      {/* Empty state */}
+      {filtered.length === 0 ? (
         <div className="card-forensic p-12 text-center">
+          <Video className="w-10 h-10 text-gold-500/40 mx-auto mb-4" />
           <p className="font-mono text-sm text-bone-300">
-            No videos published yet. Add them via the admin panel.
+            {activeDomain
+              ? `No lessons published yet for "${DOMAIN_LABELS[activeDomain] ?? activeDomain}".`
+              : 'No lessons published yet.'}
           </p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((v) => (
+          {filtered.map((v) => (
             <Link key={v.id} href={`/videos/${v.slug}`} className="group">
               <div className="relative aspect-video overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
                 <Image
@@ -56,11 +131,25 @@ export default async function VideosPage() {
                   </div>
                 </div>
 
-                {/* Top badges */}
+                {/* Domain badge — top left */}
+                {v.domain && (
+                  <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-navy-900/90 border border-gold-500/60 text-gold-500">
+                    {DOMAIN_LABELS[v.domain] ?? v.domain}
+                  </span>
+                )}
+
+                {/* Malware family badge */}
                 {v.malware_family && (
-                  <span className="absolute top-3 left-3 badge-malware">
+                  <span className="absolute top-3 right-3 badge-malware">
                     <ShieldAlert className="w-3 h-3" />
                     {v.malware_family}
+                  </span>
+                )}
+
+                {/* Episode label */}
+                {v.episode_label && (
+                  <span className="absolute bottom-3 left-3 font-mono text-[10px] uppercase tracking-[0.2em] px-2 py-1 bg-navy-950/90 border border-gold-500/40 text-gold-500">
+                    {v.episode_label}
                   </span>
                 )}
 
