@@ -13,6 +13,7 @@ import {
   Download,
   ArrowRight,
   ShieldAlert,
+  Headphones,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils';
@@ -115,11 +116,15 @@ export default async function TopicPage({ params }: Props) {
       .order('order_index', { ascending: true }),
   ]);
 
-  const videos = (videosRes.data ?? []).map((r: any) => r.videos).filter(Boolean);
-  const articles = (articlesRes.data ?? []).map((r: any) => r.articles).filter(Boolean);
+  const videos    = (videosRes.data   ?? []).map((r: any) => r.videos).filter(Boolean);
+  const articles  = (articlesRes.data ?? []).map((r: any) => r.articles).filter(Boolean);
   const resources = (resourcesRes.data ?? []).map((r: any) => r.resources).filter(Boolean);
-  const webLinks = linksRes.data ?? [];
-  const tests = (testsRes.data ?? []).map((r: any) => r.tests).filter(Boolean);
+  const webLinks  = linksRes.data ?? [];
+  const tests     = (testsRes.data   ?? []).map((r: any) => r.tests).filter(Boolean);
+
+  // Split web links: our podcast vs third-party external
+  const podcastLinks  = webLinks.filter((l: any) => l.source_type === 'podcast');
+  const externalLinks = webLinks.filter((l: any) => l.source_type !== 'podcast');
 
   // Q3 total count for header badge
   const q3Count = resources.length + webLinks.length;
@@ -323,11 +328,13 @@ export default async function TopicPage({ params }: Props) {
       </Quadrant>
 
       {/* ============== Q3 — WEB RESOURCES ============== */}
-      <Quadrant id="q3" number="3" title="Web Resources" subtitle="Downloadable reference material and curated external links" icon={Globe}>
+      <Quadrant id="q3" number="3" title="Web Resources" subtitle="Downloadable material, podcast episodes, and curated external links" icon={Globe}>
         {q3Count === 0 ? (
           <EmptyQuadrant text="No web resources linked to this topic yet." />
         ) : (
           <div className="space-y-8">
+
+            {/* Downloadable reference material */}
             {resources.length > 0 && (
               <div>
                 <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
@@ -360,13 +367,47 @@ export default async function TopicPage({ params }: Props) {
               </div>
             )}
 
-            {webLinks.length > 0 && (
+            {/* Podcast episodes — internal EpochZero content, uses Link not <a> */}
+            {podcastLinks.length > 0 && (
+              <div>
+                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4 inline-flex items-center gap-2">
+                  <Headphones className="w-3.5 h-3.5" />
+                  Podcast episodes
+                </h4>
+                <div className="space-y-3">
+                  {podcastLinks.map((link: any) => (
+                    <Link
+                      key={link.id}
+                      href={link.url}
+                      className="flex items-start gap-4 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
+                    >
+                      <div className="w-10 h-10 border border-gold-500/40 bg-navy-800 flex items-center justify-center shrink-0">
+                        <Headphones className="w-4 h-4 text-gold-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors mb-1">
+                          {link.title}
+                        </div>
+                        {link.description && (
+                          <p className="font-serif text-sm text-bone-200 leading-relaxed">
+                            {link.description}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* External links — third-party references and tools */}
+            {externalLinks.length > 0 && (
               <div>
                 <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
                   External links
                 </h4>
                 <div className="grid md:grid-cols-2 gap-3">
-                  {webLinks.map((link: any) => (
+                  {externalLinks.map((link: any) => (
                     <a
                       key={link.id}
                       href={link.url}
@@ -396,6 +437,7 @@ export default async function TopicPage({ params }: Props) {
                 </div>
               </div>
             )}
+
           </div>
         )}
       </Quadrant>
@@ -482,19 +524,9 @@ export default async function TopicPage({ params }: Props) {
 // Quadrant section wrapper
 // ---------------------------------------------------------------------
 function Quadrant({
-  id,
-  number,
-  title,
-  subtitle,
-  icon: Icon,
-  children,
+  id, number, title, subtitle, icon: Icon, children,
 }: {
-  id: string;
-  number: string;
-  title: string;
-  subtitle: string;
-  icon: any;
-  children: React.ReactNode;
+  id: string; number: string; title: string; subtitle: string; icon: any; children: React.ReactNode;
 }) {
   return (
     <section id={id} className="mb-16 scroll-mt-32">
