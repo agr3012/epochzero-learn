@@ -11,19 +11,25 @@ interface Props {
 
 const PROGRAMS = [
   'B.Tech. (CSE)',
-  'B.Tech. (Cyber Security)',
-  'B.Tech. (AI & ML)',
+  'M.Tech. (CS)',
+  'M.Tech. (DSML)',
   'M.Sc. (CSDF)',
-  'M.Sc. (Cyber Security)',
-  'M.Tech. (Cyber Security)',
-  'M.Tech. (CSE)',
-  'Other',
+  'PGD (CSDF)',
 ];
 
-const SEMESTERS = [
-  '1st Semester', '2nd Semester', '3rd Semester', '4th Semester',
-  '5th Semester', '6th Semester', '7th Semester', '8th Semester',
-];
+// Semesters depend on program
+function getSemesters(program: string): string[] {
+  if (program === 'B.Tech. (CSE)') {
+    return ['1st','2nd','3rd','4th','5th','6th','7th','8th'].map((s) => s + ' Semester');
+  }
+  if (program === 'PGD (CSDF)') {
+    return ['1st Semester', '2nd Semester'];
+  }
+  if (program) {
+    return ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester'];
+  }
+  return [];
+}
 
 const INTERESTS = [
   { value: 'ctf',     label: 'Participating in Capture The Flag (CTF) competitions'        },
@@ -173,7 +179,10 @@ export function ClubRegistrationForm({ clubId }: Props) {
         <div className={twoCol}>
           <Field label="Program / Degree" error={errors.program} required>
             <select value={form.program}
-              onChange={(e) => set('program', e.target.value)}
+              onChange={(e) => {
+                set('program', e.target.value);
+                set('semester', ''); // reset semester when program changes
+              }}
               className={ic(errors.program)}>
               <option value="">Select program...</option>
               {PROGRAMS.map((p) => <option key={p} value={p}>{p}</option>)}
@@ -182,24 +191,24 @@ export function ClubRegistrationForm({ clubId }: Props) {
           <Field label="Current Semester" error={errors.semester} required>
             <select value={form.semester}
               onChange={(e) => set('semester', e.target.value)}
-              className={ic(errors.semester)}>
-              <option value="">Select semester...</option>
-              {SEMESTERS.map((s) => <option key={s} value={s}>{s}</option>)}
+              className={ic(errors.semester)}
+              disabled={!form.program}>
+              <option value="">{form.program ? 'Select semester...' : 'Select program first'}</option>
+              {getSemesters(form.program).map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
         </div>
 
-        {/* Row 3: Email + WhatsApp */}
+        {/* Row 3: Email + WhatsApp — both fields identical height, no hint text */}
         <div className={twoCol}>
           <Field
             label="University Email Address"
             error={errors.email}
             required
-            hint="Official RRU email only (@student.rru.ac.in or @rru.ac.in)"
           >
             <input type="email" value={form.email}
               onChange={(e) => set('email', e.target.value)}
-              placeholder="22bcs*****@student.rru.ac.in"
+              placeholder="22bcs*****@student.rru.ac.in (@student.rru.ac.in only)"
               className={ic(errors.email)} />
           </Field>
           <Field label="Contact Number (WhatsApp)" error={errors.whatsapp} required>
