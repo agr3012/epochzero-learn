@@ -7,33 +7,38 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const DOMAINS = [
-  { slug: 'all', label: 'All Domains' },
-  { slug: 'rema', label: 'REMA' },
-  { slug: 'cloud', label: 'Cloud' },
-  { slug: 'crypto', label: 'Cryptography' },
-  { slug: 'webdev', label: 'Web Development' },
+  { slug: 'all',    label: 'All Domains'    },
+  { slug: 'rema',   label: 'REMA'           },
+  { slug: 'cloud',  label: 'Cloud'          },
+  { slug: 'crypto', label: 'Cryptography'   },
+  { slug: 'webdev', label: 'Web Development'},
 ];
 
-// Podcast has its own tag-based filter — separate from DOMAINS
 const PODCAST_TAGS = [
-  { slug: 'all', label: 'All Episodes' },
-  { slug: 'REMA', label: 'REMA' },
-  { slug: 'cloud', label: 'Cloud' },
+  { slug: 'all',   label: 'All Episodes' },
+  { slug: 'REMA',  label: 'REMA'         },
+  { slug: 'cloud', label: 'Cloud'        },
+];
+
+const CLUBS = [
+  { slug: 'rema',      label: 'REMA Club',             href: '/clubs/rema'      },
+  { slug: 'fullstack', label: 'Full Stack Club',        href: '/clubs/fullstack', comingSoon: true },
 ];
 
 const NAV_LINKS: Array<{
   href: string;
   label: string;
   hasDropdown?: boolean;
-  dropdownType?: 'domain' | 'podcast';
+  dropdownType?: 'domain' | 'podcast' | 'clubs';
 }> = [
-  { href: '/learn',     label: 'Learn',     hasDropdown: true, dropdownType: 'domain' },
-  { href: '/articles',  label: 'Articles',  hasDropdown: true, dropdownType: 'domain' },
-  { href: '/videos',    label: 'Videos',    hasDropdown: true, dropdownType: 'domain' },
-  { href: '/tests',     label: 'Tests',     hasDropdown: true, dropdownType: 'domain' },
-  { href: '/resources', label: 'Resources', hasDropdown: true, dropdownType: 'domain' },
-  { href: '/podcast',   label: 'Podcast',   hasDropdown: true, dropdownType: 'podcast' },
-  { href: '/about',     label: 'About' },
+  { href: '/learn',     label: 'Learn',      hasDropdown: true, dropdownType: 'domain'  },
+  { href: '/articles',  label: 'Articles',   hasDropdown: true, dropdownType: 'domain'  },
+  { href: '/videos',    label: 'Videos',     hasDropdown: true, dropdownType: 'domain'  },
+  { href: '/tests',     label: 'Tests',      hasDropdown: true, dropdownType: 'domain'  },
+  { href: '/resources', label: 'Resources',  hasDropdown: true, dropdownType: 'domain'  },
+  { href: '/clubs',     label: 'Tech Clubs', hasDropdown: true, dropdownType: 'clubs'   },
+  { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast' },
+  { href: '/about',     label: 'About'                                                   },
 ];
 
 export function Navbar() {
@@ -73,7 +78,6 @@ export function Navbar() {
               pathname === link.href ||
               (link.href !== '/' && pathname.startsWith(link.href));
 
-            // No dropdown
             if (!link.hasDropdown) {
               return (
                 <Link
@@ -91,23 +95,32 @@ export function Navbar() {
               );
             }
 
-            // With dropdown
-            const isPodcast = link.dropdownType === 'podcast';
-            const items = isPodcast
-              ? PODCAST_TAGS.map((t) => ({
+            // Build dropdown items based on type
+            const dropdownItems = (() => {
+              if (link.dropdownType === 'clubs') {
+                return CLUBS.map((c) => ({
+                  label: c.label,
+                  href: c.href,
+                  active: pathname.startsWith(c.href),
+                  comingSoon: c.comingSoon,
+                }));
+              }
+              if (link.dropdownType === 'podcast') {
+                return PODCAST_TAGS.map((t) => ({
                   label: t.label,
                   href: buildTagHref(link.href, t.slug),
-                  active: active && (
-                    t.slug === 'all'
-                      ? currentTag === 'all'
-                      : currentTag === t.slug
-                  ),
-                }))
-              : DOMAINS.map((d) => ({
-                  label: d.label,
-                  href: buildDomainHref(link.href, d.slug),
-                  active: active && currentDomain === d.slug,
+                  active: active && (t.slug === 'all' ? currentTag === 'all' : currentTag === t.slug),
+                  comingSoon: false,
                 }));
+              }
+              // domain
+              return DOMAINS.map((d) => ({
+                label: d.label,
+                href: buildDomainHref(link.href, d.slug),
+                active: active && currentDomain === d.slug,
+                comingSoon: false,
+              }));
+            })();
 
             return (
               <div
@@ -130,19 +143,27 @@ export function Navbar() {
                 </Link>
 
                 {openDropdown === link.href && (
-                  <div className="absolute top-full left-0 min-w-[180px] bg-navy-900 border border-navy-700 shadow-xl py-2">
-                    {items.map((item) => (
+                  <div className="absolute top-full left-0 min-w-[200px] bg-navy-900 border border-navy-700 shadow-xl py-2">
+                    {dropdownItems.map((item) => (
                       <Link
                         key={item.href}
-                        href={item.href}
+                        href={item.comingSoon ? '#' : item.href}
                         className={cn(
-                          'block px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
-                          item.active
+                          'flex items-center justify-between px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
+                          item.comingSoon
+                            ? 'text-bone-400 cursor-default'
+                            : item.active
                             ? 'text-gold-500 bg-navy-800'
                             : 'text-bone-200 hover:text-gold-500 hover:bg-navy-800'
                         )}
+                        onClick={item.comingSoon ? (e) => e.preventDefault() : undefined}
                       >
                         {item.label}
+                        {item.comingSoon && (
+                          <span className="font-mono text-[9px] text-bone-400 border border-navy-600 px-1.5 py-0.5 ml-2">
+                            soon
+                          </span>
+                        )}
                       </Link>
                     ))}
                   </div>
@@ -171,16 +192,15 @@ export function Navbar() {
                 pathname === link.href ||
                 (link.href !== '/' && pathname.startsWith(link.href));
 
-              const isPodcast = link.dropdownType === 'podcast';
-              const mobileItems = isPodcast
-                ? PODCAST_TAGS.map((t) => ({
-                    label: t.label,
-                    href: buildTagHref(link.href, t.slug),
-                  }))
-                : DOMAINS.map((d) => ({
-                    label: d.label,
-                    href: buildDomainHref(link.href, d.slug),
-                  }));
+              const mobileItems = (() => {
+                if (link.dropdownType === 'clubs') {
+                  return CLUBS.map((c) => ({ label: c.label, href: c.href, comingSoon: c.comingSoon }));
+                }
+                if (link.dropdownType === 'podcast') {
+                  return PODCAST_TAGS.map((t) => ({ label: t.label, href: buildTagHref(link.href, t.slug), comingSoon: false }));
+                }
+                return DOMAINS.map((d) => ({ label: d.label, href: buildDomainHref(link.href, d.slug), comingSoon: false }));
+              })();
 
               return (
                 <div key={link.href}>
@@ -201,14 +221,17 @@ export function Navbar() {
                       {mobileItems.map((item) => (
                         <Link
                           key={item.href}
-                          href={item.href}
-                          onClick={() => setOpen(false)}
+                          href={item.comingSoon ? '#' : item.href}
+                          onClick={item.comingSoon ? (e) => e.preventDefault() : () => setOpen(false)}
                           className={cn(
-                            'block px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors',
-                            'text-bone-300 hover:text-gold-500'
+                            'flex items-center justify-between px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors',
+                            item.comingSoon ? 'text-bone-400' : 'text-bone-300 hover:text-gold-500'
                           )}
                         >
                           {item.label}
+                          {item.comingSoon && (
+                            <span className="text-[9px] border border-navy-600 px-1.5 py-0.5 ml-2">soon</span>
+                          )}
                         </Link>
                       ))}
                     </div>
