@@ -17,7 +17,7 @@ import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 export const revalidate = 3600;
 
 // Coming-soon courses — remove entry when DB row is added with is_published=true
-const COMING_SOON = ['Crypto', 'Web Dev'];
+const COMING_SOON = ['Cloud', 'Crypto', 'Web Dev'];
 
 async function getHomeData() {
   const supabase = createClient();
@@ -91,30 +91,27 @@ async function getHomeData() {
 
   const courses = coursesRes.data ?? [];
 
-  // Per-course video count via topic chain: course → units → topics → topic_videos
+  // Per-course video count via videos.domain column.
+  // Simpler and correct even when a course has 0 topics (e.g. Cloud).
+  // domain column values: 'rema', 'cloud', 'crypto', 'webdev'
+  // course slug values:   'rema', 'cloud-security', 'crypto', 'webdev'
+  const domainByCourseSlug: Record<string, string> = {
+    'rema':          'rema',
+    'cloud-security':'cloud',
+    'crypto':        'crypto',
+    'webdev':        'webdev',
+  };
+
   const coursesWithCount = await Promise.all(
     courses.map(async (course) => {
-      const { data: units } = await supabase
-        .from('units')
-        .select('id')
-        .eq('course_id', course.id);
-      const unitIds = (units ?? []).map((u: { id: string }) => u.id);
-      if (!unitIds.length) return { ...course, video_count: 0 };
-
-      const { data: topics } = await supabase
-        .from('topics')
-        .select('id')
-        .in('unit_id', unitIds);
-      const topicIds = (topics ?? []).map((t: { id: string }) => t.id);
-      if (!topicIds.length) return { ...course, video_count: 0 };
-
-      const { data: links } = await supabase
-        .from('topic_videos')
-        .select('video_id')
-        .in('topic_id', topicIds);
-      // Distinct video count
-      const distinct = new Set((links ?? []).map((r: { video_id: string }) => r.video_id));
-      return { ...course, video_count: distinct.size };
+      const domainKey = domainByCourseSlug[course.slug];
+      if (!domainKey) return { ...course, video_count: 0 };
+      const { count } = await supabase
+        .from('videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_published', true)
+        .eq('domain', domainKey);
+      return { ...course, video_count: count ?? 0 };
     })
   );
 
