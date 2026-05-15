@@ -439,32 +439,75 @@ export default async function REMAClubPage() {
       </section>
 
       {/* ── MENTOR ────────────────────────────────────────────────────── */}
-      <section className="container py-20 border-b border-navy-700">
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-          // Leadership
-        </div>
-        <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
-          Club mentor
-        </h2>
-
-        <div className="max-w-lg card-forensic p-8 flex items-start gap-6">
-          <div className="w-16 h-16 border-2 border-gold-500 bg-navy-800 flex items-center justify-center shrink-0 font-mono text-2xl text-gold-500 font-bold">
-            A
+      <section className="border-b border-navy-700 bg-navy-950/60">
+        <div className="container py-20">
+          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+            // Leadership
           </div>
-          <div>
-            <div className="font-mono text-xl text-bone-50 mb-1">{club.mentor_name}</div>
-            <div className="font-mono text-sm text-gold-500 mb-3">{club.mentor_title}</div>
-            <p className="font-serif text-sm text-bone-200 leading-relaxed">
-              Founder and mentor of the REMA Club. PhD Scholar researching ML-based
-              automatic YARA rule generation for cloud malware detection. Teaches
-              Reverse Engineering and Malware Analysis at SITAICS, RRU.
-            </p>
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors mt-4"
-            >
-              Learn more <ChevronRight className="w-3 h-3" />
-            </Link>
+          <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
+            Club mentor
+          </h2>
+
+          {/* Full-width two-column mentor card */}
+          <div className="border border-gold-500/30 bg-navy-900 grid lg:grid-cols-[280px_1fr] overflow-hidden">
+            {/* Left panel — identity */}
+            <div className="bg-navy-800 border-b lg:border-b-0 lg:border-r border-gold-500/20 p-10 flex flex-col items-center justify-center text-center">
+              <div className="w-24 h-24 border-2 border-gold-500 bg-navy-950 flex items-center justify-center font-mono text-4xl text-gold-500 font-bold mb-6">
+                AR
+              </div>
+              <div className="font-mono text-xl font-bold text-bone-50 mb-1">
+                {club.mentor_name}
+              </div>
+              <div className="font-mono text-xs text-gold-500 uppercase tracking-wider mb-4">
+                {club.mentor_title}
+              </div>
+              <div className="flex flex-col gap-1.5 font-mono text-[10px] uppercase tracking-wider text-bone-400">
+                <span className="px-2 py-0.5 border border-navy-600 bg-navy-900">
+                  PhD Scholar — PDEU
+                </span>
+                <span className="px-2 py-0.5 border border-navy-600 bg-navy-900">
+                  Club Founder & Mentor
+                </span>
+              </div>
+            </div>
+
+            {/* Right panel — details */}
+            <div className="p-10">
+              <div className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500 mb-6">
+                // About the mentor
+              </div>
+              <p className="font-serif text-bone-200 leading-relaxed mb-6 text-lg">
+                Founder and mentor of the REMA Club at SITAICS, Rashtriya Raksha University.
+                PhD Scholar at Pandit Deendayal Energy University (PDEU) researching
+                ML-based automatic YARA rule generation for cloud malware detection —
+                the RUDRA framework. Teaches Reverse Engineering and Malware Analysis
+                across B.Tech, M.Sc., and M.Tech programmes.
+              </p>
+
+              {/* Research + training highlights */}
+              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                {[
+                  { label: 'Research area',   value: 'ML-based YARA rule generation for cloud malware (RUDRA)' },
+                  { label: 'Supervisors',      value: 'Dr. Shakti Mishra & Dr. Rutvij Jhaveri, PDEU'          },
+                  { label: 'Training engagements', value: 'Bharat NCX, SEBI, MHA, Gujarat Police, Nepal Police (ITEC)' },
+                  { label: 'Domains',          value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev' },
+                ].map(({ label, value }) => (
+                  <div key={label} className="border-l-2 border-gold-500/30 pl-4">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-bone-400 mb-1">
+                      {label}
+                    </div>
+                    <div className="font-serif text-sm text-bone-200 leading-snug">{value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors border border-gold-500/40 hover:border-gold-500 px-4 py-2"
+              >
+                Full profile <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -477,7 +520,7 @@ export default async function REMAClubPage() {
         <h2 className="font-mono text-3xl font-bold text-bone-50 mb-3">
           Join the REMA Club
         </h2>
-        <p className="font-serif text-bone-200 max-w-2xl mb-10 leading-relaxed">
+        <p className="font-serif text-bone-200 max-w-2xl mb-12 leading-relaxed">
           Registration is open to all students of Rashtriya Raksha University. You must
           use your official RRU email address (<span className="font-mono text-gold-500 text-sm">@student.rru.ac.in</span>{' '}
           or <span className="font-mono text-gold-500 text-sm">@rru.ac.in</span>) to register.
@@ -485,7 +528,79 @@ export default async function REMAClubPage() {
           RRU email once approved.
         </p>
 
-        <ClubRegistrationForm clubId={club.id} clubName={club.name} />
+        {/* Two-column layout: form left, info panel right */}
+        <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
+
+          {/* Form */}
+          <div>
+            <ClubRegistrationForm clubId={club.id} clubName={club.name} />
+          </div>
+
+          {/* Right info panel — sticky */}
+          <aside className="lg:sticky lg:top-24 space-y-4">
+
+            {/* What to expect */}
+            <div className="border border-navy-700 bg-navy-900 p-6">
+              <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
+                What happens next
+              </div>
+              <ol className="space-y-4">
+                {[
+                  { n: '01', text: 'Submit this form with your RRU email address.' },
+                  { n: '02', text: 'The club mentor reviews your application within 5-7 working days.' },
+                  { n: '03', text: 'You receive an approval or follow-up email on your RRU email.' },
+                  { n: '04', text: 'Approved members are added to the club WhatsApp group and invited to the next session.' },
+                ].map(({ n, text }) => (
+                  <li key={n} className="flex gap-4">
+                    <span className="font-mono text-lg text-gold-500/40 font-bold shrink-0 leading-tight">
+                      {n}
+                    </span>
+                    <span className="font-serif text-sm text-bone-200 leading-relaxed">{text}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Club activities */}
+            <div className="border border-navy-700 bg-navy-900 p-6">
+              <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
+                As a member you get
+              </div>
+              <ul className="space-y-2 font-serif text-sm text-bone-200">
+                {[
+                  'Access to exclusive CTF challenges',
+                  'Hands-on malware analysis lab sessions',
+                  'Mentorship from faculty and senior researchers',
+                  'Participation in REMA CTF events',
+                  'Certificate of membership and participation',
+                  'Networking with cybersecurity professionals',
+                ].map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <span className="text-gold-500 shrink-0">·</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div className="border border-navy-700 bg-navy-900 p-6">
+              <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-3">
+                Questions?
+              </div>
+              <p className="font-serif text-sm text-bone-200 leading-relaxed">
+                Contact the club mentor directly at SITAICS, RRU Gandhinagar, or reach
+                out through the EpochZero platform.
+              </p>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors mt-3"
+              >
+                Contact <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </aside>
+        </div>
       </section>
     </div>
   );
