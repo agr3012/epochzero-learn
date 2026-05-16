@@ -25,7 +25,7 @@ const PODCAST_TAGS = [
   { slug: 'webdev',label: 'Web Dev',      comingSoon: true  },
 ];
 
-const CLUBS = [
+const CLUBS: { slug: string; label: string; href: string; comingSoon?: boolean }[] = [
   { slug: 'rema',      label: 'REMA Club',          href: '/clubs/rema'      },
   { slug: 'fullstack', label: 'Full Stack Club',     href: '/clubs/fullstack' },
 ];
@@ -114,7 +114,7 @@ export function Navbar() {
                   label: c.label,
                   href: c.href,
                   active: pathname.startsWith(c.href),
-                  comingSoon: c.comingSoon,
+                  comingSoon: c.comingSoon ?? false,
                 }));
               }
               if (link.dropdownType === 'podcast') {
@@ -206,7 +206,7 @@ export function Navbar() {
 
               const mobileItems = (() => {
                 if (link.dropdownType === 'clubs') {
-                  return CLUBS.map((c) => ({ label: c.label, href: c.href, comingSoon: c.comingSoon }));
+                  return CLUBS.map((c) => ({ label: c.label, href: c.href, comingSoon: c.comingSoon ?? false }));
                 }
                 if (link.dropdownType === 'podcast') {
                   return PODCAST_TAGS.map((t) => ({ label: t.label, href: buildTagHref(link.href, t.slug), comingSoon: t.comingSoon ?? false }));
