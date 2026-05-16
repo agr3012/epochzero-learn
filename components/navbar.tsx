@@ -1,23 +1,28 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const EPOCHZERO_LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
+
 const DOMAINS = [
-  { slug: 'all',    label: 'All Domains'    },
-  { slug: 'rema',   label: 'REMA'           },
-  { slug: 'cloud',  label: 'Cloud'          },
-  { slug: 'crypto', label: 'Cryptography'   },
-  { slug: 'webdev', label: 'Web Development'},
+  { slug: 'all',    label: 'All Domains',    comingSoon: false },
+  { slug: 'rema',   label: 'REMA',           comingSoon: false },
+  { slug: 'cloud',  label: 'Cloud',          comingSoon: false },
+  { slug: 'crypto', label: 'Cryptography',   comingSoon: true  },
+  { slug: 'webdev', label: 'Web Development',comingSoon: true  },
 ];
 
 const PODCAST_TAGS = [
-  { slug: 'all',   label: 'All Episodes' },
-  { slug: 'REMA',  label: 'REMA'         },
-  { slug: 'cloud', label: 'Cloud'        },
+  { slug: 'all',   label: 'All Episodes', comingSoon: false },
+  { slug: 'REMA',  label: 'REMA',         comingSoon: false },
+  { slug: 'cloud', label: 'Cloud',        comingSoon: false },
+  { slug: 'crypto',label: 'Cryptography', comingSoon: true  },
+  { slug: 'webdev',label: 'Web Dev',      comingSoon: true  },
 ];
 
 const CLUBS = [
@@ -61,6 +66,13 @@ export function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
+          <Image
+            src={EPOCHZERO_LOGO}
+            alt="EpochZero Learn"
+            width={40}
+            height={40}
+            className="shrink-0"
+          />
           <div className="flex flex-col leading-none">
             <span className="font-mono text-base font-bold tracking-tight text-bone-50">
               EpochZero Learn
@@ -110,7 +122,7 @@ export function Navbar() {
                   label: t.label,
                   href: buildTagHref(link.href, t.slug),
                   active: active && (t.slug === 'all' ? currentTag === 'all' : currentTag === t.slug),
-                  comingSoon: false,
+                  comingSoon: t.comingSoon ?? false,
                 }));
               }
               // domain
@@ -197,9 +209,9 @@ export function Navbar() {
                   return CLUBS.map((c) => ({ label: c.label, href: c.href, comingSoon: c.comingSoon }));
                 }
                 if (link.dropdownType === 'podcast') {
-                  return PODCAST_TAGS.map((t) => ({ label: t.label, href: buildTagHref(link.href, t.slug), comingSoon: false }));
+                  return PODCAST_TAGS.map((t) => ({ label: t.label, href: buildTagHref(link.href, t.slug), comingSoon: t.comingSoon ?? false }));
                 }
-                return DOMAINS.map((d) => ({ label: d.label, href: buildDomainHref(link.href, d.slug), comingSoon: false }));
+                return DOMAINS.map((d) => ({ label: d.label, href: buildDomainHref(link.href, d.slug), comingSoon: d.comingSoon ?? false }));
               })();
 
               return (
