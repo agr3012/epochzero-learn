@@ -26,8 +26,8 @@ const PODCAST_TAGS = [
 ];
 
 const CLUBS = [
-  { slug: 'rema',      label: 'REMA Club',             href: '/clubs/rema'      },
-  { slug: 'fullstack', label: 'Full Stack Club',        href: '/clubs/fullstack', comingSoon: true },
+  { slug: 'rema',      label: 'REMA Club',          href: '/clubs/rema'      },
+  { slug: 'fullstack', label: 'Full Stack Club',     href: '/clubs/fullstack' },
 ];
 
 const NAV_LINKS: Array<{
