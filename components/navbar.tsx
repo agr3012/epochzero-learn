@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const EPOCHZERO_LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
@@ -44,6 +44,7 @@ const NAV_LINKS: Array<{
   { href: '/clubs',     label: 'Tech Clubs', hasDropdown: true, dropdownType: 'clubs'   },
   { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast' },
   { href: '/about',     label: 'About'                                                   },
+  { href: '/dashboard', label: 'Dashboard'                                               },
 ];
 
 export function Navbar() {
@@ -184,6 +185,22 @@ export function Navbar() {
             );
           })}
         </nav>
+
+        {/* Dashboard icon — right of nav */}
+        <div className="hidden lg:flex items-center ml-2 pl-2 border-l border-navy-700">
+          <Link
+            href="/dashboard"
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-2 font-mono text-sm uppercase tracking-wider transition-colors border',
+              pathname.startsWith('/dashboard')
+                ? 'border-gold-500 text-gold-500 bg-gold-500/10'
+                : 'border-navy-700 text-bone-300 hover:border-gold-500/60 hover:text-gold-500'
+            )}
+          >
+            <User className="w-3.5 h-3.5" />
+            Dashboard
+          </Link>
+        </div>
 
         {/* Mobile toggle */}
         <button
