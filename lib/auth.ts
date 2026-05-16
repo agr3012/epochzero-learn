@@ -6,6 +6,11 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
+const BCRYPT_ROUNDS = 12;
+const SESSION_DURATION_DAYS = 7;
+const RESET_TOKEN_EXPIRY_HOURS = 2;
+const COOKIE_NAME = 'ez_session';
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, BCRYPT_ROUNDS);
 }
