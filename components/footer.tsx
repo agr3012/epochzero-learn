@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Github, Youtube, Instagram, Mail } from 'lucide-react';
+
+const EPOCHZERO_LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
 const FOOTER_LINKS = {
   Learn: [
@@ -32,6 +35,13 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-4">
+              <Image
+                src={EPOCHZERO_LOGO}
+                alt="EpochZero Learn"
+                width={48}
+                height={48}
+                className="shrink-0"
+              />
               <div>
                 <div className="font-mono text-lg font-bold text-bone-50">
                   EpochZero Learn
