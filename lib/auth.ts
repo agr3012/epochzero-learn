@@ -3,26 +3,14 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
-const BCRYPT_ROUNDS = 12;
-const SESSION_DURATION_DAYS = 7;
-const RESET_TOKEN_EXPIRY_HOURS = 2;
-const COOKIE_NAME = 'ez_session';
-
-// ── Dynamic bcrypt import (Node.js only) ──────────────────────────────────
-async function getBcrypt() {
-  const bcrypt = await import('bcryptjs');
-  return bcrypt.default ?? bcrypt;
-}
-
-// ── Password hashing ──────────────────────────────────────────────────────
 export async function hashPassword(password: string): Promise<string> {
-  const bcrypt = await getBcrypt();
   return bcrypt.hash(password, BCRYPT_ROUNDS);
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const bcrypt = await getBcrypt();
   return bcrypt.compare(password, hash);
 }
 
@@ -37,11 +25,9 @@ export function generateSessionToken(accountId: string, email: string): string {
     exp: Math.floor(Date.now() / 1000) + SESSION_DURATION_DAYS * 86400,
     iat: Math.floor(Date.now() / 1000),
   };
-  // Simple base64 JWT without external lib (symmetric, server-only verification)
   const header  = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
   const body    = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const secret  = process.env.DASHBOARD_SECRET ?? 'change-me-in-production';
-  const crypto  = require('crypto');
   const sig     = crypto
     .createHmac('sha256', secret)
     .update(`${header}.${body}`)
@@ -53,7 +39,6 @@ export function verifySessionToken(token: string): { sub: string; email: string 
   try {
     const [header, body, sig] = token.split('.');
     const secret = process.env.DASHBOARD_SECRET ?? 'change-me-in-production';
-    const crypto = require('crypto');
     const expected = crypto
       .createHmac('sha256', secret)
       .update(`${header}.${body}`)
@@ -90,15 +75,12 @@ export function getSessionFromCookie(): { sub: string; email: string } | null {
 
 // ── Password reset token ──────────────────────────────────────────────────
 export async function generateResetToken(): Promise<{ raw: string; hash: string }> {
-  const crypto  = require('crypto');
-  const raw     = crypto.randomBytes(32).toString('hex');
-  const bcrypt  = await getBcrypt();
-  const hash    = await bcrypt.hash(raw, 10);
+  const raw    = crypto.randomBytes(32).toString('hex');
+  const hash   = await bcrypt.hash(raw, 10);
   return { raw, hash };
 }
 
 export async function verifyResetToken(raw: string, hash: string): Promise<boolean> {
-  const bcrypt = await getBcrypt();
   return bcrypt.compare(raw, hash);
 }
 
