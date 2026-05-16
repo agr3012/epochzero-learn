@@ -44,7 +44,6 @@ const NAV_LINKS: Array<{
   { href: '/clubs',     label: 'Tech Clubs', hasDropdown: true, dropdownType: 'clubs'   },
   { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast' },
   { href: '/about',     label: 'About'                                                   },
-  { href: '/dashboard', label: 'Dashboard'                                               },
 ];
 
 export function Navbar() {
