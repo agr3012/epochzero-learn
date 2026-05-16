@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
     gap: 16,
   },
   logoImage: {
@@ -100,6 +100,7 @@ const styles = StyleSheet.create({
   clubLogoCol: {
     flexDirection: 'column',
     alignItems: 'center',
+    width: 110,
     gap: 4,
   },
   clubLabel: {
@@ -319,40 +320,32 @@ export function CertificateDocument({
 
           {/* ── Logo row ────────────────────────────────────────────── */}
           {clubLogo ? (
-            // Domain has a club logo — show EpochZero + divider + Club logo
+            // Dual logo: EpochZero left, club right — symmetric columns
             <View style={styles.logoRow}>
-              {/* EpochZero platform logo */}
-              <Image
-                src={PLATFORM_LOGO}
-                style={styles.logoImage}
-              />
-
-              {/* Divider */}
-              <View style={styles.logoDivider} />
-
-              {/* Club logo + label */}
               <View style={styles.clubLogoCol}>
-                <Image
-                  src={clubLogo.url}
-                  style={styles.logoImage}
-                />
+                <Image src={PLATFORM_LOGO} style={styles.logoImage} />
+                <Text style={styles.clubLabel}>EpochZero Learn</Text>
+                <Text style={styles.clubTagline}>Multi-Domain Tech Learning Hub</Text>
+              </View>
+              <View style={styles.logoDivider} />
+              <View style={styles.clubLogoCol}>
+                <Image src={clubLogo.url} style={styles.logoImage} />
                 <Text style={styles.clubLabel}>{clubLogo.label}</Text>
                 <Text style={styles.clubTagline}>{clubLogo.tagline}</Text>
               </View>
             </View>
           ) : (
-            // No domain club — show EpochZero logo + platform branding only
+            // Single logo: EpochZero only
             <View style={styles.logoRow}>
-              <Image
-                src={PLATFORM_LOGO}
-                style={styles.logoImage}
-              />
+              <View style={styles.clubLogoCol}>
+                <Image src={PLATFORM_LOGO} style={styles.logoImage} />
+                <Text style={styles.clubLabel}>EpochZero Learn</Text>
+                <Text style={styles.clubTagline}>Multi-Domain Tech Learning Hub</Text>
+              </View>
             </View>
           )}
 
-          {/* Platform branding text */}
-          <Text style={styles.brandLine}>EpochZero Learn</Text>
-          <Text style={styles.brandSub}>Multi-Domain Tech Learning Hub</Text>
+          {/* Spacing after logo row */}
 
           {/* Certificate title */}
           <Text style={styles.certTitle}>Certificate</Text>
