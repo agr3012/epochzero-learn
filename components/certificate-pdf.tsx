@@ -100,22 +100,24 @@ const styles = StyleSheet.create({
   clubLogoCol: {
     flexDirection: 'column',
     alignItems: 'center',
-    width: 110,
+    width: 160,
     gap: 4,
   },
   clubLabel: {
     fontFamily: 'Courier',
     fontSize: 7,
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     color: GOLD,
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
   clubTagline: {
     fontFamily: 'Courier',
-    fontSize: 6,
+    fontSize: 5.5,
     letterSpacing: 1,
     color: BONE_DIM,
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
 
   // ── Platform branding (shown when no domain club logo) ────────────────
