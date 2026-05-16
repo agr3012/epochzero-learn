@@ -3,14 +3,31 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
 } from '@react-pdf/renderer';
 
-const NAVY = '#0A1628';
-const GOLD = '#FFC857';
-const BONE = '#F5F1E6';
-const BONE_DIM = '#A8A498';
+const NAVY        = '#0A1628';
+const GOLD        = '#FFC857';
+const BONE        = '#F5F1E6';
+const BONE_DIM    = '#A8A498';
 const NAVY_BORDER = '#1A2D4D';
+
+// ── Logo URLs ──────────────────────────────────────────────────────────────
+const PLATFORM_LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
+
+const DOMAIN_LOGOS: Record<string, { url: string; label: string; tagline: string }> = {
+  rema: {
+    url:     'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/REMA_Club_Logo.png',
+    label:   'REMA Club',
+    tagline: 'Reverse. Reveal. Respond.',
+  },
+  webdev: {
+    url:     'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/FSD_Club_Logo.png',
+    label:   'Full Stack Development Club',
+    tagline: 'Build. Deploy. Scale.',
+  },
+};
 
 const styles = StyleSheet.create({
   page: {
@@ -55,12 +72,52 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    paddingTop: 48,
+    paddingTop: 36,
     paddingHorizontal: 72,
     paddingBottom: 48,
     alignItems: 'center',
   },
 
+  // ── Logo row ──────────────────────────────────────────────────────────
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    gap: 16,
+  },
+  logoImage: {
+    width: 56,
+    height: 56,
+  },
+  logoDivider: {
+    width: 1,
+    height: 48,
+    backgroundColor: GOLD,
+    opacity: 0.4,
+    marginHorizontal: 12,
+  },
+  clubLogoCol: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
+  },
+  clubLabel: {
+    fontFamily: 'Courier',
+    fontSize: 7,
+    letterSpacing: 2,
+    color: GOLD,
+    textTransform: 'uppercase',
+  },
+  clubTagline: {
+    fontFamily: 'Courier',
+    fontSize: 6,
+    letterSpacing: 1,
+    color: BONE_DIM,
+    textTransform: 'uppercase',
+  },
+
+  // ── Platform branding (shown when no domain club logo) ────────────────
   brandLine: {
     fontFamily: 'Courier',
     fontSize: 9,
@@ -75,7 +132,7 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     color: BONE_DIM,
     textTransform: 'uppercase',
-    marginBottom: 32,
+    marginBottom: 24,
   },
 
   certTitle: {
@@ -93,7 +150,7 @@ const styles = StyleSheet.create({
     color: GOLD,
     letterSpacing: 3,
     textTransform: 'uppercase',
-    marginBottom: 32,
+    marginBottom: 28,
   },
 
   presentedTo: {
@@ -147,7 +204,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: BONE_DIM,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: 12,
     paddingHorizontal: 80,
   },
 
@@ -160,7 +217,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-end',
   },
-  footerCol: { flexDirection: 'column' },
+  footerCol:   { flexDirection: 'column' },
   footerLabel: {
     fontFamily: 'Courier',
     fontSize: 7,
@@ -219,14 +276,15 @@ const styles = StyleSheet.create({
 });
 
 export interface CertificateData {
-  studentName: string;
-  testTitle: string;
-  score: number;
-  certUid: string;
-  issuedDate: string;
-  verifyUrl: string;
-  logoDataUri?: string;        // kept in interface for future use, not rendered
+  studentName:     string;
+  testTitle:       string;
+  score:           number;
+  certUid:         string;
+  issuedDate:      string;
+  verifyUrl:       string;
+  domain?:         string;   // 'rema' | 'webdev' | 'cloud' | 'crypto' | null
   instructorName?: string;
+  logoDataUri?:    string;   // kept for backward compatibility, not used
 }
 
 export function CertificateDocument({
@@ -236,8 +294,12 @@ export function CertificateDocument({
   certUid,
   issuedDate,
   verifyUrl,
+  domain,
   instructorName = 'Ashish Revar',
 }: CertificateData) {
+  // Resolve domain club logo if available
+  const clubLogo = domain ? DOMAIN_LOGOS[domain] ?? null : null;
+
   return (
     <Document
       title={`EpochZero Learn Certificate - ${certUid}`}
@@ -254,10 +316,45 @@ export function CertificateDocument({
         <View style={styles.cornerBR} />
 
         <View style={styles.content}>
-          {/* Branding — no logo until added later */}
+
+          {/* ── Logo row ────────────────────────────────────────────── */}
+          {clubLogo ? (
+            // Domain has a club logo — show EpochZero + divider + Club logo
+            <View style={styles.logoRow}>
+              {/* EpochZero platform logo */}
+              <Image
+                src={PLATFORM_LOGO}
+                style={styles.logoImage}
+              />
+
+              {/* Divider */}
+              <View style={styles.logoDivider} />
+
+              {/* Club logo + label */}
+              <View style={styles.clubLogoCol}>
+                <Image
+                  src={clubLogo.url}
+                  style={styles.logoImage}
+                />
+                <Text style={styles.clubLabel}>{clubLogo.label}</Text>
+                <Text style={styles.clubTagline}>{clubLogo.tagline}</Text>
+              </View>
+            </View>
+          ) : (
+            // No domain club — show EpochZero logo + platform branding only
+            <View style={styles.logoRow}>
+              <Image
+                src={PLATFORM_LOGO}
+                style={styles.logoImage}
+              />
+            </View>
+          )}
+
+          {/* Platform branding text */}
           <Text style={styles.brandLine}>EpochZero Learn</Text>
           <Text style={styles.brandSub}>Multi-Domain Tech Learning Hub</Text>
 
+          {/* Certificate title */}
           <Text style={styles.certTitle}>Certificate</Text>
           <Text style={styles.certSubtitle}>of Completion</Text>
 
