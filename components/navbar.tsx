@@ -130,7 +130,7 @@ export function Navbar() {
                 label: d.label,
                 href: buildDomainHref(link.href, d.slug),
                 active: active && currentDomain === d.slug,
-                comingSoon: false,
+                comingSoon: d.comingSoon ?? false,
               }));
             })();
 
