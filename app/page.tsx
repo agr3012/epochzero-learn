@@ -34,6 +34,8 @@ async function getHomeData() {
     articleCountRes,
     podcastCountRes,
     topicCountRes,
+    clubsRes,
+    eventsRes,
   ] = await Promise.all([
     supabase
       .from('articles')
@@ -87,6 +89,19 @@ async function getHomeData() {
       .from('topics')
       .select('*', { count: 'exact', head: true })
       .not('slug', 'ilike', '%knowledge-check%'),
+    // Clubs for homepage
+    supabase
+      .from('clubs')
+      .select('id, slug, name, short_name, tagline, logo_url, is_active')
+      .eq('is_active', true)
+      .order('order_index'),
+    // Recent events for homepage
+    supabase
+      .from('club_events')
+      .select('id, slug, title, subtitle, event_type, status, event_date, registrations_count, participants_count, clubs(short_name, slug)')
+      .eq('is_published', true)
+      .order('event_date', { ascending: false })
+      .limit(4),
   ]);
 
   const courses = coursesRes.data ?? [];
@@ -120,6 +135,8 @@ async function getHomeData() {
     videos:    videosRes.data ?? [],
     tests:     testsRes.data ?? [],
     courses:   coursesWithCount,
+    clubs:     clubsRes.data ?? [],
+    events:    eventsRes.data ?? [],
     stats: {
       domains:          courses.length,
       video_lessons:    videoCountRes.count    ?? 0,
@@ -133,7 +150,7 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { articles, videos, tests, courses, stats } = await getHomeData();
+  const { articles, videos, tests, courses, clubs, events, stats } = await getHomeData();
 
   const statBlocks = [
     { label: 'Domains',       value: `${stats.domains}+`         },
@@ -331,8 +348,8 @@ export default async function HomePage() {
             },
             {
               icon: Calendar,
-              title: 'CTF Events',
-              desc: 'Capture-the-Flag competitions for our students. Register, compete, and win verifiable certificates.',
+              title: 'Events & Activities',
+              desc: 'CTF competitions, expert talks, industrial visits, hackathons, and extension outreach organised by SITAICS clubs.',
               href: '/events',
             },
             {
@@ -436,6 +453,109 @@ export default async function HomePage() {
                 </h3>
               </Link>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── TECH CLUBS ──────────────────────────────────────────────── */}
+      {clubs.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Student clubs
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                Tech Clubs at SITAICS
+              </h2>
+            </div>
+            <Link href="/clubs"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all">
+              All clubs <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {clubs.map((club: any) => (
+              <Link key={club.id} href={`/clubs/${club.slug}`}
+                className="card-forensic p-6 group flex items-start gap-5 hover:border-gold-500/50 transition-colors">
+                {club.logo_url && (
+                  <Image
+                    src={club.logo_url}
+                    alt={club.name}
+                    width={64}
+                    height={64}
+                    className="shrink-0 group-hover:scale-105 transition-transform"
+                  />
+                )}
+                <div className="min-w-0">
+                  <h3 className="font-mono text-base font-bold text-bone-50 mb-1 group-hover:text-gold-500 transition-colors leading-tight">
+                    {club.short_name ?? club.name}
+                  </h3>
+                  <p className="font-mono text-xs text-gold-500/80 mb-2">{club.tagline}</p>
+                  <span className="font-mono text-xs uppercase tracking-wider text-bone-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View club <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── RECENT EVENTS ───────────────────────────────────────────── */}
+      {events.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Activities
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                Recent events
+              </h2>
+            </div>
+            <Link href="/events"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all">
+              All events <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {events.map((ev: any) => (
+              <Link key={ev.id} href="/events"
+                className="border border-navy-700 hover:border-gold-500/40 p-5 group transition-colors flex flex-col gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-navy-600 text-bone-400">
+                    {ev.event_type}
+                  </span>
+                  {ev.clubs && (
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-gold-500">
+                      {ev.clubs.short_name}
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-mono text-sm font-bold text-bone-50 group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
+                  {ev.title}
+                </h3>
+                {ev.event_date && (
+                  <div className="font-mono text-xs text-bone-400 mt-auto">
+                    {new Date(ev.event_date).toLocaleDateString('en-IN', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </div>
+                )}
+                {(ev.participants_count) && (
+                  <div className="font-mono text-xs text-bone-400">
+                    <span className="text-bone-50 font-bold">{ev.participants_count}+</span> participants
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <Link href="/events"
+              className="font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors inline-flex items-center gap-2">
+              View all 7 events <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
         </section>
       )}
