@@ -35,11 +35,11 @@ const CLUBS: { slug: string; label: string; href: string; comingSoon?: boolean }
 
 // ── Events ─────────────────────────────────────────────────────────────────
 const EVENTS = [
-  { label: 'All Events',        href: '/events',              comingSoon: false },
-  { label: 'CTF Competitions',  href: '/events?type=ctf',     comingSoon: false },
-  { label: 'Hackathons',        href: '/events?type=hackathon', comingSoon: true },
-  { label: 'Workshops',         href: '/events?type=workshop', comingSoon: true  },
-  { label: 'Industrial Visits', href: '/events?type=industry', comingSoon: true  },
+  { label: 'All Events',         href: '/events',                  comingSoon: false },
+  { label: 'CTF Competitions',   href: '/events?type=ctf',         comingSoon: false },
+  { label: 'Workshops & Talks',  href: '/events?type=workshop',    comingSoon: false },
+  { label: 'Industrial Visits',  href: '/events?type=industry',    comingSoon: false },
+  { label: 'Hackathons',         href: '/events?type=hackathon',   comingSoon: true  },
 ];
 
 // ── Nav structure ─────────────────────────────────────────────────────────
