@@ -52,9 +52,9 @@ export default async function EventsPage({
   const TYPE_FILTERS = [
     { value: null,       label: 'All Events'        },
     { value: 'ctf',      label: 'CTF Competitions'  },
-    { value: 'hackathon',label: 'Hackathons'         },
-    { value: 'workshop', label: 'Workshops'          },
+    { value: 'workshop', label: 'Workshops & Talks'  },
     { value: 'industry', label: 'Industrial Visits'  },
+    { value: 'hackathon',label: 'Hackathons'         },
   ];
 
   return (
@@ -203,20 +203,20 @@ function EventCard({ ev, highlight, index }: { ev: any; highlight?: boolean; ind
         {/* Meta sidebar */}
         <div className="flex flex-col gap-3 font-mono text-xs text-bone-400 lg:text-right">
           {ev.event_date && (
-            <span className="inline-flex items-start gap-1.5 lg:justify-end">
-              <Calendar className="w-3 h-3 text-gold-500 mt-0.5 shrink-0" />
+            <span className="inline-flex items-center gap-1.5 lg:justify-end">
+              <Calendar className="w-3 h-3 text-gold-500 shrink-0" />
               <span>{fmtDate(ev.event_date)}</span>
             </span>
           )}
           {ev.venue && (
             <span className="inline-flex items-start gap-1.5 lg:justify-end">
               <MapPin className="w-3 h-3 text-gold-500 mt-0.5 shrink-0" />
-              <span>{ev.venue}</span>
+              <span className="text-left lg:text-right">{ev.venue}</span>
             </span>
           )}
           {(ev.registrations_count || ev.participants_count) && (
-            <span className="inline-flex items-center gap-1.5 lg:justify-end">
-              <Users className="w-3 h-3 text-gold-500 shrink-0" />
+            <span className="inline-flex items-start gap-1.5 lg:justify-end">
+              <Users className="w-3 h-3 text-gold-500 shrink-0 mt-0.5" />
               <span>
                 {ev.registrations_count
                   ? `${ev.registrations_count} registered`
