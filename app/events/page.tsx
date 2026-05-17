@@ -201,21 +201,21 @@ function EventCard({ ev, highlight, index }: { ev: any; highlight?: boolean; ind
         </div>
 
         {/* Meta sidebar */}
-        <div className="flex flex-col gap-3 font-mono text-xs text-bone-400 lg:text-right">
+        <div className="flex flex-col gap-3 font-mono text-xs text-bone-400 lg:items-end">
           {ev.event_date && (
-            <span className="inline-flex items-center gap-1.5 lg:justify-end">
+            <span className="inline-flex items-center gap-1.5">
               <Calendar className="w-3 h-3 text-gold-500 shrink-0" />
               <span>{fmtDate(ev.event_date)}</span>
             </span>
           )}
           {ev.venue && (
-            <span className="inline-flex items-start gap-1.5 lg:justify-end">
+            <span className="inline-flex items-start gap-1.5 max-w-[200px] lg:text-right">
               <MapPin className="w-3 h-3 text-gold-500 mt-0.5 shrink-0" />
-              <span className="text-left lg:text-right">{ev.venue}</span>
+              <span>{ev.venue}</span>
             </span>
           )}
           {(ev.registrations_count || ev.participants_count) && (
-            <span className="inline-flex items-start gap-1.5 lg:justify-end">
+            <span className="inline-flex items-start gap-1.5">
               <Users className="w-3 h-3 text-gold-500 shrink-0 mt-0.5" />
               <span>
                 {ev.registrations_count
@@ -229,7 +229,7 @@ function EventCard({ ev, highlight, index }: { ev: any; highlight?: boolean; ind
             </span>
           )}
           {index !== undefined && (
-            <div className="font-mono text-4xl font-bold text-navy-700 lg:text-right mt-auto">
+            <div className="font-mono text-4xl font-bold text-navy-700 mt-auto">
               #{String(index).padStart(2, '0')}
             </div>
           )}
