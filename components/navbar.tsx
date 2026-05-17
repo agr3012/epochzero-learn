@@ -40,6 +40,7 @@ const EVENTS = [
   { label: 'CTF Competitions',   href: '/events?type=ctf',         comingSoon: false },
   { label: 'Workshops & Talks',  href: '/events?type=workshop',    comingSoon: false },
   { label: 'Industrial Visits',  href: '/events?type=industry',    comingSoon: false },
+  { label: 'Extension Activity', href: '/events?type=extension',   comingSoon: false },
   { label: 'Hackathons',         href: '/events?type=hackathon',   comingSoon: true  },
 ];
 
