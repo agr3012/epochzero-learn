@@ -11,10 +11,11 @@ export const metadata = {
 };
 
 const EVENT_TYPE_META: Record<string, { label: string; icon: any; color: string }> = {
-  ctf:      { label: 'CTF Competition', icon: Trophy,    color: 'text-gold-500 border-gold-500/60 bg-gold-500/5'    },
-  hackathon:{ label: 'Hackathon',       icon: Cpu,       color: 'text-blue-400 border-blue-400/60 bg-blue-400/5'    },
-  workshop: { label: 'Workshop',        icon: Globe,     color: 'text-green-400 border-green-400/60 bg-green-400/5' },
-  industry: { label: 'Industrial Visit',icon: Building2, color: 'text-purple-400 border-purple-400/60 bg-purple-400/5'},
+  ctf:       { label: 'CTF Competition',    icon: Trophy,    color: 'text-gold-500 border-gold-500/60 bg-gold-500/5'     },
+  hackathon: { label: 'Hackathon',          icon: Cpu,       color: 'text-blue-400 border-blue-400/60 bg-blue-400/5'     },
+  workshop:  { label: 'Workshop',           icon: Globe,     color: 'text-green-400 border-green-400/60 bg-green-400/5'  },
+  industry:  { label: 'Industrial Visit',   icon: Building2, color: 'text-purple-400 border-purple-400/60 bg-purple-400/5'},
+  extension: { label: 'Extension Activity', icon: Globe,     color: 'text-orange-400 border-orange-400/60 bg-orange-400/5'},
 };
 
 function getTypeMeta(type: string) {
@@ -50,11 +51,12 @@ export default async function EventsPage({
   const past     = allEvents.filter(e => e.status !== 'upcoming');
 
   const TYPE_FILTERS = [
-    { value: null,       label: 'All Events'        },
-    { value: 'ctf',      label: 'CTF Competitions'  },
-    { value: 'workshop', label: 'Workshops & Talks'  },
-    { value: 'industry', label: 'Industrial Visits'  },
-    { value: 'hackathon',label: 'Hackathons'         },
+    { value: null,        label: 'All Events'         },
+    { value: 'ctf',       label: 'CTF Competitions'   },
+    { value: 'workshop',  label: 'Workshops & Talks'  },
+    { value: 'industry',  label: 'Industrial Visits'  },
+    { value: 'extension', label: 'Extension Activity' },
+    { value: 'hackathon', label: 'Hackathons'         },
   ];
 
   return (
@@ -200,36 +202,35 @@ function EventCard({ ev, highlight, index }: { ev: any; highlight?: boolean; ind
           )}
         </div>
 
-        {/* Meta sidebar */}
-        <div className="flex flex-col gap-3 font-mono text-xs text-bone-400 lg:items-end">
+        {/* Meta sidebar — clean bordered box */}
+        <div className="border border-navy-700 bg-navy-950/60 p-4 flex flex-col gap-3 font-mono text-xs text-bone-300 min-w-[190px] self-start">
           {ev.event_date && (
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="w-3 h-3 text-gold-500 shrink-0" />
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-gold-500 shrink-0" />
               <span>{fmtDate(ev.event_date)}</span>
-            </span>
+            </div>
           )}
           {ev.venue && (
-            <span className="inline-flex items-start gap-1.5 max-w-[200px] lg:text-right">
-              <MapPin className="w-3 h-3 text-gold-500 mt-0.5 shrink-0" />
-              <span>{ev.venue}</span>
-            </span>
+            <div className="flex items-start gap-2">
+              <MapPin className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
+              <span className="leading-snug">{ev.venue}</span>
+            </div>
           )}
           {(ev.registrations_count || ev.participants_count) && (
-            <span className="inline-flex items-start gap-1.5">
-              <Users className="w-3 h-3 text-gold-500 shrink-0 mt-0.5" />
-              <span>
-                {ev.registrations_count
-                  ? `${ev.registrations_count} registered`
-                  : ''}
-                {ev.registrations_count && ev.participants_count ? ' · ' : ''}
-                {ev.participants_count
-                  ? `${ev.participants_count}+ attended`
-                  : ''}
-              </span>
-            </span>
+            <div className="flex items-start gap-2">
+              <Users className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-0.5">
+                {ev.registrations_count && (
+                  <span><span className="text-bone-50 font-bold">{ev.registrations_count}</span> registered</span>
+                )}
+                {ev.participants_count && (
+                  <span><span className="text-bone-50 font-bold">{ev.participants_count}+</span> attended</span>
+                )}
+              </div>
+            </div>
           )}
           {index !== undefined && (
-            <div className="font-mono text-4xl font-bold text-navy-700 mt-auto">
+            <div className="font-mono text-3xl font-bold text-navy-700 mt-2 pt-2 border-t border-navy-700">
               #{String(index).padStart(2, '0')}
             </div>
           )}
