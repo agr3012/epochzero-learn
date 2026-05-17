@@ -31,6 +31,7 @@ const PODCAST_TAGS = [
 const CLUBS: { slug: string; label: string; href: string; comingSoon?: boolean }[] = [
   { slug: 'rema',      label: 'REMA Club',               href: '/clubs/rema'      },
   { slug: 'fullstack', label: 'Full Stack Dev Club',      href: '/clubs/fullstack' },
+  { slug: 'extension', label: 'Extension Activity',       href: '/clubs/extension' },
 ];
 
 // ── Events ─────────────────────────────────────────────────────────────────
