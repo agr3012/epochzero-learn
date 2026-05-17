@@ -256,9 +256,9 @@ export default async function FSDClubPage() {
                       </span>
                     )}
                     {ev.venue && (
-                      <span className="inline-flex items-center gap-1.5 lg:justify-end">
-                        <MapPin className="w-3 h-3 text-gold-500" />
-                        {ev.venue}
+                      <span className="inline-flex items-start gap-1.5 lg:justify-end">
+                        <MapPin className="w-3 h-3 text-gold-500 mt-0.5 shrink-0" />
+                        <span>{ev.venue}</span>
                       </span>
                     )}
                     {ev.report_url && (
