@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentAccount } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { Award, BookOpen, Shield, LogOut, ChevronRight, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Award, BookOpen, Shield, ChevronRight, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { ProfileNameForm } from './ProfileNameForm';
+import { SignOutButton } from './SignOutButton';
 
 export default async function DashboardPage() {
   const account = await getCurrentAccount();
@@ -63,13 +64,7 @@ export default async function DashboardPage() {
           </h1>
           <p className="font-mono text-sm text-bone-400 mt-1">{account.email}</p>
         </div>
-        <form action="/api/auth/logout" method="POST">
-          <button type="submit"
-            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-bone-400 hover:text-gold-500 border border-navy-700 hover:border-gold-500/40 px-4 py-2 transition-colors">
-            <LogOut className="w-3 h-3" />
-            Sign out
-          </button>
-        </form>
+        <SignOutButton />
       </div>
 
       {/* ── Profile name ────────────────────────────────────────────── */}
