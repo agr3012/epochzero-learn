@@ -346,33 +346,42 @@ export default async function REMAClubPage() {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-3 font-mono text-xs text-bone-400 lg:text-right">
+                <div className="border border-navy-700 bg-navy-950/60 p-4 flex flex-col gap-3 font-mono text-xs text-bone-300 min-w-[180px] self-start">
                   {ev.event_date && (
-                    <span className="inline-flex items-center gap-1.5 lg:justify-end">
-                      <Calendar className="w-3 h-3 text-gold-500" />
-                      {new Date(ev.event_date).toLocaleDateString('en-IN', {
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5 text-gold-500 shrink-0" />
+                      <span>{new Date(ev.event_date).toLocaleDateString('en-IN', {
                         day: 'numeric', month: 'long', year: 'numeric',
-                      })}
-                    </span>
+                      })}</span>
+                    </div>
                   )}
                   {ev.venue && (
-                    <span className="inline-flex items-start gap-1.5 lg:justify-end">
-                      <MapPin className="w-3 h-3 text-gold-500 mt-0.5 shrink-0" />
-                      <span>{ev.venue}</span>
-                    </span>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
+                      <span className="leading-snug">{ev.venue}</span>
+                    </div>
+                  )}
+                  {(ev.registrations_count || ev.participants_count) && (
+                    <div className="flex items-start gap-2">
+                      <Users className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
+                      <div className="flex flex-col gap-0.5">
+                        {ev.registrations_count && (
+                          <span><span className="text-bone-50 font-bold">{ev.registrations_count}</span> registered</span>
+                        )}
+                        {ev.participants_count && (
+                          <span><span className="text-bone-50 font-bold">{ev.participants_count}+</span> attended</span>
+                        )}
+                      </div>
+                    </div>
                   )}
                   {ev.report_url && (
-                    <a
-                      href={ev.report_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 lg:justify-end text-gold-500 hover:text-gold-400 transition-colors"
-                    >
-                      <ExternalLink className="w-3 h-3" />
+                    <a href={ev.report_url} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-gold-500 hover:text-gold-400 transition-colors mt-1">
+                      <ExternalLink className="w-3 h-3 shrink-0" />
                       View report
                     </a>
                   )}
-                  <div className="font-mono text-4xl font-bold text-navy-700 lg:text-right mt-auto">
+                  <div className="font-mono text-3xl font-bold text-navy-700 mt-2 pt-2 border-t border-navy-700">
                     #{String(events.length - i).padStart(2, '0')}
                   </div>
                 </div>
