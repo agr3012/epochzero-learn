@@ -95,11 +95,12 @@ async function getHomeData() {
       .select('id, slug, name, short_name, tagline, logo_url, is_active')
       .eq('is_active', true)
       .order('order_index'),
-    // Recent events for homepage
+    // Recent events for homepage — exclude FSD duplicate of digital hygiene (shown under Extension)
     supabase
       .from('club_events')
       .select('id, slug, title, subtitle, event_type, status, event_date, registrations_count, participants_count, clubs(short_name, slug)')
       .eq('is_published', true)
+      .neq('slug', 'digital-hygiene-drive-2025')
       .order('event_date', { ascending: false })
       .limit(4),
   ]);
@@ -176,6 +177,22 @@ export default async function HomePage() {
 
             {/* Left col */}
             <div className="lg:col-span-7">
+              {/* EpochZero logo — prominent hero placement */}
+              <div className="flex items-center gap-4 mb-8">
+                <Image
+                  src="https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png"
+                  alt="EpochZero Learn"
+                  width={80}
+                  height={80}
+                  className="shrink-0 drop-shadow-2xl"
+                  priority
+                />
+                <div>
+                  <div className="font-mono text-xl font-bold text-bone-50 tracking-tight">EpochZero Learn</div>
+                  <div className="font-mono text-xs tracking-[0.25em] text-gold-500 uppercase mt-0.5">Multi-Domain Tech Learning Hub</div>
+                </div>
+              </div>
+
               <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-gold-500/30 bg-gold-500/5 mb-8 animate-fade-up">
                 <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse" />
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500">
