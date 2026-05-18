@@ -82,7 +82,7 @@ export function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <Image src={EPOCHZERO_LOGO} alt="EpochZero Learn" width={36} height={36} className="shrink-0" />
+          <Image src={EPOCHZERO_LOGO} alt="EpochZero Learn" width={44} height={44} className="shrink-0" />
           <div className="flex flex-col leading-none">
             <span className="font-mono text-sm font-bold tracking-tight text-bone-50">
               EpochZero Learn
