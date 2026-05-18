@@ -11,13 +11,11 @@ const jetbrainsMono = JetBrains_Mono({
   variable: '--font-mono',
   display: 'swap',
 });
-
 const fraunces = Fraunces({
   subsets: ['latin'],
   variable: '--font-serif',
   display: 'swap',
 });
-
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
@@ -49,7 +47,17 @@ export const metadata: Metadata = {
     locale: 'en_IN',
   },
   robots: { index: true, follow: true },
-  icons: { icon: '/EpochZero-favicon1.png', apple: '/EpochZero-favicon1.png' },
+  icons: {
+    icon: [
+      { url: '/favicon.ico',        sizes: 'any'     },
+      { url: '/favicon.svg',        type: 'image/svg+xml' },
+      { url: '/favicon-96x96.png',  type: 'image/png', sizes: '96x96' },
+    ],
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'manifest', url: '/site.webmanifest' },
+    ],
+  },
 };
 
 export default function RootLayout({
