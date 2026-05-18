@@ -480,10 +480,10 @@ export default async function HomePage() {
           <div className="flex items-end justify-between mb-10">
             <div>
               <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-                // Student clubs
+                // Student clubs & outreach
               </div>
               <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
-                Tech Clubs at SITAICS
+                Clubs & Activities at SITAICS
               </h2>
             </div>
             <Link href="/clubs"
