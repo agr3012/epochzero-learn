@@ -34,7 +34,15 @@ const CLUBS: { slug: string; label: string; href: string; comingSoon?: boolean }
   { slug: 'extension', label: 'Extension Activity', href: '/clubs/extension' },
 ];
 
-// ── Events ─────────────────────────────────────────────────────────────────
+// ── Resources ──────────────────────────────────────────────────────────────
+const RESOURCES = [
+  { label: 'All Resources',  href: '/resources',               comingSoon: false },
+  { label: 'eBooks',         href: '/resources?type=ebook',    comingSoon: false },
+  { label: 'Question Banks', href: '/resources?type=question-bank', comingSoon: false },
+  { label: 'MCQ Banks',      href: '/resources?type=mcq-bank', comingSoon: false },
+  { label: 'Cheatsheets',    href: '/resources?type=cheatsheet', comingSoon: false },
+  { label: 'Research Papers',href: '/resources?type=research-paper', comingSoon: false },
+];
 const EVENTS = [
   { label: 'All Events',         href: '/events',                  comingSoon: false },
   { label: 'CTF Competitions',   href: '/events?type=ctf',         comingSoon: false },
@@ -50,16 +58,17 @@ const NAV_LINKS: Array<{
   href: string;
   label: string;
   hasDropdown?: boolean;
-  dropdownType?: 'domain' | 'podcast' | 'clubs' | 'events';
+  dropdownType?: 'domain' | 'podcast' | 'clubs' | 'events' | 'resources';
 }> = [
-  { href: '/learn',     label: 'Learn',      hasDropdown: true, dropdownType: 'domain'  },
-  { href: '/articles',  label: 'Articles',   hasDropdown: true, dropdownType: 'domain'  },
-  { href: '/videos',    label: 'Videos',     hasDropdown: true, dropdownType: 'domain'  },
-  { href: '/tests',     label: 'Tests',      hasDropdown: true, dropdownType: 'domain'  },
-  { href: '/clubs',     label: 'Clubs',      hasDropdown: true, dropdownType: 'clubs'   },
-  { href: '/events',    label: 'Events',     hasDropdown: true, dropdownType: 'events'  },
-  { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast' },
-  { href: '/about',     label: 'About'                                                   },
+  { href: '/learn',     label: 'Learn',      hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/articles',  label: 'Articles',   hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/videos',    label: 'Videos',     hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/tests',     label: 'Tests',      hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/resources', label: 'Resources',  hasDropdown: true, dropdownType: 'resources'  },
+  { href: '/clubs',     label: 'Clubs',      hasDropdown: true, dropdownType: 'clubs'      },
+  { href: '/events',    label: 'Events',     hasDropdown: true, dropdownType: 'events'     },
+  { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast'    },
+  { href: '/about',     label: 'About'                                                      },
 ];
 
 export function Navbar() {
@@ -116,6 +125,13 @@ export function Navbar() {
 
             // Build dropdown items
             const dropdownItems = (() => {
+              if (link.dropdownType === 'resources') {
+                return RESOURCES.map((r) => ({
+                  label: r.label, href: r.href,
+                  active: pathname === '/resources' && r.href === '/resources',
+                  comingSoon: r.comingSoon,
+                }));
+              }
               if (link.dropdownType === 'clubs') {
                 return CLUBS.map(c => ({
                   label: c.label, href: c.href,
@@ -220,6 +236,8 @@ export function Navbar() {
                 (link.href !== '/' && pathname.startsWith(link.href));
 
               const mobileItems = (() => {
+                if (link.dropdownType === 'resources')
+                  return RESOURCES.map(r => ({ label: r.label, href: r.href, comingSoon: r.comingSoon }));
                 if (link.dropdownType === 'clubs')
                   return CLUBS.map(c => ({ label: c.label, href: c.href, comingSoon: c.comingSoon ?? false }));
                 if (link.dropdownType === 'events')
