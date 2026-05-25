@@ -10,62 +10,98 @@ import { cn } from '@/lib/utils';
 const EPOCHZERO_LOGO =
   'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
-type NavItem = { label: string; href: string; soon?: boolean };
-type NavGroup = { label: string; href: string; items: NavItem[] };
+// ── Nav structure — aligned with UGC 4 Quadrants ─────────────────────
+// Q1 e-Tutorial  → Videos
+// Q2 e-Content   → Content (dropdown)
+// Q3 Assessment  → Tests (dropdown)
+// Q4 Discussion  → Forum (dropdown)
+// Campus         → Clubs, Events, Podcast
+// About
 
-const SEP: NavItem = { label: '---', href: '#' };
+type NavItem  = { label: string; href: string; soon?: boolean };
+type NavEntry =
+  | { type: 'link';  label: string; href: string }
+  | { type: 'group'; label: string; href: string; badge?: string; items: (NavItem | 'sep')[] };
 
-const NAV_GROUPS: NavGroup[] = [
+const SOON: NavItem = { label: '', href: '#', soon: true };
+
+const NAV: NavEntry[] = [
+  // Q2 — e-Content
   {
-    label: 'Learn',
-    href:  '/learn',
+    type: 'group',
+    label: 'Content',
+    href: '/learn',
+    badge: 'Q2',
     items: [
-      { label: 'Learning Path',    href: '/learn'     },
-      { label: 'Articles',         href: '/articles'  },
-      { label: 'Videos',           href: '/videos'    },
-      SEP,
-      { label: 'All Resources',    href: '/resources'                        },
-      { label: 'eBooks',           href: '/resources?type=ebook'             },
-      { label: 'Question Banks',   href: '/resources?type=question-bank'     },
-      { label: 'MCQ Banks',        href: '/resources?type=mcq-bank'          },
-      { label: 'Cheatsheets',      href: '/resources?type=cheatsheet'        },
-      { label: 'Research Papers',  href: '/resources?type=research-paper'    },
+      { label: 'Learning Path',   href: '/learn'                            },
+      { label: 'Articles',        href: '/articles'                         },
+      { label: 'Videos',          href: '/videos'                           },
+      'sep',
+      { label: 'All Resources',   href: '/resources'                        },
+      { label: 'eBooks',          href: '/resources?type=ebook'             },
+      { label: 'Question Banks',  href: '/resources?type=question-bank'     },
+      { label: 'MCQ Banks',       href: '/resources?type=mcq-bank'          },
+      { label: 'Cheatsheets',     href: '/resources?type=cheatsheet'        },
+      { label: 'Research Papers', href: '/resources?type=research-paper'    },
     ],
   },
+
+  // Q3 — Self-Assessment
   {
-    label: 'Practice',
-    href:  '/tests',
+    type: 'group',
+    label: 'Tests',
+    href: '/tests',
+    badge: 'Q3',
     items: [
-      { label: 'MCQ Tests',        href: '/tests'         },
-      SEP,
-      { label: 'Forum',            href: '/forum'         },
-      { label: 'REMA Forum',       href: '/forum/rema'    },
-      { label: 'Cloud Forum',      href: '/forum/cloud'   },
-      { label: 'Crypto Forum',     href: '/forum/crypto'  },
-      { label: 'Web Dev Forum',    href: '/forum/webdev'  },
+      { label: 'All Tests',         href: '/tests'               },
+      'sep',
+      { label: 'REMA',              href: '/tests?domain=rema'   },
+      { label: 'Cloud Security',    href: '/tests?domain=cloud'  },
+      { label: 'Cryptography',      href: '/tests?domain=crypto',  soon: true },
+      { label: 'Web Development',   href: '/tests?domain=webdev',  soon: true },
     ],
   },
+
+  // Q4 — Discussion Forum
   {
-    label: 'Community',
-    href:  '/clubs',
+    type: 'group',
+    label: 'Forum',
+    href: '/forum',
+    badge: 'Q4',
     items: [
-      { label: 'REMA Club',            href: '/clubs/rema'      },
-      { label: 'Full Stack Dev Club',  href: '/clubs/fullstack' },
-      { label: 'Extension Activity',   href: '/clubs/extension' },
-      SEP,
-      { label: 'All Events',           href: '/events'                    },
-      { label: 'CTF Competitions',     href: '/events?type=ctf'           },
-      { label: 'Workshops & Talks',    href: '/events?type=workshop'      },
-      { label: 'Industrial Visits',    href: '/events?type=industry'      },
-      { label: 'Extension Activity',   href: '/events?type=extension'     },
-      { label: 'Hackathons',           href: '/events?type=hackathon', soon: true },
-      SEP,
-      { label: 'Podcast',              href: '/podcast' },
+      { label: 'All Domains',     href: '/forum'         },
+      'sep',
+      { label: 'REMA',            href: '/forum/rema'    },
+      { label: 'Cloud Security',  href: '/forum/cloud'   },
+      { label: 'Cryptography',    href: '/forum/crypto'  },
+      { label: 'Web Dev',         href: '/forum/webdev'  },
     ],
   },
+
+  // Campus
+  {
+    type: 'group',
+    label: 'Campus',
+    href: '/clubs',
+    items: [
+      { label: 'REMA Club',           href: '/clubs/rema'      },
+      { label: 'Full Stack Dev Club', href: '/clubs/fullstack' },
+      { label: 'Extension Activity',  href: '/clubs/extension' },
+      'sep',
+      { label: 'All Events',          href: '/events'                   },
+      { label: 'CTF Competitions',    href: '/events?type=ctf'          },
+      { label: 'Workshops & Talks',   href: '/events?type=workshop'     },
+      { label: 'Industrial Visits',   href: '/events?type=industry'     },
+      { label: 'Extension Activity',  href: '/events?type=extension'    },
+      { label: 'Hackathons',          href: '/events?type=hackathon', soon: true },
+      'sep',
+      { label: 'Podcast',             href: '/podcast' },
+    ],
+  },
+
+  // About
+  { type: 'link', label: 'About', href: '/about' },
 ];
-
-const isSep = (i: NavItem) => i.label === '---';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -73,9 +109,16 @@ export function Navbar() {
   const [openGroup,   setOpenGroup]   = useState<string | null>(null);
   const [mobileGroup, setMobileGroup] = useState<string | null>(null);
 
-  const groupActive = (g: NavGroup) =>
-    pathname.startsWith(g.href) ||
-    g.items.some(i => !isSep(i) && i.href !== '#' && pathname.startsWith(i.href.split('?')[0]));
+  const groupActive = (entry: NavEntry) => {
+    if (entry.type === 'link') return pathname === entry.href;
+    return (
+      pathname.startsWith(entry.href) ||
+      entry.items.some(i =>
+        i !== 'sep' && i.href !== '#' &&
+        (pathname === i.href || (!i.href.includes('?') && pathname.startsWith(i.href)))
+      )
+    );
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-navy-700 bg-navy-900/90 backdrop-blur-md">
@@ -94,29 +137,45 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center">
-          {NAV_GROUPS.map(group => {
-            const active = groupActive(group);
-            const isOpen = openGroup === group.label;
+          {NAV.map(entry => {
+            const active = groupActive(entry);
 
+            if (entry.type === 'link') {
+              return (
+                <Link key={entry.href} href={entry.href}
+                  className={cn(
+                    'px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
+                    active ? 'text-gold-500 border-gold-500' : 'text-bone-200 hover:text-gold-500 border-transparent'
+                  )}>
+                  {entry.label}
+                </Link>
+              );
+            }
+
+            const isOpen = openGroup === entry.label;
             return (
-              <div key={group.label} className="relative"
-                onMouseEnter={() => setOpenGroup(group.label)}
+              <div key={entry.label} className="relative"
+                onMouseEnter={() => setOpenGroup(entry.label)}
                 onMouseLeave={() => setOpenGroup(null)}>
+
                 <button className={cn(
-                  'flex items-center gap-0.5 px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
-                  active || isOpen
-                    ? 'text-gold-500 border-gold-500'
-                    : 'text-bone-200 hover:text-gold-500 border-transparent'
+                  'flex items-center gap-1 px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
+                  active || isOpen ? 'text-gold-500 border-gold-500' : 'text-bone-200 hover:text-gold-500 border-transparent'
                 )}>
-                  {group.label}
+                  {entry.label}
+                  {entry.badge && (
+                    <span className="font-mono text-[8px] px-1 py-0.5 border border-gold-500/30 text-gold-500/70 leading-none">
+                      {entry.badge}
+                    </span>
+                  )}
                   <ChevronDown className={cn('w-3 h-3 transition-transform', isOpen && 'rotate-180')} />
                 </button>
 
                 {isOpen && (
-                  <div className="absolute top-full left-0 w-56 bg-navy-900 border border-navy-700 shadow-2xl py-2 z-50">
-                    {group.items.map((item, idx) => {
-                      if (isSep(item)) return <div key={idx} className="my-1 mx-3 border-t border-navy-700/60" />;
-                      const ia = pathname === item.href || (item.href !== '/' && !item.href.includes('?') && pathname.startsWith(item.href));
+                  <div className="absolute top-full left-0 w-52 bg-navy-900 border border-navy-700 shadow-2xl py-2 z-50">
+                    {entry.items.map((item, idx) => {
+                      if (item === 'sep') return <div key={idx} className="my-1 mx-3 border-t border-navy-700/60" />;
+                      const ia = pathname === item.href || (!item.href.includes('?') && item.href !== '/' && pathname.startsWith(item.href));
                       return (
                         <Link key={idx} href={item.soon ? '#' : item.href}
                           onClick={() => setOpenGroup(null)}
@@ -136,14 +195,6 @@ export function Navbar() {
               </div>
             );
           })}
-
-          <Link href="/about"
-            className={cn(
-              'px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
-              pathname === '/about' ? 'text-gold-500 border-gold-500' : 'text-bone-200 hover:text-gold-500 border-transparent'
-            )}>
-            About
-          </Link>
         </nav>
 
         {/* Dashboard */}
@@ -170,28 +221,46 @@ export function Navbar() {
       {mobileOpen && (
         <nav className="lg:hidden border-t border-navy-700 bg-navy-900 max-h-[80vh] overflow-y-auto">
           <div className="py-2">
-            {NAV_GROUPS.map(group => {
-              const active   = groupActive(group);
-              const expanded = mobileGroup === group.label;
+            {NAV.map(entry => {
+              const active = groupActive(entry);
 
+              if (entry.type === 'link') {
+                return (
+                  <Link key={entry.href} href={entry.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      'flex items-center px-5 py-4 font-mono text-sm uppercase tracking-wider transition-colors border-l-2',
+                      active ? 'text-gold-500 border-gold-500 bg-navy-800/60' : 'text-bone-200 border-transparent'
+                    )}>
+                    {entry.label}
+                  </Link>
+                );
+              }
+
+              const expanded = mobileGroup === entry.label;
               return (
-                <div key={group.label}>
+                <div key={entry.label}>
                   <button
-                    onClick={() => setMobileGroup(expanded ? null : group.label)}
+                    onClick={() => setMobileGroup(expanded ? null : entry.label)}
                     className={cn(
                       'w-full flex items-center justify-between px-5 py-4 font-mono text-sm uppercase tracking-wider transition-colors border-l-2',
-                      active || expanded
-                        ? 'text-gold-500 border-gold-500 bg-navy-800/60'
-                        : 'text-bone-200 border-transparent'
+                      active || expanded ? 'text-gold-500 border-gold-500 bg-navy-800/60' : 'text-bone-200 border-transparent'
                     )}>
-                    {group.label}
+                    <span className="flex items-center gap-2">
+                      {entry.label}
+                      {entry.badge && (
+                        <span className="font-mono text-[8px] px-1 py-0.5 border border-gold-500/30 text-gold-500/70">
+                          {entry.badge}
+                        </span>
+                      )}
+                    </span>
                     <ChevronDown className={cn('w-4 h-4 transition-transform duration-200', expanded && 'rotate-180')} />
                   </button>
 
                   {expanded && (
                     <div className="bg-navy-950 pb-1">
-                      {group.items.map((item, idx) => {
-                        if (isSep(item)) return <div key={idx} className="my-1 mx-5 border-t border-navy-700/40" />;
+                      {entry.items.map((item, idx) => {
+                        if (item === 'sep') return <div key={idx} className="my-1 mx-5 border-t border-navy-700/40" />;
                         const ia = pathname === item.href;
                         return (
                           <Link key={idx} href={item.soon ? '#' : item.href}
@@ -212,14 +281,6 @@ export function Navbar() {
                 </div>
               );
             })}
-
-            <Link href="/about" onClick={() => setMobileOpen(false)}
-              className={cn(
-                'flex items-center px-5 py-4 font-mono text-sm uppercase tracking-wider transition-colors border-l-2',
-                pathname === '/about' ? 'text-gold-500 border-gold-500 bg-navy-800/60' : 'text-bone-200 border-transparent'
-              )}>
-              About
-            </Link>
 
             <div className="border-t border-navy-700 mt-1">
               <Link href="/dashboard" onClick={() => setMobileOpen(false)}
