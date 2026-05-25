@@ -2,212 +2,152 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const EPOCHZERO_LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
+const EPOCHZERO_LOGO =
+  'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
-// ── Domain filter items (for Learn/Articles/Videos/Tests/Resources) ────────
-const DOMAINS = [
-  { slug: 'all',    label: 'All Domains',     comingSoon: false },
-  { slug: 'rema',   label: 'REMA',            comingSoon: false },
-  { slug: 'cloud',  label: 'Cloud',           comingSoon: false },
-  { slug: 'crypto', label: 'Cryptography',    comingSoon: true  },
-  { slug: 'webdev', label: 'Web Development', comingSoon: true  },
+type NavItem = { label: string; href: string; soon?: boolean };
+type NavGroup = { label: string; href: string; items: NavItem[] };
+
+const SEP: NavItem = { label: '---', href: '#' };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: 'Learn',
+    href:  '/learn',
+    items: [
+      { label: 'Learning Path',    href: '/learn'     },
+      { label: 'Articles',         href: '/articles'  },
+      { label: 'Videos',           href: '/videos'    },
+      SEP,
+      { label: 'All Resources',    href: '/resources'                        },
+      { label: 'eBooks',           href: '/resources?type=ebook'             },
+      { label: 'Question Banks',   href: '/resources?type=question-bank'     },
+      { label: 'MCQ Banks',        href: '/resources?type=mcq-bank'          },
+      { label: 'Cheatsheets',      href: '/resources?type=cheatsheet'        },
+      { label: 'Research Papers',  href: '/resources?type=research-paper'    },
+    ],
+  },
+  {
+    label: 'Practice',
+    href:  '/tests',
+    items: [
+      { label: 'MCQ Tests',        href: '/tests'         },
+      SEP,
+      { label: 'Forum',            href: '/forum'         },
+      { label: 'REMA Forum',       href: '/forum/rema'    },
+      { label: 'Cloud Forum',      href: '/forum/cloud'   },
+      { label: 'Crypto Forum',     href: '/forum/crypto'  },
+      { label: 'Web Dev Forum',    href: '/forum/webdev'  },
+    ],
+  },
+  {
+    label: 'Community',
+    href:  '/clubs',
+    items: [
+      { label: 'REMA Club',            href: '/clubs/rema'      },
+      { label: 'Full Stack Dev Club',  href: '/clubs/fullstack' },
+      { label: 'Extension Activity',   href: '/clubs/extension' },
+      SEP,
+      { label: 'All Events',           href: '/events'                    },
+      { label: 'CTF Competitions',     href: '/events?type=ctf'           },
+      { label: 'Workshops & Talks',    href: '/events?type=workshop'      },
+      { label: 'Industrial Visits',    href: '/events?type=industry'      },
+      { label: 'Extension Activity',   href: '/events?type=extension'     },
+      { label: 'Hackathons',           href: '/events?type=hackathon', soon: true },
+      SEP,
+      { label: 'Podcast',              href: '/podcast' },
+    ],
+  },
 ];
 
-// ── Podcast tags ───────────────────────────────────────────────────────────
-const PODCAST_TAGS = [
-  { slug: 'all',    label: 'All Episodes',  comingSoon: false },
-  { slug: 'REMA',   label: 'REMA',          comingSoon: false },
-  { slug: 'cloud',  label: 'Cloud',         comingSoon: false },
-  { slug: 'crypto', label: 'Cryptography',  comingSoon: true  },
-  { slug: 'webdev', label: 'Web Dev',       comingSoon: true  },
-];
-
-// ── Tech Clubs ─────────────────────────────────────────────────────────────
-const CLUBS: { slug: string; label: string; href: string; comingSoon?: boolean }[] = [
-  { slug: 'rema',      label: 'REMA Club',               href: '/clubs/rema'      },
-  { slug: 'fullstack', label: 'Full Stack Dev Club',      href: '/clubs/fullstack' },
-  { slug: 'extension', label: 'Extension Activity', href: '/clubs/extension' },
-];
-
-// ── Resources ──────────────────────────────────────────────────────────────
-const RESOURCES = [
-  { label: 'All Resources',  href: '/resources',               comingSoon: false },
-  { label: 'eBooks',         href: '/resources?type=ebook',    comingSoon: false },
-  { label: 'Question Banks', href: '/resources?type=question-bank', comingSoon: false },
-  { label: 'MCQ Banks',      href: '/resources?type=mcq-bank', comingSoon: false },
-  { label: 'Cheatsheets',    href: '/resources?type=cheatsheet', comingSoon: false },
-  { label: 'Research Papers',href: '/resources?type=research-paper', comingSoon: false },
-];
-const EVENTS = [
-  { label: 'All Events',         href: '/events',                  comingSoon: false },
-  { label: 'CTF Competitions',   href: '/events?type=ctf',         comingSoon: false },
-  { label: 'Workshops & Talks',  href: '/events?type=workshop',    comingSoon: false },
-  { label: 'Industrial Visits',  href: '/events?type=industry',    comingSoon: false },
-  { label: 'Extension Activity', href: '/events?type=extension',   comingSoon: false },
-  { label: 'Hackathons',         href: '/events?type=hackathon',   comingSoon: true  },
-];
-
-// ── Nav structure ─────────────────────────────────────────────────────────
-// Grouped to reduce clutter: Learn group | Community group | Podcast | About
-const NAV_LINKS: Array<{
-  href: string;
-  label: string;
-  hasDropdown?: boolean;
-  dropdownType?: 'domain' | 'podcast' | 'clubs' | 'events' | 'resources';
-}> = [
-  { href: '/learn',     label: 'Learn',      hasDropdown: true, dropdownType: 'domain'     },
-  { href: '/articles',  label: 'Articles',   hasDropdown: true, dropdownType: 'domain'     },
-  { href: '/videos',    label: 'Videos',     hasDropdown: true, dropdownType: 'domain'     },
-  { href: '/tests',     label: 'Tests',      hasDropdown: true, dropdownType: 'domain'     },
-  { href: '/forum',     label: 'Forum',      hasDropdown: false                            },
-  { href: '/resources', label: 'Resources',  hasDropdown: true, dropdownType: 'resources'  },
-  { href: '/clubs',     label: 'Clubs',      hasDropdown: true, dropdownType: 'clubs'      },
-  { href: '/events',    label: 'Events',     hasDropdown: true, dropdownType: 'events'     },
-  { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast'    },
-  { href: '/about',     label: 'About'                                                      },
-];
+const isSep = (i: NavItem) => i.label === '---';
 
 export function Navbar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentDomain = searchParams.get('domain') ?? 'all';
-  const currentTag    = searchParams.get('tag')    ?? 'all';
-  const [open, setOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileOpen,  setMobileOpen]  = useState(false);
+  const [openGroup,   setOpenGroup]   = useState<string | null>(null);
+  const [mobileGroup, setMobileGroup] = useState<string | null>(null);
 
-  const buildDomainHref = (base: string, domain: string) =>
-    domain === 'all' ? base : `${base}?domain=${domain}`;
-
-  const buildTagHref = (base: string, tag: string) =>
-    tag === 'all' ? base : `${base}?tag=${encodeURIComponent(tag)}`;
+  const groupActive = (g: NavGroup) =>
+    pathname.startsWith(g.href) ||
+    g.items.some(i => !isSep(i) && i.href !== '#' && pathname.startsWith(i.href.split('?')[0]));
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-navy-700 bg-navy-900/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-navy-700 bg-navy-900/90 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between gap-4">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <Image src={EPOCHZERO_LOGO} alt="EpochZero Learn" width={44} height={44} className="shrink-0" />
+        <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Image src={EPOCHZERO_LOGO} alt="EpochZero Learn" width={42} height={42} className="shrink-0" />
           <div className="flex flex-col leading-none">
-            <span className="font-mono text-sm font-bold tracking-tight text-bone-50">
-              EpochZero Learn
-            </span>
-            <span className="font-mono text-[9px] tracking-[0.25em] text-gold-500 uppercase hidden xl:block">
+            <span className="font-mono text-sm font-bold tracking-tight text-bone-50">EpochZero Learn</span>
+            <span className="font-mono text-[9px] tracking-[0.2em] text-gold-500 uppercase hidden xl:block">
               Multi-Domain Tech Learning Hub
             </span>
           </div>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-0.5">
-          {NAV_LINKS.map((link) => {
-            const active =
-              pathname === link.href ||
-              (link.href !== '/' && pathname.startsWith(link.href));
-
-            if (!link.hasDropdown) {
-              return (
-                <Link key={link.href} href={link.href}
-                  className={cn(
-                    'px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
-                    active
-                      ? 'text-gold-500 border-b-2 border-gold-500'
-                      : 'text-bone-200 hover:text-gold-500 border-b-2 border-transparent'
-                  )}>
-                  {link.label}
-                </Link>
-              );
-            }
-
-            // Build dropdown items
-            const dropdownItems = (() => {
-              if (link.dropdownType === 'resources') {
-                return RESOURCES.map((r) => ({
-                  label: r.label, href: r.href,
-                  active: pathname === '/resources' && r.href === '/resources',
-                  comingSoon: r.comingSoon,
-                }));
-              }
-              if (link.dropdownType === 'clubs') {
-                return CLUBS.map(c => ({
-                  label: c.label, href: c.href,
-                  active: pathname.startsWith(c.href),
-                  comingSoon: c.comingSoon ?? false,
-                }));
-              }
-              if (link.dropdownType === 'events') {
-                return EVENTS.map(e => ({
-                  label: e.label, href: e.href,
-                  active: pathname === e.href || (pathname === '/events' && e.href === '/events'),
-                  comingSoon: e.comingSoon,
-                }));
-              }
-              if (link.dropdownType === 'podcast') {
-                return PODCAST_TAGS.map(t => ({
-                  label: t.label,
-                  href: buildTagHref(link.href, t.slug),
-                  active: active && (t.slug === 'all' ? currentTag === 'all' : currentTag === t.slug),
-                  comingSoon: t.comingSoon,
-                }));
-              }
-              return DOMAINS.map(d => ({
-                label: d.label,
-                href: buildDomainHref(link.href, d.slug),
-                active: active && currentDomain === d.slug,
-                comingSoon: d.comingSoon,
-              }));
-            })();
+        <nav className="hidden lg:flex items-center">
+          {NAV_GROUPS.map(group => {
+            const active = groupActive(group);
+            const isOpen = openGroup === group.label;
 
             return (
-              <div key={link.href} className="relative"
-                onMouseEnter={() => setOpenDropdown(link.href)}
-                onMouseLeave={() => setOpenDropdown(null)}>
-                <Link href={link.href}
-                  className={cn(
-                    'flex items-center gap-0.5 px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
-                    active
-                      ? 'text-gold-500 border-b-2 border-gold-500'
-                      : 'text-bone-200 hover:text-gold-500 border-b-2 border-transparent'
-                  )}>
-                  {link.label}
-                  <ChevronDown className="w-3 h-3" />
-                </Link>
+              <div key={group.label} className="relative"
+                onMouseEnter={() => setOpenGroup(group.label)}
+                onMouseLeave={() => setOpenGroup(null)}>
+                <button className={cn(
+                  'flex items-center gap-0.5 px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
+                  active || isOpen
+                    ? 'text-gold-500 border-gold-500'
+                    : 'text-bone-200 hover:text-gold-500 border-transparent'
+                )}>
+                  {group.label}
+                  <ChevronDown className={cn('w-3 h-3 transition-transform', isOpen && 'rotate-180')} />
+                </button>
 
-                {openDropdown === link.href && (
-                  <div className="absolute top-full left-0 min-w-[200px] bg-navy-900 border border-navy-700 shadow-xl py-2 z-50">
-                    {dropdownItems.map(item => (
-                      <Link key={item.href} href={item.comingSoon ? '#' : item.href}
-                        className={cn(
-                          'flex items-center justify-between px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
-                          item.comingSoon
-                            ? 'text-bone-400 cursor-default'
-                            : item.active
-                            ? 'text-gold-500 bg-navy-800'
-                            : 'text-bone-200 hover:text-gold-500 hover:bg-navy-800'
-                        )}
-                        onClick={item.comingSoon ? e => e.preventDefault() : undefined}>
-                        {item.label}
-                        {item.comingSoon && (
-                          <span className="font-mono text-[9px] text-bone-400 border border-navy-600 px-1.5 py-0.5 ml-2">
-                            soon
-                          </span>
-                        )}
-                      </Link>
-                    ))}
+                {isOpen && (
+                  <div className="absolute top-full left-0 w-56 bg-navy-900 border border-navy-700 shadow-2xl py-2 z-50">
+                    {group.items.map((item, idx) => {
+                      if (isSep(item)) return <div key={idx} className="my-1 mx-3 border-t border-navy-700/60" />;
+                      const ia = pathname === item.href || (item.href !== '/' && !item.href.includes('?') && pathname.startsWith(item.href));
+                      return (
+                        <Link key={idx} href={item.soon ? '#' : item.href}
+                          onClick={() => setOpenGroup(null)}
+                          className={cn(
+                            'flex items-center justify-between px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
+                            item.soon   ? 'text-bone-500 cursor-default'
+                            : ia        ? 'text-gold-500 bg-navy-800'
+                            :             'text-bone-200 hover:text-gold-500 hover:bg-navy-800'
+                          )}>
+                          {item.label}
+                          {item.soon && <span className="text-[9px] border border-navy-600 px-1.5 py-0.5 ml-2">soon</span>}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
             );
           })}
+
+          <Link href="/about"
+            className={cn(
+              'px-3.5 py-2 font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
+              pathname === '/about' ? 'text-gold-500 border-gold-500' : 'text-bone-200 hover:text-gold-500 border-transparent'
+            )}>
+            About
+          </Link>
         </nav>
 
-        {/* Dashboard button */}
-        <div className="hidden lg:flex items-center gap-2 shrink-0">
+        {/* Dashboard */}
+        <div className="hidden lg:flex shrink-0">
           <Link href="/dashboard"
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors border',
@@ -215,80 +155,81 @@ export function Navbar() {
                 ? 'border-gold-500 text-gold-500 bg-gold-500/10'
                 : 'border-navy-700 text-bone-300 hover:border-gold-500/60 hover:text-gold-500'
             )}>
-            <User className="w-3.5 h-3.5" />
-            Dashboard
+            <User className="w-3.5 h-3.5" /> Dashboard
           </Link>
         </div>
 
         {/* Mobile toggle */}
         <button className="lg:hidden p-2 text-bone-100 hover:text-gold-500 transition-colors"
-          onClick={() => setOpen(!open)} aria-label="Toggle menu">
-          {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          onClick={() => { setMobileOpen(o => !o); setMobileGroup(null); }}>
+          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
       {/* Mobile nav */}
-      {open && (
-        <nav className="lg:hidden border-t border-navy-700 bg-navy-900">
-          <div className="container py-4 flex flex-col gap-1">
-            {NAV_LINKS.map((link) => {
-              const active =
-                pathname === link.href ||
-                (link.href !== '/' && pathname.startsWith(link.href));
-
-              const mobileItems = (() => {
-                if (link.dropdownType === 'resources')
-                  return RESOURCES.map(r => ({ label: r.label, href: r.href, comingSoon: r.comingSoon }));
-                if (link.dropdownType === 'clubs')
-                  return CLUBS.map(c => ({ label: c.label, href: c.href, comingSoon: c.comingSoon ?? false }));
-                if (link.dropdownType === 'events')
-                  return EVENTS.map(e => ({ label: e.label, href: e.href, comingSoon: e.comingSoon }));
-                if (link.dropdownType === 'podcast')
-                  return PODCAST_TAGS.map(t => ({ label: t.label, href: buildTagHref(link.href, t.slug), comingSoon: t.comingSoon }));
-                return DOMAINS.map(d => ({ label: d.label, href: buildDomainHref(link.href, d.slug), comingSoon: d.comingSoon }));
-              })();
+      {mobileOpen && (
+        <nav className="lg:hidden border-t border-navy-700 bg-navy-900 max-h-[80vh] overflow-y-auto">
+          <div className="py-2">
+            {NAV_GROUPS.map(group => {
+              const active   = groupActive(group);
+              const expanded = mobileGroup === group.label;
 
               return (
-                <div key={link.href}>
-                  <Link href={link.href} onClick={() => setOpen(false)}
+                <div key={group.label}>
+                  <button
+                    onClick={() => setMobileGroup(expanded ? null : group.label)}
                     className={cn(
-                      'px-4 py-3 font-mono text-sm uppercase tracking-wider transition-colors block',
-                      active
-                        ? 'text-gold-500 bg-navy-800 border-l-2 border-gold-500'
-                        : 'text-bone-200 hover:text-gold-500 border-l-2 border-transparent'
+                      'w-full flex items-center justify-between px-5 py-4 font-mono text-sm uppercase tracking-wider transition-colors border-l-2',
+                      active || expanded
+                        ? 'text-gold-500 border-gold-500 bg-navy-800/60'
+                        : 'text-bone-200 border-transparent'
                     )}>
-                    {link.label}
-                  </Link>
-                  {link.hasDropdown && active && (
-                    <div className="pl-6 mt-1 mb-2">
-                      {mobileItems.map(item => (
-                        <Link key={item.href} href={item.comingSoon ? '#' : item.href}
-                          onClick={item.comingSoon ? e => e.preventDefault() : () => setOpen(false)}
-                          className={cn(
-                            'flex items-center justify-between px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors',
-                            item.comingSoon ? 'text-bone-400' : 'text-bone-300 hover:text-gold-500'
-                          )}>
-                          {item.label}
-                          {item.comingSoon && (
-                            <span className="text-[9px] border border-navy-600 px-1.5 py-0.5 ml-2">soon</span>
-                          )}
-                        </Link>
-                      ))}
+                    {group.label}
+                    <ChevronDown className={cn('w-4 h-4 transition-transform duration-200', expanded && 'rotate-180')} />
+                  </button>
+
+                  {expanded && (
+                    <div className="bg-navy-950 pb-1">
+                      {group.items.map((item, idx) => {
+                        if (isSep(item)) return <div key={idx} className="my-1 mx-5 border-t border-navy-700/40" />;
+                        const ia = pathname === item.href;
+                        return (
+                          <Link key={idx} href={item.soon ? '#' : item.href}
+                            onClick={item.soon ? e => e.preventDefault() : () => { setMobileOpen(false); setMobileGroup(null); }}
+                            className={cn(
+                              'flex items-center justify-between pl-8 pr-5 py-3 font-mono text-xs uppercase tracking-wider transition-colors border-l-2 border-transparent',
+                              item.soon ? 'text-bone-500'
+                              : ia      ? 'text-gold-500 bg-navy-800 border-gold-500'
+                              :           'text-bone-300 hover:text-gold-500 hover:bg-navy-800/60'
+                            )}>
+                            {item.label}
+                            {item.soon && <span className="text-[9px] border border-navy-700 px-1.5 py-0.5">soon</span>}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               );
             })}
-            {/* Dashboard in mobile */}
-            <Link href="/dashboard" onClick={() => setOpen(false)}
+
+            <Link href="/about" onClick={() => setMobileOpen(false)}
               className={cn(
-                'px-4 py-3 font-mono text-sm uppercase tracking-wider transition-colors block border-l-2',
-                pathname.startsWith('/dashboard')
-                  ? 'text-gold-500 bg-navy-800 border-gold-500'
-                  : 'text-bone-200 hover:text-gold-500 border-transparent'
+                'flex items-center px-5 py-4 font-mono text-sm uppercase tracking-wider transition-colors border-l-2',
+                pathname === '/about' ? 'text-gold-500 border-gold-500 bg-navy-800/60' : 'text-bone-200 border-transparent'
               )}>
-              Dashboard
+              About
             </Link>
+
+            <div className="border-t border-navy-700 mt-1">
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)}
+                className={cn(
+                  'flex items-center gap-2 px-5 py-4 font-mono text-sm uppercase tracking-wider transition-colors border-l-2',
+                  pathname.startsWith('/dashboard') ? 'text-gold-500 border-gold-500 bg-navy-800/60' : 'text-bone-200 border-transparent'
+                )}>
+                <User className="w-4 h-4" /> Dashboard
+              </Link>
+            </div>
           </div>
         </nav>
       )}
