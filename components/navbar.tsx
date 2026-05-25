@@ -64,6 +64,7 @@ const NAV_LINKS: Array<{
   { href: '/articles',  label: 'Articles',   hasDropdown: true, dropdownType: 'domain'     },
   { href: '/videos',    label: 'Videos',     hasDropdown: true, dropdownType: 'domain'     },
   { href: '/tests',     label: 'Tests',      hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/forum',     label: 'Forum',      hasDropdown: false                            },
   { href: '/resources', label: 'Resources',  hasDropdown: true, dropdownType: 'resources'  },
   { href: '/clubs',     label: 'Clubs',      hasDropdown: true, dropdownType: 'clubs'      },
   { href: '/events',    label: 'Events',     hasDropdown: true, dropdownType: 'events'     },
