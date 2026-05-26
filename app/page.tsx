@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import {
+  MessageSquare,
   ArrowRight,
   BookOpen,
   Video,
@@ -10,8 +11,6 @@ import {
   Terminal,
   Calendar,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
-import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 
 // Revalidates every hour so new content appears automatically
 export const revalidate = 3600;
@@ -36,6 +35,7 @@ async function getHomeData() {
     topicCountRes,
     clubsRes,
     eventsRes,
+    forumThreadsRes,
   ] = await Promise.all([
     supabase
       .from('articles')
@@ -103,6 +103,13 @@ async function getHomeData() {
       .neq('slug', 'digital-hygiene-drive-2025')
       .order('event_date', { ascending: false })
       .limit(4),
+    // Forum: recent threads for homepage block
+    supabase
+      .from('forum_threads')
+      .select('id, title, domain, author_name, reply_count, created_at')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(4),
   ]);
 
   const courses = coursesRes.data ?? [];
@@ -138,6 +145,7 @@ async function getHomeData() {
     courses:   coursesWithCount,
     clubs:     clubsRes.data ?? [],
     events:    eventsRes.data ?? [],
+    forumThreads: forumThreadsRes.data ?? [],
     stats: {
       domains:          courses.length,
       video_lessons:    videoCountRes.count    ?? 0,
@@ -151,7 +159,7 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { articles, videos, tests, courses, clubs, events, stats } = await getHomeData();
+  const { articles, videos, tests, courses, clubs, events, stats, forumThreads } = await getHomeData();
 
   const statBlocks = [
     { label: 'Domains',       value: `${stats.domains}+`         },
@@ -429,6 +437,62 @@ export default async function HomePage() {
         </section>
       )}
 
+
+      {/* ── FORUM DISCUSSIONS ───────────────────────────────────────── */}
+      {forumThreads.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Forum discussions
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                From the discussion floor
+              </h2>
+            </div>
+            <Link href="/forum"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all">
+              All threads <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {forumThreads.map((t: any) => (
+              <Link key={t.id} href={`/forum/${t.domain}/${t.id}`}
+                className="card-forensic p-5 group flex flex-col gap-3 hover:border-gold-500/50 transition-colors">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={[
+                    'font-mono text-[9px] uppercase tracking-widest px-2 py-0.5 border',
+                    t.domain === 'rema'   ? 'text-gold-500   border-gold-500/40'   : '',
+                    t.domain === 'cloud'  ? 'text-blue-400   border-blue-400/40'   : '',
+                    t.domain === 'crypto' ? 'text-purple-400 border-purple-400/40' : '',
+                    t.domain === 'webdev' ? 'text-emerald-400 border-emerald-400/40' : '',
+                  ].filter(Boolean).join(' ')}>
+                    {t.domain}
+                  </span>
+                  <span className="font-mono text-[10px] text-bone-400 truncate">
+                    {t.author_name}
+                  </span>
+                </div>
+                <h3 className="font-mono text-sm text-bone-50 group-hover:text-gold-500
+                  transition-colors leading-snug line-clamp-3 flex-1">
+                  {t.title}
+                </h3>
+                <div className="flex items-center gap-1.5 font-mono text-xs text-bone-400 mt-auto">
+                  <MessageSquare className="w-3 h-3" />
+                  {t.reply_count ?? 0} {t.reply_count === 1 ? 'reply' : 'replies'}
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <Link href="/forum"
+              className="font-mono text-xs uppercase tracking-wider text-gold-500
+                hover:text-gold-400 transition-colors inline-flex items-center gap-2">
+              Join the discussion <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </section>
+      )}
       {/* ── LATEST VIDEOS ───────────────────────────────────────────── */}
       {videos.length > 0 && (
         <section className="container py-16 border-t border-navy-700">
