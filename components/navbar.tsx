@@ -10,9 +10,8 @@ import { cn } from '@/lib/utils';
 const LOGO =
   'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
-// ─── Nav data ─────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
-// Mega menu: Learn — 4 columns
 const LEARN_COLS = [
   {
     heading: 'Articles',
@@ -60,36 +59,36 @@ const LEARN_COLS = [
   },
 ];
 
-type DropItem = { label: string; href: string; soon?: boolean } | null;
+type Item = { label: string; href: string; soon?: boolean } | null;
 
-const TESTS: DropItem[] = [
-  { label: 'All Tests',        href: '/tests' },
+const TESTS: Item[] = [
+  { label: 'All Tests',       href: '/tests' },
   null,
-  { label: 'REMA',             href: '/tests?domain=rema' },
-  { label: 'Cloud Security',   href: '/tests?domain=cloud' },
-  { label: 'Cryptography',     href: '/tests?domain=crypto',  soon: true },
-  { label: 'Web Development',  href: '/tests?domain=webdev',  soon: true },
+  { label: 'REMA',            href: '/tests?domain=rema' },
+  { label: 'Cloud Security',  href: '/tests?domain=cloud' },
+  { label: 'Cryptography',    href: '/tests?domain=crypto',  soon: true },
+  { label: 'Web Development', href: '/tests?domain=webdev',  soon: true },
 ];
 
-const FORUM: DropItem[] = [
-  { label: 'All Domains',      href: '/forum' },
+const FORUM: Item[] = [
+  { label: 'All Domains',    href: '/forum' },
   null,
-  { label: 'REMA',             href: '/forum/rema' },
-  { label: 'Cloud Security',   href: '/forum/cloud' },
-  { label: 'Cryptography',     href: '/forum/crypto' },
-  { label: 'Web Dev',          href: '/forum/webdev' },
+  { label: 'REMA',           href: '/forum/rema' },
+  { label: 'Cloud Security', href: '/forum/cloud' },
+  { label: 'Cryptography',   href: '/forum/crypto' },
+  { label: 'Web Dev',        href: '/forum/webdev' },
 ];
 
-const CAMPUS: DropItem[] = [
-  { label: 'REMA Club',            href: '/clubs/rema' },
-  { label: 'Full Stack Dev Club',  href: '/clubs/fullstack' },
-  { label: 'Extension Activity',   href: '/clubs/extension' },
+const CAMPUS: Item[] = [
+  { label: 'REMA Club',           href: '/clubs/rema' },
+  { label: 'Full Stack Dev Club', href: '/clubs/fullstack' },
+  { label: 'Extension Activity',  href: '/clubs/extension' },
   null,
-  { label: 'All Events',           href: '/events' },
-  { label: 'CTF Competitions',     href: '/events?type=ctf' },
-  { label: 'Workshops & Talks',    href: '/events?type=workshop' },
-  { label: 'Industrial Visits',    href: '/events?type=industry' },
-  { label: 'Hackathons',           href: '/events?type=hackathon', soon: true },
+  { label: 'All Events',          href: '/events' },
+  { label: 'CTF Competitions',    href: '/events?type=ctf' },
+  { label: 'Workshops & Talks',   href: '/events?type=workshop' },
+  { label: 'Industrial Visits',   href: '/events?type=industry' },
+  { label: 'Hackathons',          href: '/events?type=hackathon', soon: true },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -97,17 +96,23 @@ const CAMPUS: DropItem[] = [
 function SoonTag() {
   return (
     <span className="ml-auto font-mono text-[9px] uppercase tracking-wider
-      px-1.5 py-0.5 border border-navy-600 text-bone-500 leading-none">
+      px-1.5 py-0.5 border border-navy-700 text-bone-500 leading-none">
       soon
     </span>
   );
 }
 
-/** Standard dropdown used by Tests / Forum / Campus */
-function Dropdown({ items }: { items: DropItem[] }) {
+function Dropdown({ items, onEnter, onLeave }: {
+  items: Item[];
+  onEnter: () => void;
+  onLeave: () => void;
+}) {
   return (
-    <div className="absolute top-full left-0 mt-0 w-52
-      bg-navy-900 border border-navy-700 shadow-2xl z-50 py-1.5">
+    <div
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      className="absolute top-full left-0 mt-0 w-52
+        bg-navy-900 border border-navy-700 border-t-0 shadow-xl z-50 py-1.5">
       {items.map((item, i) =>
         item === null ? (
           <div key={i} className="my-1 border-t border-navy-800" />
@@ -128,143 +133,126 @@ function Dropdown({ items }: { items: DropItem[] }) {
   );
 }
 
-/** Mega menu for Learn */
-function MegaMenu() {
-  return (
-    <div className="absolute top-full left-0 mt-0 w-[680px]
-      bg-navy-900 border border-navy-700 shadow-2xl z-50 p-6
-      grid grid-cols-4 gap-0 divide-x divide-navy-800">
-      {LEARN_COLS.map(col => (
-        <div key={col.heading} className="px-5 first:pl-0 last:pr-0">
-          <Link href={col.href}
-            className="block font-mono text-[10px] uppercase tracking-[0.2em]
-              text-gold-500 mb-3 hover:text-gold-400 transition-colors">
-            {col.heading}
-          </Link>
-          <div className="space-y-0.5">
-            {col.items.map(item => (
-              <Link key={item.href} href={item.href}
-                className="block font-mono text-xs text-bone-300
-                  hover:text-bone-50 transition-colors py-1 leading-snug">
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
 export function Navbar() {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen]     = useState(false);
   const [openMenu, setOpenMenu]         = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen]     = useState(false);
   const [mobileExpand, setMobileExpand] = useState<string | null>(null);
-  const navRef = useRef<HTMLElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Close on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(e.target as Node))
-        setOpenMenu(null);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  // Hover handlers — open immediately, close with 120ms delay
+  function enter(name: string) {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setOpenMenu(name);
+  }
+  function leave() {
+    timerRef.current = setTimeout(() => setOpenMenu(null), 120);
+  }
 
-  // Close on route change
   useEffect(() => {
     setMobileOpen(false);
     setOpenMenu(null);
   }, [pathname]);
 
-  function toggle(name: string) {
-    setOpenMenu(p => (p === name ? null : name));
-  }
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
-  const active = (prefixes: string[]) =>
-    prefixes.some(p => pathname === p || (p !== '/' && pathname.startsWith(p)));
+  const active = (paths: string[]) =>
+    paths.some(p => pathname === p || (p !== '/' && pathname.startsWith(p)));
 
-  // Shared button style
-  const navBtn = (isActive: boolean) =>
+  const btn = (isActive: boolean) =>
     cn(
-      'flex items-center gap-1 px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors whitespace-nowrap',
-      isActive ? 'text-gold-500' : 'text-bone-300 hover:text-bone-50',
+      'flex items-center gap-1 px-3 py-2 font-mono text-xs uppercase',
+      'tracking-wider transition-colors whitespace-nowrap h-16',
+      isActive ? 'text-gold-500 border-b-2 border-gold-500' : 'text-bone-300 hover:text-bone-50',
     );
 
   return (
-    <header ref={navRef}
-      className="sticky top-0 z-40 bg-navy-950/95 backdrop-blur-sm border-b border-navy-800">
+    // ── IMPORTANT: position:relative so mega menu can anchor to header ──
+    <header className="sticky top-0 z-40 bg-navy-950/95 backdrop-blur-sm
+      border-b border-navy-800 relative">
 
-      {/* ── Desktop ── */}
+      {/* ── Desktop bar ── */}
       <div className="container flex items-center h-16 gap-6">
 
         {/* Logo */}
         <Link href="/" className="shrink-0 flex items-center gap-3 mr-2">
           <Image src={LOGO} alt="EpochZero" width={32} height={32} className="rounded" />
           <div className="hidden sm:block leading-none">
-            <div className="font-mono text-sm font-bold text-bone-50">EpochZero Learn</div>
+            <div className="font-mono text-sm font-bold text-bone-50 tracking-wide">
+              EpochZero Learn
+            </div>
             <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-gold-500 mt-0.5">
               Multi-Domain Tech Learning Hub
             </div>
           </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-0 ml-auto">
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-0 ml-auto h-16">
 
-          {/* ── Learn (mega menu) ── */}
-          <div className="relative">
-            <button onClick={() => toggle('learn')}
-              className={navBtn(active(['/learn', '/articles', '/videos', '/podcast', '/resources']))}>
+          {/* Learn — hover triggers full-width mega panel */}
+          <div
+            onMouseEnter={() => enter('learn')}
+            onMouseLeave={leave}
+            className="relative h-full flex items-center">
+            <button className={btn(active(['/learn', '/articles', '/videos', '/podcast', '/resources']))}>
               Learn
-              <ChevronDown className={cn('w-3 h-3 transition-transform duration-200',
+              <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openMenu === 'learn' && 'rotate-180')} />
             </button>
-            {openMenu === 'learn' && <MegaMenu />}
           </div>
 
-          {/* ── Tests ── */}
-          <div className="relative">
-            <button onClick={() => toggle('tests')}
-              className={navBtn(active(['/tests']))}>
+          {/* Tests */}
+          <div
+            onMouseEnter={() => enter('tests')}
+            onMouseLeave={leave}
+            className="relative h-full flex items-center">
+            <button className={btn(active(['/tests']))}>
               Tests
-              <ChevronDown className={cn('w-3 h-3 transition-transform duration-200',
+              <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openMenu === 'tests' && 'rotate-180')} />
             </button>
-            {openMenu === 'tests' && <Dropdown items={TESTS} />}
+            {openMenu === 'tests' && (
+              <Dropdown items={TESTS} onEnter={() => enter('tests')} onLeave={leave} />
+            )}
           </div>
 
-          {/* ── Forum ── */}
-          <div className="relative">
-            <button onClick={() => toggle('forum')}
-              className={navBtn(active(['/forum']))}>
+          {/* Forum */}
+          <div
+            onMouseEnter={() => enter('forum')}
+            onMouseLeave={leave}
+            className="relative h-full flex items-center">
+            <button className={btn(active(['/forum']))}>
               Forum
-              <ChevronDown className={cn('w-3 h-3 transition-transform duration-200',
+              <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openMenu === 'forum' && 'rotate-180')} />
             </button>
-            {openMenu === 'forum' && <Dropdown items={FORUM} />}
+            {openMenu === 'forum' && (
+              <Dropdown items={FORUM} onEnter={() => enter('forum')} onLeave={leave} />
+            )}
           </div>
 
-          {/* ── Campus ── */}
-          <div className="relative">
-            <button onClick={() => toggle('campus')}
-              className={navBtn(active(['/clubs', '/events']))}>
+          {/* Campus */}
+          <div
+            onMouseEnter={() => enter('campus')}
+            onMouseLeave={leave}
+            className="relative h-full flex items-center">
+            <button className={btn(active(['/clubs', '/events']))}>
               Campus
-              <ChevronDown className={cn('w-3 h-3 transition-transform duration-200',
+              <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openMenu === 'campus' && 'rotate-180')} />
             </button>
-            {openMenu === 'campus' && <Dropdown items={CAMPUS} />}
+            {openMenu === 'campus' && (
+              <Dropdown items={CAMPUS} onEnter={() => enter('campus')} onLeave={leave} />
+            )}
           </div>
 
-          {/* ── About ── */}
-          <Link href="/about" className={navBtn(pathname === '/about')}>
-            About
-          </Link>
+          {/* About */}
+          <Link href="/about" className={btn(pathname === '/about')}>About</Link>
 
-          {/* ── Dashboard ── */}
+          {/* Dashboard */}
           <Link href="/dashboard"
             className="ml-4 flex items-center gap-2 px-4 py-2 border border-gold-500/40
               font-mono text-xs uppercase tracking-wider text-bone-200
@@ -275,91 +263,90 @@ export function Navbar() {
         </nav>
 
         {/* Hamburger */}
-        <button className="lg:hidden ml-auto p-2 text-bone-300 hover:text-bone-50"
-          onClick={() => setMobileOpen(v => !v)} aria-label="Toggle menu">
+        <button
+          className="lg:hidden ml-auto p-2 text-bone-300 hover:text-bone-50"
+          onClick={() => setMobileOpen(v => !v)}>
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
+
+      {/* ── MEGA MENU — full width, anchored to header, not to button ── */}
+      {openMenu === 'learn' && (
+        <div
+          onMouseEnter={() => enter('learn')}
+          onMouseLeave={leave}
+          className="absolute top-full left-0 right-0 bg-navy-900
+            border-b border-navy-700 shadow-2xl z-50">
+          <div className="container py-7 grid grid-cols-4 divide-x divide-navy-800">
+            {LEARN_COLS.map(col => (
+              <div key={col.heading} className="px-6 first:pl-0 last:pr-0">
+                <Link href={col.href}
+                  className="block font-mono text-[10px] uppercase tracking-[0.2em]
+                    text-gold-500 mb-3 hover:text-gold-400 transition-colors">
+                  {col.heading}
+                </Link>
+                <div className="space-y-1">
+                  {col.items.map(item => (
+                    <Link key={item.href} href={item.href}
+                      className="block font-mono text-xs text-bone-300
+                        hover:text-bone-50 py-1 transition-colors">
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Mobile drawer ── */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-navy-800 bg-navy-950
           max-h-[calc(100vh-4rem)] overflow-y-auto divide-y divide-navy-800">
 
-          {/* Learn — accordion with 4 sub-sections */}
-          <MobileSection label="Learn" id="learn"
-            open={mobileExpand} setOpen={setMobileExpand}>
-            {LEARN_COLS.map(col => (
-              <div key={col.heading} className="mb-4 last:mb-0">
-                <Link href={col.href}
-                  className="block font-mono text-[9px] uppercase tracking-widest
-                    text-gold-500 mb-1.5">
-                  {col.heading}
-                </Link>
-                {col.items.map(item => (
-                  <Link key={item.href} href={item.href}
-                    className="block font-mono text-xs text-bone-300
-                      hover:text-gold-500 py-1 pl-3">
-                    {item.label}
+          {/* Learn accordion */}
+          <MobileSection label="Learn" id="learn" open={mobileExpand} setOpen={setMobileExpand}>
+            <div className="grid grid-cols-2 gap-4">
+              {LEARN_COLS.map(col => (
+                <div key={col.heading}>
+                  <Link href={col.href}
+                    className="block font-mono text-[9px] uppercase tracking-widest
+                      text-gold-500 mb-2">
+                    {col.heading}
                   </Link>
-                ))}
-              </div>
-            ))}
+                  {col.items.map(item => (
+                    <Link key={item.href} href={item.href}
+                      className="block font-mono text-xs text-bone-300
+                        hover:text-gold-500 py-1 pl-2">
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
           </MobileSection>
 
-          {/* Tests */}
-          <MobileSection label="Tests" id="tests"
-            open={mobileExpand} setOpen={setMobileExpand}>
-            {TESTS.map((item, i) =>
-              item === null
-                ? <div key={i} className="my-2 border-t border-navy-800" />
-                : <Link key={item.href} href={item.soon ? '#' : item.href}
-                    className={cn('flex items-center font-mono text-xs text-bone-300',
-                      'hover:text-gold-500 py-1.5 transition-colors',
-                      item.soon && 'opacity-40 pointer-events-none')}>
-                    {item.label}{item.soon && <SoonTag />}
-                  </Link>
-            )}
+          <MobileSection label="Tests" id="tests" open={mobileExpand} setOpen={setMobileExpand}>
+            <MobileItems items={TESTS} />
           </MobileSection>
 
-          {/* Forum */}
-          <MobileSection label="Forum" id="forum"
-            open={mobileExpand} setOpen={setMobileExpand}>
-            {FORUM.map((item, i) =>
-              item === null
-                ? <div key={i} className="my-2 border-t border-navy-800" />
-                : <Link key={item.href} href={item.href}
-                    className="flex items-center font-mono text-xs text-bone-300
-                      hover:text-gold-500 py-1.5 transition-colors">
-                    {item.label}
-                  </Link>
-            )}
+          <MobileSection label="Forum" id="forum" open={mobileExpand} setOpen={setMobileExpand}>
+            <MobileItems items={FORUM} />
           </MobileSection>
 
-          {/* Campus */}
-          <MobileSection label="Campus" id="campus"
-            open={mobileExpand} setOpen={setMobileExpand}>
-            {CAMPUS.map((item, i) =>
-              item === null
-                ? <div key={i} className="my-2 border-t border-navy-800" />
-                : <Link key={item.href} href={item.soon ? '#' : item.href}
-                    className={cn('flex items-center font-mono text-xs text-bone-300',
-                      'hover:text-gold-500 py-1.5 transition-colors',
-                      item.soon && 'opacity-40 pointer-events-none')}>
-                    {item.label}{item.soon && <SoonTag />}
-                  </Link>
-            )}
+          <MobileSection label="Campus" id="campus" open={mobileExpand} setOpen={setMobileExpand}>
+            <MobileItems items={CAMPUS} />
           </MobileSection>
 
-          {/* About + Dashboard */}
           <Link href="/about"
             className="flex px-5 py-4 font-mono text-xs uppercase tracking-wider
               text-bone-200 hover:text-gold-500 transition-colors">
             About
           </Link>
           <Link href="/dashboard"
-            className="flex items-center gap-2 px-5 py-4 font-mono text-xs
-              uppercase tracking-wider text-bone-200 hover:text-gold-500 transition-colors">
+            className="flex items-center gap-2 px-5 py-4 font-mono text-xs uppercase
+              tracking-wider text-bone-200 hover:text-gold-500 transition-colors">
             <User className="w-4 h-4" /> Dashboard
           </Link>
         </div>
@@ -368,15 +355,9 @@ export function Navbar() {
   );
 }
 
-// ─── Mobile accordion section ─────────────────────────────────────────────────
-
-function MobileSection({
-  label, id, open, setOpen, children,
-}: {
-  label: string;
-  id: string;
-  open: string | null;
-  setOpen: (v: string | null) => void;
+function MobileSection({ label, id, open, setOpen, children }: {
+  label: string; id: string;
+  open: string | null; setOpen: (v: string | null) => void;
   children: React.ReactNode;
 }) {
   return (
@@ -385,11 +366,31 @@ function MobileSection({
         className="w-full flex items-center justify-between px-5 py-4
           font-mono text-xs uppercase tracking-wider text-bone-200">
         {label}
-        <ChevronDown className={cn('w-4 h-4 transition-transform duration-200',
+        <ChevronDown className={cn('w-4 h-4 transition-transform duration-150',
           open === id && 'rotate-180')} />
       </button>
-      {open === id && (
-        <div className="px-5 pb-4">{children}</div>
+      {open === id && <div className="px-5 pb-4">{children}</div>}
+    </div>
+  );
+}
+
+function MobileItems({ items }: { items: Item[] }) {
+  return (
+    <div className="space-y-0.5">
+      {items.map((item, i) =>
+        item === null ? (
+          <div key={i} className="my-2 border-t border-navy-800" />
+        ) : (
+          <Link key={item.href} href={item.soon ? '#' : item.href}
+            className={cn(
+              'flex items-center font-mono text-xs text-bone-300',
+              'hover:text-gold-500 py-1.5 transition-colors',
+              item.soon && 'opacity-40 pointer-events-none',
+            )}>
+            {item.label}
+            {item.soon && <SoonTag />}
+          </Link>
+        )
       )}
     </div>
   );
