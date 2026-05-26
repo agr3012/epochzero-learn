@@ -2,280 +2,294 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const LOGO =
-  'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
+const EPOCHZERO_LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
-// ─── Nav structure (UGC 4Q aligned) ──────────────────────────────────────────
-
-type NavItem  = { label: string; href: string; soon?: boolean };
-type NavEntry =
-  | { type: 'link';  label: string; href: string }
-  | { type: 'group'; label: string; href: string; badge?: string; items: (NavItem | 'sep')[] };
-
-const NAV: NavEntry[] = [
-  // Q2 — e-Content
-  {
-    type: 'group', label: 'Content', href: '/learn', badge: 'Q2',
-    items: [
-      { label: 'Learning Path',   href: '/learn' },
-      { label: 'Articles',        href: '/articles' },
-      { label: 'Videos',          href: '/videos' },
-      'sep',
-      { label: 'All Resources',   href: '/resources' },
-      { label: 'eBooks & PDFs',   href: '/resources?type=ebook' },
-      { label: 'Question Banks',  href: '/resources?type=question-bank' },
-      { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
-      { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
-      { label: 'Research Papers', href: '/resources?type=research-paper' },
-    ],
-  },
-
-  // Q3 — Self-Assessment
-  {
-    type: 'group', label: 'Tests', href: '/tests', badge: 'Q3',
-    items: [
-      { label: 'All Tests',        href: '/tests' },
-      'sep',
-      { label: 'REMA',             href: '/tests?domain=rema' },
-      { label: 'Cloud Security',   href: '/tests?domain=cloud' },
-      { label: 'Cryptography',     href: '/tests?domain=crypto',  soon: true },
-      { label: 'Web Development',  href: '/tests?domain=webdev',  soon: true },
-    ],
-  },
-
-  // Q4 — Discussion Forum
-  {
-    type: 'group', label: 'Forum', href: '/forum', badge: 'Q4',
-    items: [
-      { label: 'All Domains',     href: '/forum' },
-      'sep',
-      { label: 'REMA',            href: '/forum/rema' },
-      { label: 'Cloud Security',  href: '/forum/cloud' },
-      { label: 'Cryptography',    href: '/forum/crypto' },
-      { label: 'Web Dev',         href: '/forum/webdev' },
-    ],
-  },
-
-  // Campus
-  {
-    type: 'group', label: 'Campus', href: '/clubs',
-    items: [
-      { label: 'REMA Club',           href: '/clubs/rema' },
-      { label: 'Full Stack Dev Club', href: '/clubs/fullstack' },
-      { label: 'Extension Activity',  href: '/clubs/extension' },
-      'sep',
-      { label: 'All Events',          href: '/events' },
-      { label: 'CTF Competitions',    href: '/events?type=ctf' },
-      { label: 'Workshops & Talks',   href: '/events?type=workshop' },
-      { label: 'Industrial Visits',   href: '/events?type=industry' },
-      { label: 'Hackathons',          href: '/events?type=hackathon', soon: true },
-      'sep',
-      { label: 'Podcast',             href: '/podcast' },
-    ],
-  },
-
-  // About
-  { type: 'link', label: 'About', href: '/about' },
+// ── Domain filter items (for Learn/Articles/Videos/Tests/Resources) ────────
+const DOMAINS = [
+  { slug: 'all',    label: 'All Domains',     comingSoon: false },
+  { slug: 'rema',   label: 'REMA',            comingSoon: false },
+  { slug: 'cloud',  label: 'Cloud',           comingSoon: false },
+  { slug: 'crypto', label: 'Cryptography',    comingSoon: true  },
+  { slug: 'webdev', label: 'Web Development', comingSoon: true  },
 ];
 
-// ─── Dropdown ─────────────────────────────────────────────────────────────────
+// ── Podcast tags ───────────────────────────────────────────────────────────
+const PODCAST_TAGS = [
+  { slug: 'all',    label: 'All Episodes',  comingSoon: false },
+  { slug: 'REMA',   label: 'REMA',          comingSoon: false },
+  { slug: 'cloud',  label: 'Cloud',         comingSoon: false },
+  { slug: 'crypto', label: 'Cryptography',  comingSoon: true  },
+  { slug: 'webdev', label: 'Web Dev',       comingSoon: true  },
+];
 
-function Dropdown({ items }: { items: (NavItem | 'sep')[] }) {
-  return (
-    <div className="absolute top-full left-0 mt-0 min-w-[200px]
-      bg-navy-900 border border-navy-700 border-t-0 shadow-xl z-50 py-1.5">
-      {items.map((item, i) =>
-        item === 'sep' ? (
-          <div key={i} className="my-1 border-t border-navy-800" />
-        ) : (
-          <Link key={item.href}
-            href={item.soon ? '#' : item.href}
-            className="flex items-center justify-between px-4 py-1.5
-              font-mono text-xs text-bone-300
-              hover:bg-navy-800 hover:text-gold-500 transition-colors">
-            <span className={item.soon ? 'opacity-40' : ''}>{item.label}</span>
-            {item.soon && (
-              <span className="font-mono text-[9px] uppercase tracking-wider
-                px-1.5 py-0.5 border border-navy-600 text-bone-500 leading-none ml-3">
-                soon
-              </span>
-            )}
-          </Link>
-        )
-      )}
-    </div>
-  );
-}
+// ── Tech Clubs ─────────────────────────────────────────────────────────────
+const CLUBS: { slug: string; label: string; href: string; comingSoon?: boolean }[] = [
+  { slug: 'rema',      label: 'REMA Club',               href: '/clubs/rema'      },
+  { slug: 'fullstack', label: 'Full Stack Dev Club',      href: '/clubs/fullstack' },
+  { slug: 'extension', label: 'Extension Activity', href: '/clubs/extension' },
+];
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
+// ── Resources ──────────────────────────────────────────────────────────────
+const RESOURCES = [
+  { label: 'All Resources',  href: '/resources',               comingSoon: false },
+  { label: 'eBooks',         href: '/resources?type=ebook',    comingSoon: false },
+  { label: 'Question Banks', href: '/resources?type=question-bank', comingSoon: false },
+  { label: 'MCQ Banks',      href: '/resources?type=mcq-bank', comingSoon: false },
+  { label: 'Cheatsheets',    href: '/resources?type=cheatsheet', comingSoon: false },
+  { label: 'Research Papers',href: '/resources?type=research-paper', comingSoon: false },
+];
+const EVENTS = [
+  { label: 'All Events',         href: '/events',                  comingSoon: false },
+  { label: 'CTF Competitions',   href: '/events?type=ctf',         comingSoon: false },
+  { label: 'Workshops & Talks',  href: '/events?type=workshop',    comingSoon: false },
+  { label: 'Industrial Visits',  href: '/events?type=industry',    comingSoon: false },
+  { label: 'Extension Activity', href: '/events?type=extension',   comingSoon: false },
+  { label: 'Hackathons',         href: '/events?type=hackathon',   comingSoon: true  },
+];
+
+// ── Nav structure ─────────────────────────────────────────────────────────
+// Grouped to reduce clutter: Learn group | Community group | Podcast | About
+const NAV_LINKS: Array<{
+  href: string;
+  label: string;
+  hasDropdown?: boolean;
+  dropdownType?: 'domain' | 'podcast' | 'clubs' | 'events' | 'resources';
+}> = [
+  { href: '/learn',     label: 'Learn',      hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/articles',  label: 'Articles',   hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/videos',    label: 'Videos',     hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/tests',     label: 'Tests',      hasDropdown: true, dropdownType: 'domain'     },
+  { href: '/resources', label: 'Resources',  hasDropdown: true, dropdownType: 'resources'  },
+  { href: '/clubs',     label: 'Clubs',      hasDropdown: true, dropdownType: 'clubs'      },
+  { href: '/events',    label: 'Events',     hasDropdown: true, dropdownType: 'events'     },
+  { href: '/podcast',   label: 'Podcast',    hasDropdown: true, dropdownType: 'podcast'    },
+  { href: '/about',     label: 'About'                                                      },
+];
 
 export function Navbar() {
-  const pathname    = usePathname();
-  const [openGroup, setOpenGroup]     = useState<string | null>(null);
-  const [mobileOpen, setMobileOpen]   = useState(false);
-  const [mobileGroup, setMobileGroup] = useState<string | null>(null);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentDomain = searchParams.get('domain') ?? 'all';
+  const currentTag    = searchParams.get('tag')    ?? 'all';
+  const [open, setOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  function groupActive(entry: NavEntry) {
-    if (entry.type === 'link') return pathname === entry.href;
-    return (
-      pathname.startsWith(entry.href) ||
-      entry.items.some(i =>
-        i !== 'sep' && (pathname === i.href || pathname.startsWith(i.href.split('?')[0]))
-      )
-    );
-  }
+  const buildDomainHref = (base: string, domain: string) =>
+    domain === 'all' ? base : `${base}?domain=${domain}`;
+
+  const buildTagHref = (base: string, tag: string) =>
+    tag === 'all' ? base : `${base}?tag=${encodeURIComponent(tag)}`;
 
   return (
-    <header className="sticky top-0 z-40 bg-navy-950/95 backdrop-blur-sm border-b border-navy-800">
-
-      {/* ── Desktop ── */}
-      <div className="container flex items-center h-16 gap-6">
+    <header className="sticky top-0 z-40 w-full border-b border-navy-700 bg-navy-900/80 backdrop-blur-md">
+      <div className="container flex h-16 items-center justify-between gap-4">
 
         {/* Logo */}
-        <Link href="/" className="shrink-0 flex items-center gap-3 mr-4">
-          <Image src={LOGO} alt="EpochZero" width={32} height={32} className="rounded" />
-          <div className="hidden sm:block leading-none">
-            <div className="font-mono text-sm font-bold text-bone-50">EpochZero Learn</div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-gold-500 mt-0.5">
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+          <Image src={EPOCHZERO_LOGO} alt="EpochZero Learn" width={44} height={44} className="shrink-0" />
+          <div className="flex flex-col leading-none">
+            <span className="font-mono text-sm font-bold tracking-tight text-bone-50">
+              EpochZero Learn
+            </span>
+            <span className="font-mono text-[9px] tracking-[0.25em] text-gold-500 uppercase hidden xl:block">
               Multi-Domain Tech Learning Hub
-            </div>
+            </span>
           </div>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-0 ml-auto">
-          {NAV.map(entry => {
-            const isActive = groupActive(entry);
+        <nav className="hidden lg:flex items-center gap-0.5">
+          {NAV_LINKS.map((link) => {
+            const active =
+              pathname === link.href ||
+              (link.href !== '/' && pathname.startsWith(link.href));
 
-            if (entry.type === 'link') {
+            if (!link.hasDropdown) {
               return (
-                <Link key={entry.href} href={entry.href}
+                <Link key={link.href} href={link.href}
                   className={cn(
-                    'px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors h-16 flex items-center',
-                    isActive ? 'text-gold-500 border-b-2 border-gold-500' : 'text-bone-300 hover:text-bone-50',
+                    'px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
+                    active
+                      ? 'text-gold-500 border-b-2 border-gold-500'
+                      : 'text-bone-200 hover:text-gold-500 border-b-2 border-transparent'
                   )}>
-                  {entry.label}
+                  {link.label}
                 </Link>
               );
             }
 
+            // Build dropdown items
+            const dropdownItems = (() => {
+              if (link.dropdownType === 'resources') {
+                return RESOURCES.map((r) => ({
+                  label: r.label, href: r.href,
+                  active: pathname === '/resources' && r.href === '/resources',
+                  comingSoon: r.comingSoon,
+                }));
+              }
+              if (link.dropdownType === 'clubs') {
+                return CLUBS.map(c => ({
+                  label: c.label, href: c.href,
+                  active: pathname.startsWith(c.href),
+                  comingSoon: c.comingSoon ?? false,
+                }));
+              }
+              if (link.dropdownType === 'events') {
+                return EVENTS.map(e => ({
+                  label: e.label, href: e.href,
+                  active: pathname === e.href || (pathname === '/events' && e.href === '/events'),
+                  comingSoon: e.comingSoon,
+                }));
+              }
+              if (link.dropdownType === 'podcast') {
+                return PODCAST_TAGS.map(t => ({
+                  label: t.label,
+                  href: buildTagHref(link.href, t.slug),
+                  active: active && (t.slug === 'all' ? currentTag === 'all' : currentTag === t.slug),
+                  comingSoon: t.comingSoon,
+                }));
+              }
+              return DOMAINS.map(d => ({
+                label: d.label,
+                href: buildDomainHref(link.href, d.slug),
+                active: active && currentDomain === d.slug,
+                comingSoon: d.comingSoon,
+              }));
+            })();
+
             return (
-              <div key={entry.href} className="relative h-16 flex items-center">
-                <button
-                  onClick={() => setOpenGroup(p => p === entry.label ? null : entry.label)}
-                  onBlur={() => setTimeout(() => setOpenGroup(null), 150)}
+              <div key={link.href} className="relative"
+                onMouseEnter={() => setOpenDropdown(link.href)}
+                onMouseLeave={() => setOpenDropdown(null)}>
+                <Link href={link.href}
                   className={cn(
-                    'flex items-center gap-1 px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors h-16',
-                    isActive ? 'text-gold-500 border-b-2 border-gold-500' : 'text-bone-300 hover:text-bone-50',
+                    'flex items-center gap-0.5 px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
+                    active
+                      ? 'text-gold-500 border-b-2 border-gold-500'
+                      : 'text-bone-200 hover:text-gold-500 border-b-2 border-transparent'
                   )}>
-                  {entry.label}
-                  {entry.badge && (
-                    <span className="font-mono text-[8px] px-1 border border-current opacity-60 leading-none ml-0.5">
-                      {entry.badge}
-                    </span>
-                  )}
-                  <ChevronDown className={cn(
-                    'w-3 h-3 transition-transform duration-150 ml-0.5',
-                    openGroup === entry.label && 'rotate-180',
-                  )} />
-                </button>
-                {openGroup === entry.label && <Dropdown items={entry.items} />}
-              </div>
-            );
-          })}
-
-          {/* Dashboard */}
-          <Link href="/dashboard"
-            className="ml-4 flex items-center gap-2 px-4 py-2
-              border border-gold-500/40 font-mono text-xs uppercase tracking-wider
-              text-bone-200 hover:border-gold-500 hover:text-gold-500 transition-colors">
-            <User className="w-3.5 h-3.5" /> Dashboard
-          </Link>
-        </nav>
-
-        {/* Hamburger */}
-        <button
-          className="lg:hidden ml-auto p-2 text-bone-300 hover:text-bone-50"
-          onClick={() => setMobileOpen(v => !v)}>
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* ── Mobile drawer ── */}
-      {mobileOpen && (
-        <div className="lg:hidden border-t border-navy-800 bg-navy-950
-          max-h-[calc(100vh-4rem)] overflow-y-auto divide-y divide-navy-800">
-
-          {NAV.map(entry => {
-            if (entry.type === 'link') {
-              return (
-                <Link key={entry.href} href={entry.href}
-                  className="flex px-5 py-4 font-mono text-xs uppercase tracking-wider
-                    text-bone-200 hover:text-gold-500 transition-colors">
-                  {entry.label}
+                  {link.label}
+                  <ChevronDown className="w-3 h-3" />
                 </Link>
-              );
-            }
-            return (
-              <div key={entry.href}>
-                <button
-                  onClick={() => setMobileGroup(p => p === entry.label ? null : entry.label)}
-                  className="w-full flex items-center justify-between px-5 py-4
-                    font-mono text-xs uppercase tracking-wider text-bone-200">
-                  <span className="flex items-center gap-2">
-                    {entry.label}
-                    {entry.badge && (
-                      <span className="font-mono text-[8px] px-1 border border-bone-600 text-bone-500 leading-none">
-                        {entry.badge}
-                      </span>
-                    )}
-                  </span>
-                  <ChevronDown className={cn(
-                    'w-4 h-4 transition-transform duration-150',
-                    mobileGroup === entry.label && 'rotate-180',
-                  )} />
-                </button>
-                {mobileGroup === entry.label && (
-                  <div className="px-5 pb-3 space-y-0.5">
-                    {entry.items.map((item, i) =>
-                      item === 'sep' ? (
-                        <div key={i} className="my-2 border-t border-navy-800" />
-                      ) : (
-                        <div key={item.href} className="flex items-center justify-between">
-                          <Link
-                            href={item.soon ? '#' : item.href}
-                            className={cn(
-                              'font-mono text-xs py-1.5 transition-colors',
-                              item.soon ? 'text-bone-500 pointer-events-none' : 'text-bone-300 hover:text-gold-500',
-                            )}>
-                            {item.label}
-                          </Link>
-                          {item.soon && (
-                            <span className="font-mono text-[9px] uppercase tracking-wider
-                              px-1.5 border border-navy-600 text-bone-500">
-                              soon
-                            </span>
-                          )}
-                        </div>
-                      )
-                    )}
+
+                {openDropdown === link.href && (
+                  <div className="absolute top-full left-0 min-w-[200px] bg-navy-900 border border-navy-700 shadow-xl py-2 z-50">
+                    {dropdownItems.map(item => (
+                      <Link key={item.href} href={item.comingSoon ? '#' : item.href}
+                        className={cn(
+                          'flex items-center justify-between px-4 py-2 font-mono text-xs uppercase tracking-wider transition-colors',
+                          item.comingSoon
+                            ? 'text-bone-400 cursor-default'
+                            : item.active
+                            ? 'text-gold-500 bg-navy-800'
+                            : 'text-bone-200 hover:text-gold-500 hover:bg-navy-800'
+                        )}
+                        onClick={item.comingSoon ? e => e.preventDefault() : undefined}>
+                        {item.label}
+                        {item.comingSoon && (
+                          <span className="font-mono text-[9px] text-bone-400 border border-navy-600 px-1.5 py-0.5 ml-2">
+                            soon
+                          </span>
+                        )}
+                      </Link>
+                    ))}
                   </div>
                 )}
               </div>
             );
           })}
+        </nav>
 
+        {/* Dashboard button */}
+        <div className="hidden lg:flex items-center gap-2 shrink-0">
           <Link href="/dashboard"
-            className="flex items-center gap-2 px-5 py-4 font-mono text-xs uppercase
-              tracking-wider text-bone-200 hover:text-gold-500 transition-colors">
-            <User className="w-4 h-4" /> Dashboard
+            className={cn(
+              'flex items-center gap-1.5 px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors border',
+              pathname.startsWith('/dashboard')
+                ? 'border-gold-500 text-gold-500 bg-gold-500/10'
+                : 'border-navy-700 text-bone-300 hover:border-gold-500/60 hover:text-gold-500'
+            )}>
+            <User className="w-3.5 h-3.5" />
+            Dashboard
           </Link>
         </div>
+
+        {/* Mobile toggle */}
+        <button className="lg:hidden p-2 text-bone-100 hover:text-gold-500 transition-colors"
+          onClick={() => setOpen(!open)} aria-label="Toggle menu">
+          {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile nav */}
+      {open && (
+        <nav className="lg:hidden border-t border-navy-700 bg-navy-900">
+          <div className="container py-4 flex flex-col gap-1">
+            {NAV_LINKS.map((link) => {
+              const active =
+                pathname === link.href ||
+                (link.href !== '/' && pathname.startsWith(link.href));
+
+              const mobileItems = (() => {
+                if (link.dropdownType === 'resources')
+                  return RESOURCES.map(r => ({ label: r.label, href: r.href, comingSoon: r.comingSoon }));
+                if (link.dropdownType === 'clubs')
+                  return CLUBS.map(c => ({ label: c.label, href: c.href, comingSoon: c.comingSoon ?? false }));
+                if (link.dropdownType === 'events')
+                  return EVENTS.map(e => ({ label: e.label, href: e.href, comingSoon: e.comingSoon }));
+                if (link.dropdownType === 'podcast')
+                  return PODCAST_TAGS.map(t => ({ label: t.label, href: buildTagHref(link.href, t.slug), comingSoon: t.comingSoon }));
+                return DOMAINS.map(d => ({ label: d.label, href: buildDomainHref(link.href, d.slug), comingSoon: d.comingSoon }));
+              })();
+
+              return (
+                <div key={link.href}>
+                  <Link href={link.href} onClick={() => setOpen(false)}
+                    className={cn(
+                      'px-4 py-3 font-mono text-sm uppercase tracking-wider transition-colors block',
+                      active
+                        ? 'text-gold-500 bg-navy-800 border-l-2 border-gold-500'
+                        : 'text-bone-200 hover:text-gold-500 border-l-2 border-transparent'
+                    )}>
+                    {link.label}
+                  </Link>
+                  {link.hasDropdown && active && (
+                    <div className="pl-6 mt-1 mb-2">
+                      {mobileItems.map(item => (
+                        <Link key={item.href} href={item.comingSoon ? '#' : item.href}
+                          onClick={item.comingSoon ? e => e.preventDefault() : () => setOpen(false)}
+                          className={cn(
+                            'flex items-center justify-between px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors',
+                            item.comingSoon ? 'text-bone-400' : 'text-bone-300 hover:text-gold-500'
+                          )}>
+                          {item.label}
+                          {item.comingSoon && (
+                            <span className="text-[9px] border border-navy-600 px-1.5 py-0.5 ml-2">soon</span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {/* Dashboard in mobile */}
+            <Link href="/dashboard" onClick={() => setOpen(false)}
+              className={cn(
+                'px-4 py-3 font-mono text-sm uppercase tracking-wider transition-colors block border-l-2',
+                pathname.startsWith('/dashboard')
+                  ? 'text-gold-500 bg-navy-800 border-gold-500'
+                  : 'text-bone-200 hover:text-gold-500 border-transparent'
+              )}>
+              Dashboard
+            </Link>
+          </div>
+        </nav>
       )}
     </header>
   );
