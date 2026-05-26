@@ -1,420 +1,642 @@
-// app/page.tsx
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  ArrowRight,
+  BookOpen,
+  Video,
+  GraduationCap,
+  FileText,
+  Award,
+  Terminal,
+  Calendar,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import { ArrowRight, BookOpen, FlaskConical, MessageSquare, Users, CalendarDays, Award } from 'lucide-react';
+import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 
-export const revalidate = 60;
+// Revalidates every hour so new content appears automatically
+export const revalidate = 3600;
 
-const DOMAINS = [
-  {
-    slug: 'rema', label: 'REMA',
-    full: 'Reverse Engineering & Malware Analysis',
-    color: 'border-gold-500/40 hover:border-gold-500',
-    tag: 'text-gold-500 border-gold-500/40',
-    desc: 'Static & dynamic analysis, YARA rules, unpacking, IOC extraction, malware triage.',
-  },
-  {
-    slug: 'cloud', label: 'Cloud Security',
-    full: 'Cloud Architecture & Threat Modelling',
-    color: 'border-blue-500/40 hover:border-blue-500',
-    tag: 'text-blue-400 border-blue-400/40',
-    desc: 'Shared responsibility, IAM, data protection, cloud forensics, attack surfaces.',
-  },
-  {
-    slug: 'crypto', label: 'Cryptography',
-    full: 'Applied Cryptography & PKI',
-    color: 'border-purple-500/40 hover:border-purple-500',
-    tag: 'text-purple-400 border-purple-400/40',
-    desc: 'Symmetric/asymmetric systems, hash functions, TLS, PKI, cryptanalysis techniques.',
-    soon: true,
-  },
-  {
-    slug: 'webdev', label: 'Web Development',
-    full: 'Full Stack & Secure Coding',
-    color: 'border-emerald-500/40 hover:border-emerald-500',
-    tag: 'text-emerald-400 border-emerald-400/40',
-    desc: 'React, Node.js, REST APIs, databases, deployment, secure coding practices.',
-    soon: true,
-  },
-];
+// Coming-soon courses — remove entry when DB row is added with is_published=true
+const COMING_SOON = ['Crypto', 'Web Dev'];
 
-export default async function HomePage() {
+async function getHomeData() {
   const supabase = createClient();
 
-  // Fetch counts
+  // All queries in one parallel batch — flat and simple
   const [
-    { count: articleCount },
-    { count: videoCount },
-    { count: forumCount },
-    { data: recentArticles },
-    { data: recentThreads },
-    { data: domainCounts },
+    articlesRes,
+    videosRes,
+    testsRes,
+    coursesRes,
+    videoCountRes,
+    assessmentCountRes,
+    questionCountRes,
+    articleCountRes,
+    podcastCountRes,
+    topicCountRes,
+    clubsRes,
+    eventsRes,
   ] = await Promise.all([
-    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    supabase.from('videos').select('*', { count: 'exact', head: true }).eq('is_published', true),
-    supabase.from('forum_threads').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('articles')
-      .select('id, slug, title, category, reading_time, published_at')
+    supabase
+      .from('articles')
+      .select('id, slug, title, excerpt, category, published_at, reading_time')
       .eq('is_published', true)
       .order('published_at', { ascending: false })
-      .limit(4),
-    supabase.from('forum_threads')
-      .select('id, title, domain, author_name, reply_count, created_at')
-      .eq('status', 'published')
+      .limit(3),
+    supabase
+      .from('videos')
+      .select('id, slug, youtube_id, title, episode_label, duration_seconds, published_at')
+      .eq('is_published', true)
+      .order('published_at', { ascending: false })
+      .limit(3),
+    supabase
+      .from('tests')
+      .select('id, slug, title, description, malware_family, duration_minutes, total_questions')
+      .eq('is_published', true)
       .order('created_at', { ascending: false })
-      .limit(5),
-    supabase.from('articles')
-      .select('category')
+      .limit(3),
+    supabase
+      .from('courses')
+      .select('id, title, slug, short_title')
+      .eq('is_published', true)
+      .order('created_at', { ascending: true }),
+    // Stat: total published videos
+    supabase
+      .from('videos')
+      .select('*', { count: 'exact', head: true })
       .eq('is_published', true),
+    // Stat: total published tests
+    supabase
+      .from('tests')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_published', true),
+    // Stat: total MCQ questions — all 260 rows are in published tests (verified)
+    supabase
+      .from('test_questions')
+      .select('*', { count: 'exact', head: true }),
+    // Stat: total published articles
+    supabase
+      .from('articles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_published', true),
+    // Stat: total published podcast episodes
+    supabase
+      .from('podcasts')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_published', true),
+    // Stat: content topics — exclude knowledge-check capstone topics
+    supabase
+      .from('topics')
+      .select('*', { count: 'exact', head: true })
+      .not('slug', 'ilike', '%knowledge-check%'),
+    // Clubs for homepage
+    supabase
+      .from('clubs')
+      .select('id, slug, name, short_name, tagline, logo_url, is_active')
+      .eq('is_active', true)
+      .order('order_index'),
+    // Recent events for homepage — exclude FSD duplicate of digital hygiene (shown under Extension)
+    supabase
+      .from('club_events')
+      .select('id, slug, title, subtitle, event_type, status, event_date, registrations_count, participants_count, clubs(short_name, slug)')
+      .eq('is_published', true)
+      .neq('slug', 'digital-hygiene-drive-2025')
+      .order('event_date', { ascending: false })
+      .limit(4),
   ]);
 
-  // Count articles per domain
-  const domainMap: Record<string, number> = {};
-  for (const row of domainCounts ?? []) {
-    const key = (row.category as string)?.toLowerCase().replace(/\s/g, '') ?? 'other';
-    domainMap[key] = (domainMap[key] ?? 0) + 1;
-  }
+  const courses = coursesRes.data ?? [];
 
-  const STATS = [
-    { label: 'Articles',     value: articleCount ?? 0 },
-    { label: 'Videos',       value: videoCount ?? 0 },
-    { label: 'Forum Threads',value: forumCount ?? 0 },
-    { label: 'Domains',      value: 4 },
+  // Per-course video count via videos.domain column.
+  // Simpler and correct even when a course has 0 topics (e.g. Cloud).
+  // domain column values: 'rema', 'cloud', 'crypto', 'webdev'
+  // course slug values:   'rema', 'cloud-security', 'crypto', 'webdev'
+  const domainByCourseSlug: Record<string, string> = {
+    'rema':          'rema',
+    'cloud-security':'cloud',
+    'crypto':        'crypto',
+    'webdev':        'webdev',
+  };
+
+  const coursesWithCount = await Promise.all(
+    courses.map(async (course) => {
+      const domainKey = domainByCourseSlug[course.slug];
+      if (!domainKey) return { ...course, video_count: 0 };
+      const { count } = await supabase
+        .from('videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_published', true)
+        .eq('domain', domainKey);
+      return { ...course, video_count: count ?? 0 };
+    })
+  );
+
+  return {
+    articles:  articlesRes.data ?? [],
+    videos:    videosRes.data ?? [],
+    tests:     testsRes.data ?? [],
+    courses:   coursesWithCount,
+    clubs:     clubsRes.data ?? [],
+    events:    eventsRes.data ?? [],
+    stats: {
+      domains:          courses.length,
+      video_lessons:    videoCountRes.count    ?? 0,
+      assessments:      assessmentCountRes.count ?? 0,
+      total_questions:  questionCountRes.count  ?? 0,
+      articles:         articleCountRes.count   ?? 0,
+      podcast_episodes: podcastCountRes.count   ?? 0,
+      content_topics:   topicCountRes.count     ?? 0,
+    },
+  };
+}
+
+export default async function HomePage() {
+  const { articles, videos, tests, courses, clubs, events, stats } = await getHomeData();
+
+  const statBlocks = [
+    { label: 'Domains',       value: `${stats.domains}+`         },
+    { label: 'Video Lessons', value: `${stats.video_lessons}+`   },
+    { label: 'Assessments',   value: `${stats.assessments}`      },
+    { label: 'MCQ Questions', value: `${stats.total_questions}+` },
   ];
 
-  function domainArticleCount(slug: string) {
-    const map: Record<string, string[]> = {
-      rema:   ['rema', 'reverseengineering', 'malware'],
-      cloud:  ['cloud', 'cloudsecurity'],
-      crypto: ['crypto', 'cryptography'],
-      webdev: ['webdev', 'webdevelopment'],
-    };
-    return Object.entries(domainMap)
-      .filter(([k]) => (map[slug] ?? [slug]).some(m => k.includes(m)))
-      .reduce((s, [, v]) => s + v, 0);
-  }
-
   return (
-    <div className="min-h-screen">
+    <>
+      {/* ── HERO ────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-navy-700">
+        <div className="absolute inset-0 border-grid opacity-40" aria-hidden />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(800px circle at 30% 20%, rgba(255,200,87,0.08), transparent 50%)' }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-scanlines pointer-events-none opacity-50" aria-hidden />
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="border-b border-navy-800 bg-navy-950 relative overflow-hidden">
-        <div className="absolute inset-0 border-grid opacity-10" aria-hidden />
-        <div className="container py-16 lg:py-20">
-          <div className="max-w-2xl">
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-              EpochZero Learn — Live Platform
-            </div>
-            <h1 className="font-mono text-5xl lg:text-6xl font-bold text-bone-50 leading-none mb-2">
-              Learn.
-            </h1>
-            <h1 className="font-mono text-5xl lg:text-6xl font-bold text-gold-500 leading-none mb-2">
-              Compete.
-            </h1>
-            <h1 className="font-mono text-5xl lg:text-6xl font-bold text-bone-50 leading-none mb-8">
-              Get Certified.
-            </h1>
-            <p className="font-serif text-lg text-bone-300 leading-relaxed mb-8 max-w-lg">
-              A structured learning platform for Reverse Engineering, Cloud Security,
-              Cryptography, and Web Development. Articles, videos, tests, and peer discussion
-              — all in one place.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/learn"
-                className="inline-flex items-center gap-2 px-5 py-3
-                  bg-gold-500 text-navy-950 font-mono text-sm uppercase tracking-wider
-                  hover:bg-gold-400 transition-colors">
-                Browse Courses <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link href="/forum"
-                className="inline-flex items-center gap-2 px-5 py-3
-                  border border-navy-600 text-bone-200 font-mono text-sm uppercase tracking-wider
-                  hover:border-gold-500/50 hover:text-bone-50 transition-colors">
-                Join Discussion
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+        <div className="container relative py-24 lg:py-32">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
 
-      {/* ── Stats bar ────────────────────────────────────────────────────── */}
-      <section className="border-b border-navy-800 bg-navy-900/50">
-        <div className="container py-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-navy-800">
-            {STATS.map(({ label, value }) => (
-              <div key={label} className="px-8 py-5 text-center">
-                <div className="font-mono text-3xl font-bold text-bone-50 tabular-nums">
-                  {value}
-                </div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-bone-400 mt-1">
-                  {label}
+            {/* Left col */}
+            <div className="lg:col-span-7">
+              {/* EpochZero logo — prominent hero placement */}
+              <div className="flex items-center gap-4 mb-8">
+                <Image
+                  src="https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png"
+                  alt="EpochZero Learn"
+                  width={80}
+                  height={80}
+                  className="shrink-0 drop-shadow-2xl"
+                  priority
+                />
+                <div>
+                  <div className="font-mono text-xl font-bold text-bone-50 tracking-tight">EpochZero Learn</div>
+                  <div className="font-mono text-xs tracking-[0.25em] text-gold-500 uppercase mt-0.5">Multi-Domain Tech Learning Hub</div>
                 </div>
               </div>
-            ))}
+
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-gold-500/30 bg-gold-500/5 mb-8 animate-fade-up">
+                <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse" />
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500">
+                  EpochZero Learn — Live Platform
+                </span>
+              </div>
+
+              <h1
+                className="font-mono text-5xl lg:text-7xl font-bold leading-[0.95] tracking-tight text-bone-50 mb-6 animate-fade-up text-balance"
+                style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
+              >
+                Learn.
+                <br />
+                <span className="text-gold-500">Compete.</span>
+                <br />
+                Get Certified.
+              </h1>
+
+              <p
+                className="font-serif text-xl text-bone-200 max-w-2xl leading-relaxed mb-10 animate-fade-up"
+                style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
+              >
+                A multi-domain learning hub for{' '}
+                <span className="text-gold-500 font-mono text-base">REMA</span>,{' '}
+                <span className="text-gold-500 font-mono text-base">Cloud</span>,{' '}
+                <span className="text-gold-500 font-mono text-base">Cryptography</span>, and{' '}
+                <span className="text-gold-500 font-mono text-base">Web Development</span>.
+                Articles, video lessons, podcast, MCQ tests with verifiable certificates, and CTF events.
+              </p>
+
+              <div
+                className="flex flex-wrap gap-4 animate-fade-up"
+                style={{ animationDelay: '0.3s', animationFillMode: 'both' }}
+              >
+                <Link href="/learn" className="btn-primary">
+                  <GraduationCap className="w-4 h-4" />
+                  Browse Courses
+                </Link>
+                <Link href="/videos" className="btn-ghost">
+                  <Video className="w-4 h-4" />
+                  Watch Lessons
+                </Link>
+              </div>
+
+              {/* Dynamic stat blocks */}
+              <div
+                className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-xl animate-fade-up"
+                style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
+              >
+                {statBlocks.map((s) => (
+                  <div key={s.label} className="border-l-2 border-gold-500 pl-4">
+                    <div className="font-mono text-3xl text-bone-50 font-bold tabular-nums">
+                      {s.value}
+                    </div>
+                    <div className="font-mono text-xs uppercase tracking-wider text-bone-300 mt-1">
+                      {s.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right col — terminal */}
+            <div
+              className="lg:col-span-5 animate-fade-up"
+              style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
+            >
+              <div className="card-forensic border-2 p-1">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-navy-700 bg-navy-950">
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-crimson-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-gold-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-bone-300/40" />
+                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-bone-300">
+                    epochzero://session
+                  </span>
+                </div>
+
+                <div className="p-6 bg-navy-950 font-mono text-sm leading-relaxed space-y-1">
+                  {/* Courses */}
+                  <div className="text-bone-300 pb-1">
+                    <span className="text-gold-500">$</span> ez courses --list
+                  </div>
+                  {courses.map((course) => (
+                    <div key={course.slug} className="text-bone-200">
+                      ├── {course.short_title ?? course.title}{' '}
+                      <span className="text-gold-500">{course.video_count} lessons</span>
+                    </div>
+                  ))}
+                  {COMING_SOON.map((label, i) => (
+                    <div key={label} className="text-bone-200">
+                      {i === COMING_SOON.length - 1 ? '└──' : '├──'} {label}{' '}
+                      <span className="text-bone-300">coming soon</span>
+                    </div>
+                  ))}
+
+                  {/* Live stats */}
+                  <div className="text-bone-300 pt-3 pb-1">
+                    <span className="text-gold-500">$</span> ez stats --live
+                  </div>
+                  <div className="text-bone-200">
+                    ├── articles{' '}
+                    <span className="text-gold-500">{stats.articles}</span>
+                  </div>
+                  <div className="text-bone-200">
+                    ├── podcasts{' '}
+                    <span className="text-gold-500">{stats.podcast_episodes} episodes</span>
+                  </div>
+                  <div className="text-bone-200">
+                    ├── questions{' '}
+                    <span className="text-gold-500">{stats.total_questions} MCQs</span>
+                  </div>
+                  <div className="text-bone-200">
+                    └── topics{' '}
+                    <span className="text-gold-500">{stats.content_topics} covered</span>
+                  </div>
+
+                  {/* Cursor */}
+                  <div className="text-bone-300 pt-3">
+                    <span className="text-gold-500">$</span>{' '}
+                    <span className="inline-block w-2 h-4 bg-gold-500 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Domains ──────────────────────────────────────────────────────── */}
-      <section className="border-b border-navy-800">
-        <div className="container py-14">
-          <div className="mb-8">
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-2">
-              // Domains
+      {/* ── FEATURES GRID ───────────────────────────────────────────── */}
+      <section className="container py-24 border-t border-navy-700">
+        <div className="mb-16">
+          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+            Multi-Domain
+          </div>
+          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+            // What you'll find here
+          </div>
+          <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+            Learning, assessments, and events — under one roof.
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              icon: BookOpen,
+              title: 'Articles & Writeups',
+              desc: 'In-depth technical writeups across malware analysis, cloud security, cryptography, and modern web development.',
+              href: '/articles',
+            },
+            {
+              icon: Video,
+              title: 'Video Lessons',
+              desc: 'Step-by-step lessons with synchronised lab notes, references, and exercises. YouTube-embedded for one-click viewing.',
+              href: '/videos',
+            },
+            {
+              icon: GraduationCap,
+              title: 'MCQ Tests + Certificates',
+              desc: 'Validated question banks across every domain. Pass the test, receive a verifiable PDF certificate by email.',
+              href: '/tests',
+            },
+            {
+              icon: FileText,
+              title: 'eBooks & Cheatsheets',
+              desc: 'Course textbooks, cheatsheets, and question banks — downloadable, all free.',
+              href: '/resources',
+            },
+            {
+              icon: Calendar,
+              title: 'Events & Activities',
+              desc: 'CTF competitions, expert talks, industrial visits, hackathons, and extension outreach organised by SITAICS clubs.',
+              href: '/events',
+            },
+            {
+              icon: Award,
+              title: 'Verifiable Credentials',
+              desc: 'Every certificate has a public verification URL. Employers and institutions can validate authenticity instantly.',
+              href: '/verify',
+            },
+          ].map(({ icon: Icon, title, desc, href }) => (
+            <Link key={title} href={href} className="card-forensic p-8 group">
+              <Icon className="w-8 h-8 text-gold-500 mb-4 group-hover:scale-110 transition-transform" />
+              <h3 className="font-mono text-lg uppercase tracking-wider text-bone-50 mb-3">
+                {title}
+              </h3>
+              <p className="font-serif text-bone-200 leading-relaxed mb-4">{desc}</p>
+              <span className="font-mono text-xs uppercase tracking-wider text-gold-500 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                Open <ArrowRight className="w-3 h-3" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── LATEST ARTICLES ─────────────────────────────────────────── */}
+      {articles.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Latest writeups
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                From the lab notebook
+              </h2>
             </div>
-            <h2 className="font-mono text-2xl font-bold text-bone-50">
-              Four specialisations. One platform.
-            </h2>
+            <Link
+              href="/articles"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all"
+            >
+              All articles <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {articles.map((a) => (
+              <Link key={a.id} href={`/articles/${a.slug}`} className="card-forensic p-6 group">
+                {a.category && <span className="badge-tag mb-4">{a.category}</span>}
+                <h3 className="font-mono text-xl text-bone-50 mb-3 group-hover:text-gold-500 transition-colors">
+                  {a.title}
+                </h3>
+                <p className="font-serif text-bone-200 leading-relaxed mb-4 line-clamp-3">
+                  {a.excerpt}
+                </p>
+                <div className="flex items-center gap-3 font-mono text-xs text-bone-300">
+                  {a.published_at && <span>{formatDate(a.published_at)}</span>}
+                  {a.reading_time && <span>· {a.reading_time} min read</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── LATEST VIDEOS ───────────────────────────────────────────── */}
+      {videos.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Recent lessons
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                Video lessons
+              </h2>
+            </div>
+            <Link
+              href="/videos"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all"
+            >
+              All videos <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {videos.map((v) => (
+              <Link key={v.id} href={`/videos/${v.slug}`} className="group">
+                <div className="relative aspect-video overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
+                  <Image
+                    src={getYouTubeThumbnail(v.youtube_id, 'maxres')}
+                    alt={v.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-transparent to-transparent" />
+                  {v.episode_label && (
+                    <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-[0.3em] text-gold-500 border border-gold-500/40 px-2 py-1 bg-navy-950/80">
+                      {v.episode_label}
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-mono text-base text-bone-50 mt-4 group-hover:text-gold-500 transition-colors">
+                  {v.title}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── TECH CLUBS ──────────────────────────────────────────────── */}
+      {clubs.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Student clubs & outreach
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                Clubs & Activities at SITAICS
+              </h2>
+            </div>
+            <Link href="/clubs"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all">
+              All clubs <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {clubs.map((club: any) => (
+              <Link key={club.id} href={`/clubs/${club.slug}`}
+                className="card-forensic p-6 group flex items-start gap-5 hover:border-gold-500/50 transition-colors">
+                {club.logo_url && (
+                  <Image
+                    src={club.logo_url}
+                    alt={club.name}
+                    width={64}
+                    height={64}
+                    className="shrink-0 group-hover:scale-105 transition-transform"
+                  />
+                )}
+                <div className="min-w-0">
+                  <h3 className="font-mono text-base font-bold text-bone-50 mb-1 group-hover:text-gold-500 transition-colors leading-tight">
+                    {club.short_name ?? club.name}
+                  </h3>
+                  <p className="font-mono text-xs text-gold-500/80 mb-2">{club.tagline}</p>
+                  <span className="font-mono text-xs uppercase tracking-wider text-bone-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View club <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── RECENT EVENTS ───────────────────────────────────────────── */}
+      {events.length > 0 && (
+        <section className="container py-16 border-t border-navy-700">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
+                // Activities
+              </div>
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50">
+                Recent events
+              </h2>
+            </div>
+            <Link href="/events"
+              className="hidden md:inline-flex items-center gap-2 font-mono text-sm uppercase tracking-wider text-gold-500 hover:gap-3 transition-all">
+              All events <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {DOMAINS.map(d => (
-              <Link key={d.slug}
-                href={d.soon ? '#' : `/learn?domain=${d.slug}`}
-                className={cn(
-                  'border p-5 block transition-colors group',
-                  d.color,
-                  d.soon && 'pointer-events-none opacity-60',
-                )}>
-                <div className="flex items-start justify-between mb-4">
-                  <span className={cn(
-                    'font-mono text-[9px] uppercase tracking-widest px-2 py-1 border',
-                    d.tag,
-                  )}>
-                    {d.label}
+            {events.map((ev: any) => (
+              <Link key={ev.id} href="/events"
+                className="border border-navy-700 hover:border-gold-500/40 p-5 group transition-colors flex flex-col gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-navy-600 text-bone-400">
+                    {ev.event_type}
                   </span>
-                  {d.soon
-                    ? <span className="font-mono text-[9px] text-bone-500 uppercase tracking-wider">Soon</span>
-                    : <span className="font-mono text-[10px] text-bone-400">
-                        {domainArticleCount(d.slug)} articles
-                      </span>
-                  }
+                  {ev.clubs && (
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-gold-500">
+                      {ev.clubs.short_name}
+                    </span>
+                  )}
                 </div>
-                <div className="font-mono text-sm font-semibold text-bone-100
-                  group-hover:text-gold-500 transition-colors mb-2 leading-snug">
-                  {d.full}
-                </div>
-                <p className="font-mono text-[11px] text-bone-400 leading-relaxed">
-                  {d.desc}
-                </p>
-                {!d.soon && (
-                  <div className="mt-4 font-mono text-xs text-gold-500 flex items-center gap-1
-                    group-hover:gap-2 transition-all">
-                    Explore <ArrowRight className="w-3 h-3" />
+                <h3 className="font-mono text-sm font-bold text-bone-50 group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
+                  {ev.title}
+                </h3>
+                {ev.event_date && (
+                  <div className="font-mono text-xs text-bone-400 mt-auto">
+                    {new Date(ev.event_date).toLocaleDateString('en-IN', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </div>
+                )}
+                {(ev.participants_count) && (
+                  <div className="font-mono text-xs text-bone-400">
+                    <span className="text-bone-50 font-bold">{ev.participants_count}+</span> participants
                   </div>
                 )}
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── Recent Articles + Forum Activity ─────────────────────────────── */}
-      <section className="border-b border-navy-800">
-        <div className="container py-14 grid lg:grid-cols-[1fr_380px] gap-10">
-
-          {/* Articles */}
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-1">
-                  // Latest Articles
-                </div>
-              </div>
-              <Link href="/articles"
-                className="font-mono text-xs text-bone-400 hover:text-gold-500
-                  transition-colors flex items-center gap-1">
-                View all <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-            <div className="space-y-0 border border-navy-800 divide-y divide-navy-800">
-              {(recentArticles ?? []).length === 0 ? (
-                <div className="p-8 text-center font-mono text-sm text-bone-500">
-                  No articles yet.
-                </div>
-              ) : (
-                (recentArticles ?? []).map(article => (
-                  <Link key={article.id} href={`/articles/${article.slug}`}
-                    className="flex items-start gap-4 p-5 hover:bg-navy-900/40
-                      transition-colors group">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="font-mono text-[9px] uppercase tracking-widest
-                          px-1.5 py-0.5 border border-navy-700 text-bone-400">
-                          {article.category}
-                        </span>
-                        {article.reading_time && (
-                          <span className="font-mono text-[10px] text-bone-500">
-                            {article.reading_time} min read
-                          </span>
-                        )}
-                      </div>
-                      <div className="font-mono text-sm text-bone-100
-                        group-hover:text-gold-500 transition-colors leading-snug">
-                        {article.title}
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-bone-600 group-hover:text-gold-500
-                      transition-colors shrink-0 mt-1" />
-                  </Link>
-                ))
-              )}
-            </div>
+          <div className="mt-6 text-center">
+            <Link href="/events"
+              className="font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors inline-flex items-center gap-2">
+              View all 7 events <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
+        </section>
+      )}
 
-          {/* Forum Activity */}
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
-                // Forum Activity
-              </div>
-              <Link href="/forum"
-                className="font-mono text-xs text-bone-400 hover:text-gold-500
-                  transition-colors flex items-center gap-1">
-                All threads <ArrowRight className="w-3 h-3" />
+      {/* ── TESTS CTA ───────────────────────────────────────────────── */}
+      <section className="container py-24 border-t border-navy-700">
+        <div className="card-forensic relative overflow-hidden p-12 lg:p-16 border-2">
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'radial-gradient(600px circle at 80% 50%, rgba(255,200,87,0.08), transparent 60%)' }}
+            aria-hidden
+          />
+          <div className="relative grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <Award className="w-12 h-12 text-gold-500 mb-6" />
+              <h2 className="font-mono text-3xl lg:text-4xl font-bold text-bone-50 mb-4 leading-tight">
+                Test your skills.
+                <br />
+                Earn a certificate.
+              </h2>
+              <p className="font-serif text-lg text-bone-200 mb-8 leading-relaxed">
+                Pick a test, enter your email, prove what you know. Pass the bar — receive
+                a PDF certificate with a unique verification ID. No paywall. No catch.
+              </p>
+              <Link href="/tests" className="btn-primary">
+                Browse Tests <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="space-y-2">
-              {(recentThreads ?? []).length === 0 ? (
-                <div className="border border-dashed border-navy-800 p-8 text-center
-                  font-mono text-sm text-bone-500">
-                  No threads yet.
-                </div>
-              ) : (
-                (recentThreads ?? []).map(t => (
-                  <Link key={t.id}
-                    href={`/forum/${t.domain}/${t.id}`}
-                    className="block border border-navy-800 hover:border-navy-600
-                      p-4 transition-colors group">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className={cn(
-                        'font-mono text-[9px] uppercase tracking-widest px-1.5 py-0.5 border',
-                        t.domain === 'rema'   && 'text-gold-500 border-gold-500/30',
-                        t.domain === 'cloud'  && 'text-blue-400 border-blue-400/30',
-                        t.domain === 'crypto' && 'text-purple-400 border-purple-400/30',
-                        t.domain === 'webdev' && 'text-emerald-400 border-emerald-400/30',
-                      )}>
-                        {t.domain}
-                      </span>
-                      <span className="font-mono text-[10px] text-bone-500 truncate">
-                        {t.author_name}
-                      </span>
+            <div className="space-y-3">
+              {tests.length > 0 ? (
+                tests.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/tests/${t.slug}`}
+                    className="block p-5 border border-navy-700 hover:border-gold-500 group transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-mono text-sm uppercase tracking-wider text-bone-50 group-hover:text-gold-500 transition-colors">
+                        {t.title}
+                      </h3>
+                      <Terminal className="w-4 h-4 text-gold-500" />
                     </div>
-                    <div className="font-mono text-xs text-bone-200
-                      group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
-                      {t.title}
-                    </div>
-                    <div className="font-mono text-[10px] text-bone-500 mt-2 flex items-center gap-1">
-                      <MessageSquare className="w-3 h-3" />
-                      {t.reply_count ?? 0} {t.reply_count === 1 ? 'reply' : 'replies'}
+                    <div className="flex items-center gap-3 font-mono text-xs text-bone-300">
+                      <span>{t.total_questions} questions</span>
+                      <span>·</span>
+                      <span>{t.duration_minutes} min</span>
+                      {t.malware_family && (
+                        <>
+                          <span>·</span>
+                          <span className="text-crimson-400">{t.malware_family}</span>
+                        </>
+                      )}
                     </div>
                   </Link>
                 ))
+              ) : (
+                <div className="p-8 border border-dashed border-navy-700 text-center">
+                  <p className="font-mono text-sm text-bone-300">Tests coming soon.</p>
+                </div>
               )}
             </div>
           </div>
         </div>
       </section>
-
-      {/* ── Campus ───────────────────────────────────────────────────────── */}
-      <section className="border-b border-navy-800">
-        <div className="container py-14 grid md:grid-cols-3 gap-8">
-
-          <div>
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-              // Campus
-            </div>
-            <p className="font-mono text-xs text-bone-400 leading-relaxed">
-              Student clubs, events, workshops, CTF competitions, and industrial visits.
-              All linked to the learning domains.
-            </p>
-          </div>
-
-          <div className="border border-navy-800 p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="w-4 h-4 text-gold-500" />
-              <span className="font-mono text-xs uppercase tracking-wider text-bone-200">Clubs</span>
-            </div>
-            <div className="space-y-2">
-              {[
-                { label: 'REMA Club',           href: '/clubs/rema',       tag: 'Active' },
-                { label: 'Full Stack Dev Club',  href: '/clubs/fullstack',  tag: 'Active' },
-                { label: 'Extension Activity',   href: '/clubs/extension',  tag: 'Active' },
-              ].map(c => (
-                <Link key={c.href} href={c.href}
-                  className="flex items-center justify-between font-mono text-xs
-                    text-bone-300 hover:text-gold-500 transition-colors py-1">
-                  {c.label}
-                  <span className="text-[9px] text-emerald-400 uppercase tracking-wider">
-                    {c.tag}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="border border-navy-800 p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <CalendarDays className="w-4 h-4 text-gold-500" />
-              <span className="font-mono text-xs uppercase tracking-wider text-bone-200">Events</span>
-            </div>
-            <div className="space-y-2">
-              {[
-                { label: 'CTF Competitions',  href: '/events?type=ctf' },
-                { label: 'Workshops & Talks', href: '/events?type=workshop' },
-                { label: 'Industrial Visits', href: '/events?type=industry' },
-              ].map(e => (
-                <Link key={e.href} href={e.href}
-                  className="flex items-center font-mono text-xs text-bone-300
-                    hover:text-gold-500 transition-colors py-1 gap-2">
-                  <ArrowRight className="w-3 h-3 text-bone-600 shrink-0" />
-                  {e.label}
-                </Link>
-              ))}
-              <Link href="/events"
-                className="font-mono text-xs text-gold-500 hover:text-gold-400
-                  transition-colors pt-1 flex items-center gap-1">
-                View all events <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Bottom CTA ───────────────────────────────────────────────────── */}
-      <section className="bg-navy-950 border-b border-navy-800">
-        <div className="container py-12 flex flex-col md:flex-row
-          items-start md:items-center justify-between gap-6">
-          <div>
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-2">
-              // Verify Certificate
-            </div>
-            <p className="font-mono text-sm text-bone-300">
-              All test completions generate a verifiable certificate with a unique ID.
-            </p>
-          </div>
-          <div className="flex gap-3 shrink-0">
-            <Link href="/dashboard"
-              className="inline-flex items-center gap-2 px-5 py-3
-                bg-gold-500 text-navy-950 font-mono text-sm uppercase tracking-wider
-                hover:bg-gold-400 transition-colors">
-              Dashboard <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link href="/verify-certificate"
-              className="inline-flex items-center gap-2 px-5 py-3
-                border border-navy-600 text-bone-200 font-mono text-sm uppercase tracking-wider
-                hover:border-navy-500 transition-colors">
-              <Award className="w-4 h-4" />
-              Verify
-            </Link>
-          </div>
-        </div>
-      </section>
-
-    </div>
+    </>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }
