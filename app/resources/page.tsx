@@ -31,6 +31,13 @@ const ICON_MAP: Record<string, any> = {
   'Presentation': FileText,
 };
 
+// Normalise type for comparison: lowercase + spaces→hyphens
+// Allows URL ?type=ebook  to match DB value 'eBook'
+// Allows URL ?type=question-bank to match DB value 'Question Bank'
+function normalizeType(t: string): string {
+  return t.toLowerCase().replace(/\s+/g, '-');
+}
+
 function isDriveFileId(value: string): boolean {
   // Drive file IDs are 25–44 chars, alphanumeric plus _-
   return /^[A-Za-z0-9_-]{20,60}$/.test(value);
@@ -72,8 +79,9 @@ export default async function ResourcesPage({ searchParams }: Props) {
   ).sort();
 
   // Apply type filter in-memory (so type chips stay visible after filtering)
+  // Use normaliseType so URL 'ebook' matches DB 'eBook', 'question-bank' matches 'Question Bank'
   const filtered = activeType
-    ? resources.filter((r) => r.type === activeType)
+    ? resources.filter((r) => normalizeType(r.type ?? '') === normalizeType(activeType))
     : resources;
 
   // Build URL preserving the domain param when switching types
@@ -118,7 +126,7 @@ export default async function ResourcesPage({ searchParams }: Props) {
               key={t}
               href={buildHref(t)}
               className={`font-mono text-xs uppercase tracking-wider px-4 py-1.5 border transition-colors ${
-                activeType === t
+                activeType !== null && normalizeType(activeType) === normalizeType(t)
                   ? 'border-gold-500 bg-gold-500/10 text-gold-500'
                   : 'border-navy-700 text-bone-300 hover:border-navy-600 hover:text-bone-100'
               }`}
