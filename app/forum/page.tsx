@@ -137,38 +137,64 @@ export default async function ForumPage() {
           </div>
         </div>
 
-        {/* ── Sidebar: recent threads ────────────────────────────────── */}
-        <div>
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-6">// Recent activity</div>
-          {(!recent || recent.length === 0) ? (
-            <div className="border border-dashed border-navy-700 p-8 text-center">
-              <MessageSquare className="w-8 h-8 text-gold-500/20 mx-auto mb-3" />
-              <p className="font-mono text-sm text-bone-400">No threads yet. Be the first to post.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recent.map(t => {
-                const d = DOMAINS.find(d => d.slug === t.domain);
-                return (
-                  <Link key={t.id} href={`/forum/${t.domain}/${t.id}`}
-                    className="block border border-navy-700 hover:border-gold-500/40 p-4 transition-colors group">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 border ${d?.color ?? ''}`}>
-                        {t.domain}
-                      </span>
-                      <span className="font-mono text-[10px] text-bone-400">{t.author_name}</span>
-                    </div>
-                    <div className="font-mono text-sm text-bone-100 group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
-                      {t.title}
-                    </div>
-                    <div className="font-mono text-[10px] text-bone-400 mt-2 flex items-center gap-2">
-                      <MessageSquare className="w-3 h-3" />
-                      {t.reply_count} {t.reply_count === 1 ? 'reply' : 'replies'}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+        {/* ── Sidebar ───────────────────────────────────────────────── */}
+<div className="space-y-6">
+
+  {/* Forum rules — top */}
+  <div className="border border-navy-700 bg-navy-950/60 p-5">
+    <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">// Forum rules</div>
+    <ul className="space-y-2 font-mono text-[11px] text-bone-300 leading-relaxed">
+      {[
+        'Be respectful to all members',
+        'Stay on-topic within each domain',
+        'No piracy, illegal content, or spam',
+        'No abusive or hateful language',
+        'Share knowledge, help others learn',
+        'Posts are reviewed before publishing',
+      ].map(r => (
+        <li key={r} className="flex items-start gap-2">
+          <span className="text-gold-500 mt-0.5">›</span>
+          {r}
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  {/* Recent activity */}
+  <div>
+    <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">// Recent activity</div>
+    {(!recent || recent.length === 0) ? (
+      <div className="border border-dashed border-navy-700 p-8 text-center">
+        <MessageSquare className="w-8 h-8 text-gold-500/20 mx-auto mb-3" />
+        <p className="font-mono text-sm text-bone-400">No threads yet. Be the first to post.</p>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {recent.map(t => {
+          const d = DOMAINS.find(d => d.slug === t.domain);
+          return (
+            <Link key={t.id} href={`/forum/${t.domain}/${t.id}`}
+              className="block border border-navy-700 hover:border-gold-500/40 p-4 transition-colors group">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 border ${d?.color ?? ''}`}>
+                  {t.domain}
+                </span>
+                <span className="font-mono text-[10px] text-bone-400">{t.author_name}</span>
+              </div>
+              <div className="font-mono text-sm text-bone-100 group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
+                {t.title}
+              </div>
+              <div className="font-mono text-[10px] text-bone-400 mt-2 flex items-center gap-2">
+                <MessageSquare className="w-3 h-3" />
+                {t.reply_count} {t.reply_count === 1 ? 'reply' : 'replies'}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    )}
+  </div>
+</div>
           )}
 
           {/* Forum rules */}
