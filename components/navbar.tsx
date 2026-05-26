@@ -16,11 +16,7 @@ type DropItem  = { label: string; href: string; soon?: boolean } | 'sep';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const LEARN_COLS: Array<{
-  heading: string; href: string;
-  items: LearnItem[];
-  extra?: { heading: string; href: string; items: Array<{ label: string; href: string }> };
-}> = [
+const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> = [
   {
     heading: 'Articles', href: '/articles',
     items: [
@@ -48,17 +44,17 @@ const LEARN_COLS: Array<{
       { label: 'REMA',           href: '/podcast?tag=REMA' },
       { label: 'Cloud Security', href: '/podcast?tag=cloud' },
     ],
-    extra: {
-      heading: 'Resources', href: '/resources',
-      items: [
-        { label: 'All Resources',   href: '/resources' },
-        { label: 'eBooks & PDFs',   href: '/resources?type=ebook' },
-        { label: 'Question Banks',  href: '/resources?type=question-bank' },
-        { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
-        { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
-        { label: 'Research Papers', href: '/resources?type=research-paper' },
-      ],
-    },
+  },
+  {
+    heading: 'Resources', href: '/resources',
+    items: [
+      { label: 'All Resources',   href: '/resources' },
+      { label: 'eBooks & PDFs',   href: '/resources?type=ebook' },
+      { label: 'Question Banks',  href: '/resources?type=question-bank' },
+      { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
+      { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
+      { label: 'Research Papers', href: '/resources?type=research-paper' },
+    ],
   },
 ];
 
@@ -252,9 +248,9 @@ export function Navbar() {
             <div
               onMouseEnter={() => enter('learn')}
               onMouseLeave={leave}
-              className="absolute top-full right-0 w-[580px]
+              className="absolute top-full right-0 w-[760px]
                 bg-navy-900 border border-navy-700 shadow-2xl z-50
-                grid grid-cols-3 divide-x divide-navy-800">
+                grid grid-cols-4 divide-x divide-navy-800">
               {LEARN_COLS.map(col => (
                 <div key={col.heading} className="py-5 px-4">
                   <Link href={col.href}
@@ -282,24 +278,6 @@ export function Navbar() {
                     </Link>
                   ))}
 
-                  {/* Resources sub-section in col 3 */}
-                  {col.extra && (
-                    <>
-                      <div className="my-3 border-t border-navy-800" />
-                      <Link href={col.extra.href}
-                        className="block font-mono text-[10px] uppercase tracking-[0.2em]
-                          text-gold-500 mb-3 hover:text-gold-400 transition-colors">
-                        {col.extra.heading}
-                      </Link>
-                      {col.extra.items.map(item => (
-                        <Link key={item.href} href={item.href}
-                          className="block font-mono text-xs uppercase tracking-wider
-                            text-bone-300 hover:text-gold-500 py-1 transition-colors">
-                          {item.label}
-                        </Link>
-                      ))}
-                    </>
-                  )}
                 </div>
               ))}
             </div>
