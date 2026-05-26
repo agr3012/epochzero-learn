@@ -11,6 +11,8 @@ import {
   Terminal,
   Calendar,
 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 
 // Revalidates every hour so new content appears automatically
 export const revalidate = 3600;
