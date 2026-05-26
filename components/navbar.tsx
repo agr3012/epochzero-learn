@@ -296,7 +296,7 @@ export function Navbar() {
                   text-gold-500 mb-2 hover:text-gold-400 transition-colors">
                 {col.heading}
               </Link>
-              {col.items.map(item => (
+              {col.items.map((item: LearnItem) => (
                 <Link key={item.href}
                   href={item.soon ? '#' : item.href}
                   className={cn(
@@ -357,7 +357,7 @@ export function Navbar() {
                           text-gold-500 px-4 py-1">
                         {col.heading}
                       </Link>
-                      {col.items.map(item => (
+                      {col.items.map((item: LearnItem) => (
                         <Link key={item.href} href={item.soon ? '#' : item.href}
                           onClick={item.soon ? undefined : () => setOpen(false)}
                           className={cn('block font-mono text-xs uppercase tracking-wider px-4 py-1',
