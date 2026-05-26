@@ -24,7 +24,7 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
       { label: 'REMA',            href: '/articles?domain=rema' },
       { label: 'Cloud Security',  href: '/articles?domain=cloud' },
       { label: 'Cryptography',    href: '/articles?domain=crypto',  soon: true },
-      { label: 'Web Development', href: '/articles?domain=webdev',  soon: true },
+      { label: 'Web Dev',         href: '/articles?domain=webdev',  soon: true },
     ],
   },
   {
@@ -34,7 +34,7 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
       { label: 'REMA',            href: '/videos?domain=rema' },
       { label: 'Cloud Security',  href: '/videos?domain=cloud' },
       { label: 'Cryptography',    href: '/videos?domain=crypto',  soon: true },
-      { label: 'Web Development', href: '/videos?domain=webdev',  soon: true },
+      { label: 'Web Dev',         href: '/videos?domain=webdev',  soon: true },
     ],
   },
   {
