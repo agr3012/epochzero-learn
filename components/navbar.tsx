@@ -263,10 +263,10 @@ export function Navbar() {
                       href={item.soon ? '#' : item.href}
                       className={cn(
                         'flex items-center justify-between',
-                        'font-mono text-xs uppercase tracking-wider py-1 transition-colors',
+                        'font-mono text-xs uppercase tracking-wider px-2 py-1.5 -mx-2 transition-colors',
                         item.soon
                           ? 'text-bone-600 pointer-events-none'
-                          : 'text-bone-300 hover:text-gold-500',
+                          : 'text-bone-300 hover:text-gold-500 hover:bg-navy-800',
                       )}>
                       <span className={item.soon ? 'opacity-50' : ''}>{item.label}</span>
                       {item.soon && (
@@ -322,8 +322,8 @@ export function Navbar() {
                           href={item.soon ? '#' : item.href}
                           onClick={item.soon ? undefined : () => setMobileOpen(false)}
                           className={cn(
-                            'block font-mono text-xs uppercase tracking-wider py-1',
-                            item.soon ? 'text-bone-500' : 'text-bone-300 hover:text-gold-500',
+                            'block font-mono text-xs uppercase tracking-wider px-2 py-1.5',
+                            item.soon ? 'text-bone-500' : 'text-bone-300 hover:text-gold-500 hover:bg-navy-800',
                           )}>
                           {item.label}{item.soon ? ' ›' : ''}
                         </Link>
