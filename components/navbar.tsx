@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,8 +19,12 @@ const DOMAINS = [
   { slug: 'webdev', label: 'Web Development', soon: true  },
 ];
 
+type LearnItem = { label: string; href: string; soon?: boolean };
+type LearnExtra = { heading: string; href: string; items: { label: string; href: string }[] };
+type LearnCol = { heading: string; href: string; items: LearnItem[]; extra?: LearnExtra };
+
 // Learn mega menu — 3 columns
-const LEARN_COLS = [
+const LEARN_COLS: LearnCol[] = [
   {
     heading: 'Articles',
     href: '/articles',
@@ -150,16 +154,14 @@ export function Navbar() {
   const [open, setOpen]             = useState(false);
   const [hover, setHover]           = useState<string | null>(null);
   const [mobileExpand, setMobile]   = useState<string | null>(null);
-  const timerRef                    = useState<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef                    = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function enter(key: string) {
-    if (timerRef[0]) clearTimeout(timerRef[0]);
+    if (timerRef.current) clearTimeout(timerRef.current);
     setHover(key);
   }
   function leave() {
-    const t = setTimeout(() => setHover(null), 120);
-    // @ts-ignore
-    timerRef[0] = t;
+    timerRef.current = setTimeout(() => setHover(null), 120);
   }
 
   const isActive = (hrefs: string[]) =>
