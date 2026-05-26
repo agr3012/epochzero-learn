@@ -15,8 +15,10 @@ const LINKS = {
     { label: 'eBooks & PDFs',   href: '/resources?type=ebook' },
     { label: 'Question Banks',  href: '/resources?type=question-bank' },
     { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
+    { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
+    { label: 'Research Papers', href: '/resources?type=research-paper' },
   ],
-  Practice: [
+  'Tests & Forum': [
     { label: 'All Tests',       href: '/tests' },
     { label: 'REMA Tests',      href: '/tests?domain=rema' },
     { label: 'Cloud Tests',     href: '/tests?domain=cloud' },
@@ -36,8 +38,6 @@ const LINKS = {
     { label: 'Dashboard',           href: '/dashboard' },
     { label: 'About',               href: '/about' },
     { label: 'Verify Certificate',  href: '/verify-certificate' },
-    { label: 'MCQ Banks',           href: '/resources?type=mcq-bank' },
-    { label: 'Research Papers',     href: '/resources?type=research-paper' },
   ],
 };
 
