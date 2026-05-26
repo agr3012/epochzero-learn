@@ -252,10 +252,10 @@ export function Navbar() {
                 bg-navy-900 border border-navy-700 shadow-2xl z-50
                 grid grid-cols-4 divide-x divide-navy-800">
               {LEARN_COLS.map(col => (
-                <div key={col.heading} className="py-5 px-4">
+                <div key={col.heading} className="py-5">
                   <Link href={col.href}
                     className="block font-mono text-[10px] uppercase tracking-[0.2em]
-                      text-gold-500 mb-3 hover:text-gold-400 transition-colors">
+                      text-gold-500 mb-3 px-4 hover:text-gold-400 transition-colors">
                     {col.heading}
                   </Link>
                   {col.items.map((item: LearnItem) => (
@@ -263,7 +263,7 @@ export function Navbar() {
                       href={item.soon ? '#' : item.href}
                       className={cn(
                         'flex items-center justify-between',
-                        'font-mono text-xs uppercase tracking-wider px-2 py-1.5 -mx-2 transition-colors',
+                        'font-mono text-xs uppercase tracking-wider px-4 py-1.5 transition-colors',
                         item.soon
                           ? 'text-bone-600 pointer-events-none'
                           : 'text-bone-300 hover:text-gold-500 hover:bg-navy-800',
