@@ -249,9 +249,44 @@ export function Navbar() {
               onMouseEnter={() => enter('learn')}
               onMouseLeave={leave}
               className="absolute top-full right-0 w-[760px]
-                bg-navy-900 border border-navy-700 shadow-2xl z-50
-                grid grid-cols-4 divide-x divide-navy-800">
-              {LEARN_COLS.map(col => (
+                bg-navy-900 border border-navy-700 shadow-2xl z-50">
+
+              {/* ── Domain / Track strip ── */}
+              <div className="grid grid-cols-4 divide-x divide-navy-800 border-b border-navy-700 bg-navy-950/60">
+                {[
+                  { label: 'REMA',            sub: 'Reverse Engineering',    href: '/learn?domain=rema',   soon: false },
+                  { label: 'Cloud Security',  sub: 'Architecture & Threats', href: '/learn?domain=cloud',  soon: false },
+                  { label: 'Cryptography',    sub: 'Applied & PKI',          href: '/learn?domain=crypto', soon: true  },
+                  { label: 'Web Development', sub: 'Full Stack & Secure',    href: '/learn?domain=webdev', soon: true  },
+                ].map(d => (
+                  <Link key={d.href}
+                    href={d.soon ? '#' : d.href}
+                    className={cn(
+                      'px-4 py-3 group transition-colors',
+                      d.soon ? 'pointer-events-none opacity-40' : 'hover:bg-navy-800',
+                    )}>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className={cn(
+                        'font-mono text-xs font-semibold uppercase tracking-wider transition-colors',
+                        d.soon ? 'text-bone-500' : 'text-bone-50 group-hover:text-gold-500',
+                      )}>
+                        {d.label}
+                      </span>
+                      {d.soon
+                        ? <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 border border-navy-600 text-bone-600">soon</span>
+                        : <span className="font-mono text-[9px] text-gold-500 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                      }
+                    </div>
+                    <div className="font-mono text-[9px] text-bone-500 uppercase tracking-wider">
+                      {d.sub}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* ── Content type columns ── */}
+              <div className="grid grid-cols-4 divide-x divide-navy-800">
+                {LEARN_COLS.map(col => (
                 <div key={col.heading} className="py-5">
                   <Link href={col.href}
                     className="block font-mono text-[10px] uppercase tracking-[0.2em]
@@ -280,6 +315,7 @@ export function Navbar() {
 
                 </div>
               ))}
+              </div>
             </div>
           )}
         </nav>
