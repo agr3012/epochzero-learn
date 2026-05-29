@@ -43,6 +43,8 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
       { label: 'All Episodes',   href: '/podcast' },
       { label: 'REMA',           href: '/podcast?tag=REMA' },
       { label: 'Cloud Security', href: '/podcast?tag=cloud' },
+      { label: 'Cryptography',   href: '/podcast?tag=crypto',  soon: true },
+      { label: 'Web Dev',        href: '/podcast?tag=webdev',  soon: true },
     ],
   },
   {
@@ -53,7 +55,7 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
       { label: 'Question Banks',  href: '/resources?type=question-bank' },
       { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
       { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
-      { label: 'Research Papers', href: '/resources?type=research-paper' },
+      { label: 'Research Papers', href: '/resources?type=research-paper', soon: true },
     ],
   },
 ];
