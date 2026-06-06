@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar';
 import { Suspense } from 'react';
 import { Footer } from '@/components/footer';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -74,6 +75,14 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col antialiased">
         <Suspense fallback={<div className="h-16 border-b border-navy-700 bg-navy-900" />}>
+          <NextTopLoader
+            color="#D4A017"
+            height={2}
+            showSpinner={false}
+            shadow={false}
+            speed={200}
+            crawlSpeed={200}
+          />
           <Navbar />
         </Suspense>
         <main className="flex-1">{children}</main>
