@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { Navbar } from '@/components/navbar';
 import { Suspense } from 'react';
 import { Footer } from '@/components/footer';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import './globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -84,6 +85,7 @@ export default function RootLayout({
             className: 'font-mono text-sm border border-navy-700 bg-navy-800 text-bone-100',
           }}
         />
+        <ScrollToTop />
       </body>
     </html>
   );
