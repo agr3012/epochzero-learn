@@ -1,7 +1,9 @@
+// app/resources/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Download, ExternalLink } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { PdfViewer } from '@/components/PdfViewer';
 
 export const revalidate = 60;
 
@@ -28,12 +30,11 @@ function isDriveId(v: string) {
 function urls(fileUrl: string) {
   if (isDriveId(fileUrl)) {
     return {
-      preview: `https://drive.google.com/file/d/${fileUrl}/preview`,
       download: `https://drive.google.com/uc?export=download&id=${fileUrl}`,
       external: `https://drive.google.com/file/d/${fileUrl}/view`,
     };
   }
-  return { preview: fileUrl, download: fileUrl, external: fileUrl };
+  return { download: fileUrl, external: fileUrl };
 }
 
 export default async function ResourceReaderPage({ params }: Props) {
@@ -47,15 +48,19 @@ export default async function ResourceReaderPage({ params }: Props) {
 
   if (!r) notFound();
 
-  const { preview, download, external } = urls(r.file_url);
+  const fileId         = isDriveId(r.file_url) ? r.file_url : null;
+  const { download, external } = urls(r.file_url);
 
   return (
-    <div className="min-h-screen flex flex-col scrollbar-themed">
+    <div className="min-h-screen flex flex-col">
+
+      {/* ── Top bar ── */}
       <div className="border-b border-navy-700 bg-navy-950 sticky top-0 z-10">
         <div className="container py-3 flex items-center gap-3 flex-wrap">
           <Link
             href="/resources"
-            className="font-mono text-xs uppercase tracking-wider text-bone-300 hover:text-gold-500 transition-colors inline-flex items-center gap-1.5"
+            className="font-mono text-xs uppercase tracking-wider text-bone-300
+              hover:text-gold-500 transition-colors inline-flex items-center gap-1.5"
           >
             <ChevronLeft className="w-4 h-4" />
             Back
@@ -68,35 +73,39 @@ export default async function ResourceReaderPage({ params }: Props) {
             <div className="font-mono text-sm text-bone-50 truncate">{r.title}</div>
           </div>
           <div className="flex items-center gap-2">
-            <a
-              href={external}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost text-xs px-3 py-1.5 inline-flex items-center gap-1.5"
-            >
+            <a href={external} target="_blank" rel="noopener noreferrer"
+              className="btn-ghost text-xs px-3 py-1.5 inline-flex items-center gap-1.5">
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Open</span>
             </a>
-            <a
-              href={download}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1.5"
-            >
+            <a href={download} target="_blank" rel="noopener noreferrer"
+              className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1.5">
               <Download className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Download</span>
             </a>
           </div>
         </div>
       </div>
-      <div className="flex-1 bg-navy-950 overflow-y-auto scrollbar-themed">
-        <iframe
-          src={preview}
-          title={r.title}
-          className="w-full h-[calc(100vh-65px)]"
-          allow="autoplay"
-        />
+
+      {/* ── PDF viewer or iframe fallback ── */}
+      <div className="flex-1">
+        {fileId ? (
+          // Google Drive file → render via PDF.js (gold scrollbar, no iframe)
+          <PdfViewer fileId={fileId} title={r.title} />
+        ) : (
+          // Non-Drive URL → keep iframe as fallback
+          <div className="flex-1 bg-navy-950 overflow-y-auto scrollbar-themed"
+            style={{ height: 'calc(100vh - 65px)' }}>
+            <iframe
+              src={r.file_url}
+              title={r.title}
+              className="w-full h-full"
+              allow="autoplay"
+            />
+          </div>
+        )}
       </div>
+
     </div>
   );
 }
