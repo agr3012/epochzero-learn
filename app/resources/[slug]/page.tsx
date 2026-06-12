@@ -50,7 +50,7 @@ export default async function ResourceReaderPage({ params }: Props) {
   const { preview, download, external } = urls(r.file_url);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col scrollbar-themed">
       <div className="border-b border-navy-700 bg-navy-950 sticky top-0 z-10">
         <div className="container py-3 flex items-center gap-3 flex-wrap">
           <Link
@@ -89,7 +89,7 @@ export default async function ResourceReaderPage({ params }: Props) {
           </div>
         </div>
       </div>
-      <div className="flex-1 bg-navy-950">
+      <div className="flex-1 bg-navy-950 overflow-y-auto scrollbar-themed">
         <iframe
           src={preview}
           title={r.title}
