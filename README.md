@@ -2,7 +2,7 @@
 
 A Next.js 14 + Supabase + Resend learning hub for Reverse Engineering and Malware Analysis. Public articles, video walkthroughs, MCQ tests with verifiable certificates, eBook and question bank downloads.
 
-> **Course Instructor:** Ashish Gahlot
+> **Course Instructor:** Ashish Revar
 > **Identity:** REMA Club — Reverse · Reveal · Respond
 
 ---
