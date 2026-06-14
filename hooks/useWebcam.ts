@@ -128,13 +128,39 @@ export function useWebcam({ enabled, videoRef, attemptId, onViolation }: Options
   }, []);
 
   // ── Watch for camera disconnect ────────────────────────────────────────
+  // 'ended' event doesn't always fire when user disables camera via OS/browser
+  // controls mid-session, so poll readyState + enabled + muted as backup.
   useEffect(() => {
     if (!camReady || !streamRef.current) return;
     const track = streamRef.current.getVideoTracks()[0];
     if (!track) return;
-    const onEnded = () => onViolation('webcam_lost');
+
+    let firedLost = false;
+    const flagLost = () => {
+      if (firedLost) return;
+      firedLost = true;
+      onViolation('webcam_lost');
+    };
+
+    const onEnded = () => flagLost();
     track.addEventListener('ended', onEnded);
-    return () => track.removeEventListener('ended', onEnded);
+    track.addEventListener('mute',  () => flagLost());
+
+    // Poll every 2s as a backup for browsers that don't emit events reliably
+    const poll = setInterval(() => {
+      if (
+        track.readyState === 'ended' ||
+        !track.enabled ||
+        track.muted
+      ) {
+        flagLost();
+      }
+    }, 2000);
+
+    return () => {
+      track.removeEventListener('ended', onEnded);
+      clearInterval(poll);
+    };
   }, [camReady, onViolation]);
 
   // ── Start detection when both camera + model ready ─────────────────────
