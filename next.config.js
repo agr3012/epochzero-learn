@@ -12,6 +12,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@react-pdf/renderer'],
   },
+  transpilePackages: ['@vladmandic/face-api'],
 };
 
 module.exports = nextConfig;
