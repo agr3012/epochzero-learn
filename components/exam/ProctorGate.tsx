@@ -1,24 +1,30 @@
 // components/exam/ProctorGate.tsx
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Camera, Maximize, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Props {
-  onReady: () => void; // called when camera + fullscreen confirmed
+  onReady: () => void; // called when camera + face + fullscreen confirmed
 }
 
 type Step = 'camera' | 'fullscreen' | 'ready';
+type CamStatus = 'idle' | 'starting' | 'no_face' | 'ok' | 'error';
+
+const MODEL_URL = '/models';
 
 export function ProctorGate({ onReady }: Props) {
-  const [step,         setStep]         = useState<Step>('camera');
-  const [camStatus,    setCamStatus]    = useState<'idle'|'checking'|'ok'|'error'>('idle');
-  const [camError,     setCamError]     = useState<string | null>(null);
-  const [fsStatus,     setFSStatus]     = useState<'idle'|'ok'>('idle');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const [step,      setStep]      = useState<Step>('camera');
+  const [camStatus, setCamStatus] = useState<CamStatus>('idle');
+  const [camError,  setCamError]  = useState<string | null>(null);
+  const [fsStatus,  setFSStatus]  = useState<'idle' | 'ok'>('idle');
 
-  // Check fullscreen
+  const videoRef       = useRef<HTMLVideoElement>(null);
+  const streamRef      = useRef<MediaStream | null>(null);
+  const faceapiRef     = useRef<any>(null);
+  const faceCheckTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Fullscreen tracking ─────────────────────────────────────────────────
   useEffect(() => {
     function onFSChange() {
       if (document.fullscreenElement) setFSStatus('ok');
@@ -27,20 +33,63 @@ export function ProctorGate({ onReady }: Props) {
     return () => document.removeEventListener('fullscreenchange', onFSChange);
   }, []);
 
+  // ── Cleanup on unmount ──────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (faceCheckTimer.current) clearInterval(faceCheckTimer.current);
+      streamRef.current?.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  // ── Continuous face check loop (runs while on Step 1) ──────────────────
+  const startFaceCheckLoop = useCallback(() => {
+    if (faceCheckTimer.current) clearInterval(faceCheckTimer.current);
+
+    faceCheckTimer.current = setInterval(async () => {
+      const faceapi = faceapiRef.current;
+      const video   = videoRef.current;
+      if (!faceapi || !video || video.readyState < 2) return;
+
+      // Also catch shutter-closed / black-feed cases where readyState
+      // is fine but track is muted/disabled
+      const track = streamRef.current?.getVideoTracks()[0];
+      if (track && (track.muted || !track.enabled || track.readyState === 'ended')) {
+        setCamStatus('no_face');
+        return;
+      }
+
+      try {
+        const detections = await faceapi.detectAllFaces(
+          video,
+          new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 })
+        );
+        if (detections.length >= 1) {
+          setCamStatus('ok');
+        } else {
+          setCamStatus('no_face');
+        }
+      } catch {
+        // detection error — treat as no face yet
+        setCamStatus('no_face');
+      }
+    }, 1000);
+  }, []);
+
+  // ── Step 1: start camera + load model + begin checking ──────────────────
   async function checkCamera() {
-    setCamStatus('checking');
+    setCamStatus('starting');
     setCamError(null);
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' }, audio: false,
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
-      setCamStatus('ok');
-      setStep('fullscreen');
     } catch (err: any) {
       setCamStatus('error');
       setCamError(
@@ -48,9 +97,28 @@ export function ProctorGate({ onReady }: Props) {
           ? 'Camera permission denied. Click "Allow" when your browser asks.'
           : 'No camera found. Please connect a webcam and try again.'
       );
+      return;
     }
+
+    // Load face detection model
+    try {
+      if (!faceapiRef.current) {
+        const faceapi = await import('@vladmandic/face-api');
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        faceapiRef.current = faceapi;
+      }
+    } catch {
+      setCamStatus('error');
+      setCamError('Failed to load face detection. Refresh and try again.');
+      return;
+    }
+
+    // Begin checking for a face on the live feed
+    setCamStatus('no_face');
+    startFaceCheckLoop();
   }
 
+  // ── Step 2: fullscreen ────────────────────────────────────────────────
   async function enterFullscreen() {
     try {
       await document.documentElement.requestFullscreen();
@@ -61,8 +129,15 @@ export function ProctorGate({ onReady }: Props) {
     }
   }
 
+  // Move to Step 2 only once a real face has been confirmed
+  function confirmFaceAndContinue() {
+    if (faceCheckTimer.current) clearInterval(faceCheckTimer.current);
+    setStep('fullscreen');
+  }
+
   function startExam() {
-    // Stop the preview stream — ProctorShell will restart it
+    // Stop preview stream — ProctorShell starts its own
+    if (faceCheckTimer.current) clearInterval(faceCheckTimer.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
     onReady();
@@ -89,7 +164,7 @@ export function ProctorGate({ onReady }: Props) {
         {/* Steps */}
         <div className="space-y-4 mb-8">
 
-          {/* Step 1 — Camera */}
+          {/* Step 1 — Camera + Face check */}
           <div className={`border p-5 transition-colors
             ${step === 'camera'
               ? 'border-gold-500/60 bg-gold-500/5'
@@ -99,12 +174,14 @@ export function ProctorGate({ onReady }: Props) {
             <div className="flex items-start gap-4">
               <div className={`w-10 h-10 flex items-center justify-center shrink-0
                 border ${camStatus === 'ok' ? 'border-emerald-500/40' : 'border-navy-700'}`}>
-                {camStatus === 'checking'
+                {(camStatus === 'starting')
                   ? <Loader2 className="w-5 h-5 text-gold-500 animate-spin" />
                   : camStatus === 'ok'
                   ? <CheckCircle className="w-5 h-5 text-emerald-400" />
                   : camStatus === 'error'
                   ? <AlertCircle className="w-5 h-5 text-crimson-400" />
+                  : camStatus === 'no_face'
+                  ? <AlertCircle className="w-5 h-5 text-gold-500" />
                   : <Camera className="w-5 h-5 text-bone-400" />
                 }
               </div>
@@ -119,32 +196,55 @@ export function ProctorGate({ onReady }: Props) {
                 {camError && (
                   <p className="font-mono text-xs text-crimson-400 mt-2">{camError}</p>
                 )}
-                {step === 'camera' && (
+                {step === 'camera' && camStatus === 'idle' && (
                   <button
                     onClick={checkCamera}
-                    disabled={camStatus === 'checking'}
                     className="mt-3 px-4 py-2 font-mono text-xs uppercase tracking-wider
-                      bg-gold-500 text-navy-950 hover:bg-gold-400 transition-colors
-                      disabled:opacity-50 disabled:cursor-not-allowed">
-                    {camStatus === 'checking' ? 'Checking…' : 'Allow Camera'}
+                      bg-gold-500 text-navy-950 hover:bg-gold-400 transition-colors">
+                    Allow Camera
+                  </button>
+                )}
+                {step === 'camera' && camStatus === 'error' && (
+                  <button
+                    onClick={checkCamera}
+                    className="mt-3 px-4 py-2 font-mono text-xs uppercase tracking-wider
+                      bg-gold-500 text-navy-950 hover:bg-gold-400 transition-colors">
+                    Retry
+                  </button>
+                )}
+                {step === 'camera' && camStatus === 'ok' && (
+                  <button
+                    onClick={confirmFaceAndContinue}
+                    className="mt-3 px-4 py-2 font-mono text-xs uppercase tracking-wider
+                      bg-gold-500 text-navy-950 hover:bg-gold-400 transition-colors">
+                    Continue
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Camera preview */}
-            {camStatus === 'ok' && (
+            {/* Camera preview — shown once stream exists */}
+            {(camStatus === 'no_face' || camStatus === 'ok') && (
               <div className="mt-4 border border-navy-700 overflow-hidden">
                 <video
                   ref={videoRef}
                   autoPlay playsInline muted
-                  className="w-full h-32 object-cover bg-black"
+                  className="w-full h-32 object-cover bg-black scale-x-[-1]"
                 />
-                <p className="font-mono text-[9px] uppercase tracking-widest
-                  text-emerald-400 text-center py-1.5 bg-navy-900/60">
-                  ✓ Camera active — face visible
+                <p className={`font-mono text-[9px] uppercase tracking-widest
+                  text-center py-1.5 bg-navy-900/60
+                  ${camStatus === 'ok' ? 'text-emerald-400' : 'text-gold-500'}`}>
+                  {camStatus === 'ok'
+                    ? '✓ Camera active — face detected'
+                    : 'Position your face in the frame…'}
                 </p>
               </div>
+            )}
+
+            {/* Hidden video element while loading (for shutter-closed case
+                where readyState never reaches 2, so no preview is shown) */}
+            {camStatus === 'starting' && (
+              <video ref={videoRef} autoPlay playsInline muted className="hidden" />
             )}
           </div>
 
