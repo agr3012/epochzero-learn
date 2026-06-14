@@ -44,7 +44,7 @@
     "nextjs-toploader": "^3.7.15",
     "bcryptjs": "^2.4.3",
     "react-pdf": "^9.1.0",
-    "@vladmandic/face-api": "^3.0.0"
+    "@vladmandic/face-api": "^1.7.15"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
