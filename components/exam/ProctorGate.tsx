@@ -253,29 +253,23 @@ export function ProctorGate({ onReady }: Props) {
               </div>
             </div>
 
-            {/* Camera preview — shown once stream exists */}
-            {(camStatus === 'no_face' || camStatus === 'ok') && (
-              <div className="mt-4 border border-navy-700 overflow-hidden">
-                <video
-                  ref={videoRef}
-                  autoPlay playsInline muted
-                  className="w-full h-32 object-cover bg-black scale-x-[-1]"
-                />
-                <p className={`font-mono text-[9px] uppercase tracking-widest
-                  text-center py-1.5 bg-navy-900/60
-                  ${camStatus === 'ok' ? 'text-emerald-400' : 'text-gold-500'}`}>
-                  {camStatus === 'ok'
-                    ? '✓ Camera active — face detected'
-                    : 'Position your face in the frame…'}
-                </p>
-              </div>
-            )}
-
-            {/* Hidden video element while loading (for shutter-closed case
-                where readyState never reaches 2, so no preview is shown) */}
-            {camStatus === 'starting' && (
-              <video ref={videoRef} autoPlay playsInline muted className="hidden" />
-            )}
+            {/* Camera preview — ONE element, always mounted (ref stable from
+                first render). Visibility/label toggled by CSS only. */}
+            <div className={`mt-4 border border-navy-700 overflow-hidden
+              ${(camStatus === 'no_face' || camStatus === 'ok') ? '' : 'hidden'}`}>
+              <video
+                ref={videoRef}
+                autoPlay playsInline muted
+                className="w-full h-32 object-cover bg-black scale-x-[-1]"
+              />
+              <p className={`font-mono text-[9px] uppercase tracking-widest
+                text-center py-1.5 bg-navy-900/60
+                ${camStatus === 'ok' ? 'text-emerald-400' : 'text-gold-500'}`}>
+                {camStatus === 'ok'
+                  ? '✓ Camera active — face detected'
+                  : 'Position your face in the frame…'}
+              </p>
+            </div>
           </div>
 
           {/* Step 2 — Fullscreen */}
