@@ -37,11 +37,12 @@ interface ReviewItem {
 }
 
 interface Props {
-  testId: string;
-  testTitle: string;
+  testId:             string;
+  testTitle:          string;
+  onAttemptCreated?:  (attemptId: string) => void; // proctor hook
 }
 
-export function TestEngine({ testId, testTitle }: Props) {
+export function TestEngine({ testId, testTitle, onAttemptCreated }: Props) {
   const [step, setStep] = useState<Step>('enroll');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
@@ -113,6 +114,7 @@ export function TestEngine({ testId, testTitle }: Props) {
       }
       setQuestions(data.questions);
       setAttemptId(data.attempt_id);
+      onAttemptCreated?.(data.attempt_id); // notify ProctorShell
       setDurationMin(data.test.duration_minutes);
       setPassingScore(data.test.passing_score);
       setSecondsLeft(data.test.duration_minutes * 60);
