@@ -103,11 +103,30 @@ export function ProctorGate({ onReady }: Props) {
     // Load face detection model
     try {
       if (!faceapiRef.current) {
-        const faceapi = await import('@vladmandic/face-api');
+        const mod: any = await import('@vladmandic/face-api');
+        // Some bundlers wrap the module as { default: faceapi }
+        const faceapi = mod?.nets ? mod : mod?.default;
+
+        if (!faceapi?.nets?.tinyFaceDetector) {
+          throw new Error('face-api module shape unexpected — nets.tinyFaceDetector missing');
+        }
+
+        // Force CPU backend — WebGL unsupported in some environments and
+        // WASM binary isn't served by Next.js without extra config.
+        // CPU is plenty fast for TinyFaceDetector at 1-3s intervals.
+        if (faceapi.tf?.setBackend) {
+          await faceapi.tf.setBackend('cpu');
+        }
+        if (faceapi.tf?.ready) {
+          await faceapi.tf.ready();
+        }
+
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         faceapiRef.current = faceapi;
       }
-    } catch {
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ProctorGate] face-api load failed:', err);
       setCamStatus('error');
       setCamError('Failed to load face detection. Refresh and try again.');
       return;
