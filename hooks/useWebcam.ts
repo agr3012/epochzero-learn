@@ -70,7 +70,22 @@ export function useWebcam({ enabled, videoRef, attemptId, onViolation }: Options
   // ── Load face model ────────────────────────────────────────────────────
   const loadModel = useCallback(async () => {
     try {
-      const faceapi = await import('@vladmandic/face-api');
+      const mod: any = await import('@vladmandic/face-api');
+      const faceapi = mod?.nets ? mod : mod?.default;
+
+      if (!faceapi?.nets?.tinyFaceDetector) {
+        throw new Error('face-api module shape unexpected — nets.tinyFaceDetector missing');
+      }
+
+      // Force CPU backend — WebGL unsupported in some environments and
+      // WASM binary isn't served by Next.js without extra config.
+      if (faceapi.tf?.setBackend) {
+        await faceapi.tf.setBackend('cpu');
+      }
+      if (faceapi.tf?.ready) {
+        await faceapi.tf.ready();
+      }
+
       faceapiRef.current = faceapi;
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
       setModelLoaded(true);
