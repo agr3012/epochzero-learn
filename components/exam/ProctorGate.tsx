@@ -48,7 +48,14 @@ export function ProctorGate({ onReady }: Props) {
     faceCheckTimer.current = setInterval(async () => {
       const faceapi = faceapiRef.current;
       const video   = videoRef.current;
-      if (!faceapi || !video || video.readyState < 2) return;
+
+      if (!faceapi || !video) return;
+
+      if (video.readyState < 2) {
+        // eslint-disable-next-line no-console
+        console.log('[ProctorGate] video not ready, readyState=', video.readyState);
+        return;
+      }
 
       // Also catch shutter-closed / black-feed cases where readyState
       // is fine but track is muted/disabled
@@ -63,13 +70,17 @@ export function ProctorGate({ onReady }: Props) {
           video,
           new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 })
         );
+        // eslint-disable-next-line no-console
+        console.log('[ProctorGate] detections:', detections.length,
+          'video size:', video.videoWidth, 'x', video.videoHeight);
         if (detections.length >= 1) {
           setCamStatus('ok');
         } else {
           setCamStatus('no_face');
         }
-      } catch {
-        // detection error — treat as no face yet
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[ProctorGate] detectAllFaces error:', err);
         setCamStatus('no_face');
       }
     }, 1000);
