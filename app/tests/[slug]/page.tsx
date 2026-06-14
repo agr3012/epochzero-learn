@@ -1,7 +1,8 @@
+// app/tests/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import { Clock, ListChecks, ShieldAlert, Award } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import { TestEngine } from '@/components/test-engine';
+import { TestPageClient } from '@/components/exam/TestPageClient';
 
 export const revalidate = 60;
 
@@ -34,6 +35,8 @@ export default async function TestDetailPage({ params }: Props) {
 
   return (
     <div className="container py-12 lg:py-16 max-w-4xl">
+
+      {/* ── Test info header ── */}
       <div className="mb-12">
         <div className="flex items-center gap-2 mb-4">
           {test.malware_family && (
@@ -87,7 +90,8 @@ export default async function TestDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <TestEngine testId={test.id} testTitle={test.title} />
+      {/* ── Proctored exam flow ── */}
+      <TestPageClient testId={test.id} testTitle={test.title} />
     </div>
   );
 }
