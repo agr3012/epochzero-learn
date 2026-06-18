@@ -31,7 +31,7 @@ export default async function VideosPage({ searchParams }: Props) {
     )
     .eq('is_published', true)
     .order('domain', { ascending: true })
-    .order('order_index', { ascending: true });
+    .order('order_index', { ascending: false });
 
   const videos = allVideos ?? [];
 
