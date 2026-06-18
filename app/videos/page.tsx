@@ -7,10 +7,9 @@ import { formatDuration, getYouTubeThumbnail } from '@/lib/utils';
 export const revalidate = 60;
 export const metadata = { title: 'Video Lessons' };
 
-// Domain display labels — matches the `domain` column values in the videos table
 const DOMAIN_LABELS: Record<string, string> = {
-  rema:  'REMA',
-  cloud: 'Cloud',
+  rema:   'REMA',
+  cloud:  'Cloud',
   crypto: 'Cryptography',
   webdev: 'Web Dev',
 };
@@ -23,31 +22,26 @@ export default async function VideosPage({ searchParams }: Props) {
   const supabase = createClient();
   const activeDomain = searchParams.domain ?? null;
 
-  // Fetch all published videos
   const { data: allVideos } = await supabase
     .from('videos')
     .select(
       'id, slug, youtube_id, title, description, malware_family, category, domain, duration_seconds, difficulty, view_count, episode_label, published_at'
     )
     .eq('is_published', true)
-    .order('domain', { ascending: true })
-    .order('order_index', { ascending: false });
+    .order('order_index', { ascending: false }); // ← single sort: newest/highest first
 
   const videos = allVideos ?? [];
 
-  // Derive unique domains present in published videos (dynamic — no hardcoding)
   const domains = Array.from(
     new Set(videos.map((v) => v.domain).filter((d): d is string => !!d))
   ).sort();
 
-  // Filter by active domain
   const filtered = activeDomain
     ? videos.filter((v) => v.domain === activeDomain)
     : videos;
 
   return (
     <div className="container py-16 lg:py-24">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <Video className="w-5 h-5 text-gold-500" />
         <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
@@ -64,7 +58,6 @@ export default async function VideosPage({ searchParams }: Props) {
         follow-up MCQ assessments in the 4Q course view.
       </p>
 
-      {/* Domain filter chips — dynamic from DB */}
       {domains.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-10">
           <Link
@@ -93,15 +86,15 @@ export default async function VideosPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* Count label */}
       {filtered.length > 0 && (
         <p className="font-mono text-xs text-bone-400 mb-6 uppercase tracking-wider">
           {filtered.length} {filtered.length === 1 ? 'lesson' : 'lessons'}
-          {activeDomain ? ` in ${DOMAIN_LABELS[activeDomain] ?? activeDomain}` : ' across all domains'}
+          {activeDomain
+            ? ` in ${DOMAIN_LABELS[activeDomain] ?? activeDomain}`
+            : ' across all domains'}
         </p>
       )}
 
-      {/* Empty state */}
       {filtered.length === 0 ? (
         <div className="card-forensic p-12 text-center">
           <Video className="w-10 h-10 text-gold-500/40 mx-auto mb-4" />
@@ -124,21 +117,18 @@ export default async function VideosPage({ searchParams }: Props) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-transparent to-transparent" />
 
-                {/* Play overlay */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="w-16 h-16 rounded-full bg-gold-500 flex items-center justify-center">
                     <Play className="w-7 h-7 text-navy-900 ml-1" fill="currentColor" />
                   </div>
                 </div>
 
-                {/* Domain badge — top left */}
                 {v.domain && (
                   <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-navy-900/90 border border-gold-500/60 text-gold-500">
                     {DOMAIN_LABELS[v.domain] ?? v.domain}
                   </span>
                 )}
 
-                {/* Malware family badge */}
                 {v.malware_family && (
                   <span className="absolute top-3 right-3 badge-malware">
                     <ShieldAlert className="w-3 h-3" />
@@ -146,14 +136,12 @@ export default async function VideosPage({ searchParams }: Props) {
                   </span>
                 )}
 
-                {/* Episode label */}
                 {v.episode_label && (
                   <span className="absolute bottom-3 left-3 font-mono text-[10px] uppercase tracking-[0.2em] px-2 py-1 bg-navy-950/90 border border-gold-500/40 text-gold-500">
                     {v.episode_label}
                   </span>
                 )}
 
-                {/* Duration */}
                 {v.duration_seconds && (
                   <span className="absolute bottom-3 right-3 px-2 py-1 bg-navy-950/90 border border-navy-700 font-mono text-xs text-bone-100">
                     {formatDuration(v.duration_seconds)}
