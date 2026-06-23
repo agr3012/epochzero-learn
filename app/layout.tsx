@@ -93,9 +93,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               try {
                 var t = localStorage.getItem('ez-theme') || 'dark';
-                document.documentElement.classList.add(t === 'light' ? 'light' : 'dark');
+                document.documentElement.classList.add(t);
+                document.documentElement.setAttribute('data-theme', t);
               } catch(e) {
                 document.documentElement.classList.add('dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
               }
             `,
           }}
