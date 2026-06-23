@@ -3,99 +3,111 @@
 @tailwind utilities;
 
 /* ============================================================
-   EPOCHZERO LEARN — Design System v2
-   Inspired by CyberDefenders aesthetic
-   Dark-first, gold-disciplined, sans-primary
+   EPOCHZERO LEARN — Design System v2.1
    ============================================================ */
 
 @layer base {
 
   /* ── Dark mode (default) ─────────────────────────────────── */
   :root,
-  html.dark {
-    --background:          215 55% 6%;    /* #080F1E — deep navy */
-    --surface:             215 52% 9%;    /* #0C1729 — navy-850  */
-    --card:                215 50% 12%;   /* #101E36 — navy-800  */
-    --card-hover:          215 45% 16%;   /* #172B4D — navy-700  */
-    --card-foreground:     210 20% 92%;
+  html.dark,
+  [data-theme="dark"] {
+    /* Backgrounds — matched to CyberDefenders dark palette */
+    --background:   222 47% 9%;    /* #0d1117 — very deep blue-black */
+    --surface:      222 42% 12%;   /* #111927 — navbar/sidebar bg    */
+    --card:         222 38% 16%;   /* #182030 — card bg              */
+    --card-hover:   222 35% 20%;   /* #1e293b — card hover           */
+    --card-foreground: 210 20% 90%;
 
-    --popover:             215 50% 12%;
-    --popover-foreground:  210 20% 92%;
+    --popover:      222 38% 16%;
+    --popover-foreground: 210 20% 90%;
 
-    --foreground:          210 18% 91%;   /* cool near-white     */
-    --foreground-muted:    215 18% 55%;   /* medium slate        */
-    --foreground-subtle:   215 15% 38%;   /* quiet grey          */
+    /* Text — from CyberDefenders: --text-color: #cfd7e2, --text-muted: #899bb4 */
+    --foreground:         210 22% 89%;   /* #cfd7e2 */
+    --foreground-muted:   215 20% 62%;   /* #899bb4 */
+    --foreground-subtle:  215 18% 44%;
 
-    /* Gold: used ONLY on primary CTAs, active states, key links */
-    --primary:             38 80% 52%;    /* amber-gold #E8A020  */
-    --primary-foreground:  215 55% 6%;    /* dark navy on gold   */
-    --primary-hover:       35 75% 43%;    /* darker gold #C47E0A */
+    /* Gold accent — used sparingly */
+    --primary:      38 85% 52%;    /* amber gold #E8A020 */
+    --primary-foreground: 222 47% 9%;
+    --primary-hover: 35 80% 43%;
 
-    --secondary:           215 45% 16%;
-    --secondary-foreground: 210 18% 91%;
+    --secondary:    222 35% 20%;
+    --secondary-foreground: 210 22% 89%;
 
-    --muted:               215 45% 14%;
-    --muted-foreground:    215 18% 55%;
+    --muted:        222 35% 18%;
+    --muted-foreground: 215 20% 62%;
 
-    --accent:              38 80% 52%;
-    --accent-foreground:   215 55% 6%;
+    --accent:       38 85% 52%;
+    --accent-foreground: 222 47% 9%;
 
-    --destructive:         2 56% 51%;     /* crimson-500         */
+    --destructive:  2 56% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border:              215 40% 16%;   /* very subtle — navy  */
-    --border-strong:       215 35% 24%;   /* visible border      */
-    --input:               215 45% 14%;
-    --ring:                38 80% 52%;
+    /* Borders — very subtle in dark */
+    --border:       222 30% 20%;
+    --border-strong: 222 28% 28%;
+    --input:        222 35% 18%;
+    --ring:         38 85% 52%;
 
-    --radius:              0.625rem;      /* 10px — modern rounding */
+    --radius: 0.625rem; /* 10px */
+
+    /* Shadow tokens */
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-dropdown: 0 4px 16px rgba(0,0,0,0.5);
   }
 
   /* ── Light mode ──────────────────────────────────────────── */
-  html.light {
-    --background:          220 20% 97%;   /* off-white           */
-    --surface:             220 16% 93%;   /* light grey          */
-    --card:                0   0%  100%;  /* white cards         */
-    --card-hover:          220 16% 96%;
-    --card-foreground:     215 55% 10%;
+  html.light,
+  [data-theme="light"] {
+    /* CyberDefenders light: clean white cards on light grey bg */
+    --background:   220 16% 94%;   /* #f0f2f5 — light grey page bg */
+    --surface:      0   0%  100%;  /* #ffffff — white navbar       */
+    --card:         0   0%  100%;  /* #ffffff — white cards        */
+    --card-hover:   220 14% 96%;   /* very light grey hover        */
+    --card-foreground: 215 55% 10%;
 
-    --popover:             0   0%  100%;
-    --popover-foreground:  215 55% 10%;
+    --popover:      0   0%  100%;
+    --popover-foreground: 215 55% 10%;
 
-    --foreground:          215 55% 10%;   /* dark navy text      */
-    --foreground-muted:    215 20% 42%;
-    --foreground-subtle:   215 15% 62%;
+    /* Text — from CyberDefenders: --text-color: #344a68, --text-muted: #5a6a8a */
+    --foreground:        215 42% 30%;   /* #344a68 */
+    --foreground-muted:  215 22% 45%;   /* #5a6a8a */
+    --foreground-subtle: 215 16% 62%;
 
-    --primary:             35 90% 38%;    /* darker gold for light bg */
-    --primary-foreground:  0   0%  100%;
-    --primary-hover:       35 85% 30%;
+    /* Darker gold for light bg */
+    --primary:      35 90% 38%;    /* #B8740F */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 35 85% 30%;
 
-    --secondary:           220 16% 93%;
-    --secondary-foreground: 215 55% 10%;
+    --secondary:    220 14% 92%;
+    --secondary-foreground: 215 42% 30%;
 
-    --muted:               220 16% 94%;
-    --muted-foreground:    215 20% 42%;
+    --muted:        220 14% 92%;
+    --muted-foreground: 215 22% 45%;
 
-    --accent:              35 90% 38%;
-    --accent-foreground:   0   0%  100%;
+    --accent:       35 90% 38%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive:         2 56% 45%;
+    --destructive:  2 56% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:              220 15% 88%;
-    --border-strong:       220 12% 78%;
-    --input:               220 15% 88%;
-    --ring:                35 90% 38%;
+    /* Light mode borders — subtle */
+    --border:       220 14% 88%;
+    --border-strong: 220 12% 78%;
+    --input:        220 14% 88%;
+    --ring:         35 90% 38%;
 
-    --radius:              0.625rem;
+    --radius: 0.625rem;
+
+    --shadow-card: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+    --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05);
   }
 }
 
-/* ── Base element styles ─────────────────────────────────────── */
+/* ── Base elements ───────────────────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
   html {
     @apply scroll-smooth;
@@ -104,43 +116,30 @@
   }
 
   body {
-    /* font-sans (Inter) is default — mono ONLY where explicitly applied */
-    @apply bg-background text-foreground font-sans;
+    @apply font-sans;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-size: 15px;
     line-height: 1.6;
     font-feature-settings: "rlig" 1, "calt" 1;
-
-    /* Subtle depth gradient — no gold tinge (removes AI aesthetic) */
+    /* Very subtle depth — no gold tinge */
     background-image:
-      radial-gradient(ellipse 120% 50% at 50% -10%,
-        rgba(23, 43, 77, 0.45), transparent 70%);
+      radial-gradient(ellipse 100% 40% at 50% -5%,
+        hsl(var(--surface) / 0.6), transparent 70%);
     background-attachment: fixed;
   }
 
-  html.light body {
-    background-image:
-      radial-gradient(ellipse 120% 50% at 50% -10%,
-        rgba(200, 210, 230, 0.4), transparent 70%);
-  }
-
-  /* Headings use display font (Plus Jakarta Sans) */
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-semibold tracking-tight;
     color: hsl(var(--foreground));
     line-height: 1.25;
   }
 
-  /* Code and pre: mono only here */
-  code, kbd, samp {
-    @apply font-mono text-sm;
-  }
-
-  pre {
-    @apply font-mono text-sm;
-  }
+  code, kbd, samp { @apply font-mono text-sm; }
+  pre             { @apply font-mono text-sm; }
 
   ::selection {
-    background: hsl(var(--primary) / 0.25);
+    background: hsl(var(--primary) / 0.2);
     color: hsl(var(--foreground));
   }
 }
@@ -148,135 +147,154 @@
 /* ── Component library ───────────────────────────────────────── */
 @layer components {
 
-  /* ── Cards ─────────────────────────────────────────────────── */
+  /* ── Navbar glass ─────────────────────────────────────────── */
+  /* Theme-aware — white in light, dark navy in dark */
+  .navbar-glass {
+    background: hsl(var(--surface) / 0.95);
+    border-bottom: 1px solid hsl(var(--border));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 
-  /* NEW: Modern card — borderless, rounded, filled (like CyberDefenders) */
+  /* Nav link — CyberDefenders: pill hover, no border */
+  .nav-link-pill {
+    @apply flex items-center gap-1 px-3 py-1.5 rounded-[18px]
+           font-sans font-medium text-sm transition-colors;
+    color: hsl(var(--foreground-muted));
+  }
+
+  .nav-link-pill:hover {
+    background: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .nav-link-pill.active {
+    background: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  /* Desktop nav link with underline (top-level) */
+  .nav-link-underline {
+    @apply flex items-center gap-1 px-3 h-16
+           font-sans font-medium text-sm transition-colors;
+    color: hsl(var(--foreground-muted));
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-link-underline:hover {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--border-strong));
+  }
+
+  .nav-link-underline.active {
+    color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--primary));
+  }
+
+  /* ── Cards ─────────────────────────────────────────────────── */
   .card {
     background: hsl(var(--card));
     border-radius: var(--radius);
     overflow: hidden;
-    transition: background-color 200ms ease;
+    box-shadow: var(--shadow-card);
   }
 
   .card-interactive {
     background: hsl(var(--card));
     border-radius: var(--radius);
     overflow: hidden;
-    transition: background-color 200ms ease, transform 200ms ease,
-                box-shadow 200ms ease;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 200ms ease, transform 200ms ease,
+                background-color 200ms ease;
     cursor: pointer;
   }
 
   .card-interactive:hover {
     background: hsl(var(--card-hover));
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
 
-  /* LEGACY: card-forensic — kept for backward compat, modernised */
-  /* Border removed, corners rounded, gold hover removed */
+  /* Legacy card-forensic — kept, modernised */
   .card-forensic {
-    @apply relative rounded-lg overflow-hidden;
+    @apply rounded-lg overflow-hidden;
     background: hsl(var(--card));
-    transition: background-color 250ms ease;
+    box-shadow: var(--shadow-card);
+    transition: background-color 200ms, box-shadow 200ms;
   }
 
   .card-forensic:hover {
     background: hsl(var(--card-hover));
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   }
 
-  /* Note: .card-forensic::before (gold gradient overlay) is removed */
+  /* ── Domain content tiles — CyberDefenders pattern ───────── */
+  /* Solid colored, work in BOTH light and dark mode            */
+  .domain-tile {
+    @apply flex items-center justify-center rounded-lg
+           font-display font-bold text-white;
+    background: var(--tile-color, #1B5FA8);
+  }
+
+  .domain-tile-rema   { --tile-color: #8B5E1A; }  /* deep amber */
+  .domain-tile-cloud  { --tile-color: #1B5FA8; }  /* blue       */
+  .domain-tile-crypto { --tile-color: #6B3AD4; }  /* purple     */
+  .domain-tile-webdev { --tile-color: #1B7C3E; }  /* green      */
 
   /* ── Buttons ────────────────────────────────────────────────── */
-
-  /* Primary: gold fill — used SPARINGLY for main CTAs only */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
            font-sans font-semibold text-sm
-           px-5 py-2.5 rounded-md
+           px-5 py-2.5 rounded-lg
            transition-all duration-150 select-none;
     background: hsl(var(--primary));
-    color:      hsl(var(--primary-foreground));
+    color: hsl(var(--primary-foreground));
   }
 
-  .btn-primary:hover {
-    background: hsl(var(--primary-hover));
-  }
+  .btn-primary:hover   { background: hsl(var(--primary-hover)); }
+  .btn-primary:active  { transform: scale(0.98); }
 
-  .btn-primary:active {
-    transform: scale(0.98);
-  }
-
-  /* Ghost: subtle, no gold unless hovered */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2
            font-sans font-medium text-sm
-           px-5 py-2.5 rounded-md
+           px-5 py-2.5 rounded-lg
            transition-all duration-150 select-none;
-    color:      hsl(var(--foreground-muted));
-    background: transparent;
-    border:     1px solid hsl(var(--border));
+    color: hsl(var(--foreground-muted));
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
   }
 
   .btn-ghost:hover {
-    background: hsl(var(--card));
-    border-color: hsl(var(--border-strong));
+    background: hsl(var(--card-hover));
     color: hsl(var(--foreground));
   }
 
-  /* Secondary: filled muted background */
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2
            font-sans font-medium text-sm
-           px-5 py-2.5 rounded-md
+           px-5 py-2.5 rounded-lg
            transition-all duration-150 select-none;
-    background: hsl(var(--secondary));
-    color:      hsl(var(--secondary-foreground));
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
   }
 
-  .btn-secondary:hover {
-    background: hsl(var(--card-hover));
-  }
+  .btn-secondary:hover { background: hsl(var(--card-hover)); }
 
   /* ── Badges ─────────────────────────────────────────────────── */
-
-  /* NEW: pill badge — sans, rounded-full, modern */
   .badge {
     @apply inline-flex items-center gap-1.5
            font-sans font-medium text-xs
            px-2.5 py-0.5 rounded-full;
   }
 
-  /* Domain colour badges (content metadata, like CyberDefenders lab tiles) */
-  .badge-domain-rema {
+  .badge-tag {
     @apply badge;
-    background: rgba(232, 160, 32, 0.12);
-    color: #E8A020;
-    border: 1px solid rgba(232, 160, 32, 0.25);
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground-muted));
+    border: 1px solid hsl(var(--border));
   }
 
-  .badge-domain-cloud {
-    @apply badge;
-    background: rgba(56, 139, 253, 0.12);
-    color: #58A6FF;
-    border: 1px solid rgba(56, 139, 253, 0.25);
-  }
-
-  .badge-domain-crypto {
-    @apply badge;
-    background: rgba(139, 92, 246, 0.12);
-    color: #A78BFA;
-    border: 1px solid rgba(139, 92, 246, 0.25);
-  }
-
-  .badge-domain-webdev {
-    @apply badge;
-    background: rgba(34, 197, 94, 0.12);
-    color: #4ADE80;
-    border: 1px solid rgba(34, 197, 94, 0.25);
-  }
-
-  /* LEGACY: badge-malware — kept, slightly modernised */
   .badge-malware {
     @apply inline-flex items-center gap-1.5
            font-sans font-medium text-xs
@@ -286,26 +304,18 @@
     border: 1px solid rgba(199, 62, 58, 0.25);
   }
 
-  /* LEGACY: badge-tag — kept, slightly modernised */
-  .badge-tag {
-    @apply inline-flex items-center gap-1.5
-           font-sans font-medium text-xs
-           px-2.5 py-0.5 rounded-full;
-    background: hsl(var(--muted));
-    color: hsl(var(--foreground-muted));
-    border: 1px solid hsl(var(--border));
-  }
+  /* Domain colour badges */
+  .badge-domain-rema   { @apply badge; background: rgba(232,160,32,0.12); color:#E8A020; border: 1px solid rgba(232,160,32,0.25); }
+  .badge-domain-cloud  { @apply badge; background: rgba(56,139,253,0.12); color:#58A6FF; border: 1px solid rgba(56,139,253,0.25); }
+  .badge-domain-crypto { @apply badge; background: rgba(139,92,246,0.12); color:#A78BFA; border: 1px solid rgba(139,92,246,0.25); }
+  .badge-domain-webdev { @apply badge; background: rgba(34,197,94,0.12);  color:#4ADE80; border: 1px solid rgba(34,197,94,0.25);  }
 
-  /* ── Typography utilities ───────────────────────────────────── */
-
-  /* Eyebrow: small section label — replaces "// Section" pattern */
-  /* Use this SPARINGLY — one per section max                     */
+  /* ── Typography ─────────────────────────────────────────────── */
   .eyebrow {
     @apply font-sans font-semibold text-xs uppercase tracking-[0.12em];
     color: hsl(var(--primary));
   }
 
-  /* Display heading: for hero sections and page titles */
   .heading-display {
     @apply font-display font-bold tracking-tight;
     font-size: clamp(2rem, 5vw, 3.5rem);
@@ -313,79 +323,34 @@
     color: hsl(var(--foreground));
   }
 
-  /* Section heading */
   .heading-section {
     @apply font-display font-semibold text-2xl tracking-tight;
     color: hsl(var(--foreground));
   }
 
-  /* Terminal: ONLY for terminal-flavoured UI (homepage hero widget, code refs) */
-  .terminal-prompt::before {
-    content: "$ ";
-    @apply font-mono text-gold-500;
-    opacity: 0.7;
-  }
+  /* Terminal — keep mono, it's intentional */
+  .terminal-prompt::before { content: "$ "; @apply font-mono; color: hsl(var(--primary)); opacity: 0.7; }
+  .text-display { @apply font-mono uppercase tracking-[0.18em]; }
 
-  /* LEGACY: text-display — kept but restrict usage to terminal widgets only */
-  .text-display {
-    @apply font-mono uppercase tracking-[0.18em];
-  }
-
-  /* ── Layout utilities ───────────────────────────────────────── */
-
-  .container-prose {
-    @apply max-w-3xl mx-auto px-6;
-  }
-
-  /* Subtle grid overlay — for hero sections only */
+  /* ── Layout ─────────────────────────────────────────────────── */
+  .container-prose { @apply max-w-3xl mx-auto px-6; }
   .border-grid {
     background-image:
-      linear-gradient(rgba(255, 200, 87, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 200, 87, 0.04) 1px, transparent 1px);
+      linear-gradient(rgba(255,200,87,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,200,87,0.03) 1px, transparent 1px);
     background-size: 48px 48px;
   }
 
-  /* ── Form elements ──────────────────────────────────────────── */
+  /* ── Prose ──────────────────────────────────────────────────── */
+  .prose-rema { @apply leading-relaxed; color: hsl(var(--foreground)); }
 
-  .input-base {
-    @apply w-full font-sans text-sm
-           px-3.5 py-2.5 rounded-md
-           bg-[hsl(var(--input))]
-           text-[hsl(var(--foreground))]
-           placeholder:text-[hsl(var(--foreground-muted))]
-           border border-[hsl(var(--border))]
-           outline-none
-           transition-colors duration-150;
-  }
-
-  .input-base:focus {
-    border-color: hsl(var(--primary) / 0.6);
-    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
-  }
-
-  /* ── Article prose ──────────────────────────────────────────── */
-
-  .prose-rema {
-    @apply text-[hsl(var(--foreground))] leading-relaxed;
-  }
-
-  /* Headings: display font, NOT mono, sentence case */
-  .prose-rema h1,
-  .prose-rema h2,
-  .prose-rema h3 {
+  .prose-rema h1, .prose-rema h2, .prose-rema h3 {
     @apply font-display font-semibold tracking-tight mt-10 mb-4;
     color: hsl(var(--foreground));
   }
-
   .prose-rema h1 { @apply text-3xl; }
-  .prose-rema h2 { @apply text-2xl; }
+  .prose-rema h2 { @apply text-2xl; padding-bottom: 0.5rem; border-bottom: 2px solid hsl(var(--primary) / 0.3); }
   .prose-rema h3 { @apply text-xl; }
-
-  /* Gold accent underline on h2 only — a single restrained gold touch */
-  .prose-rema h2 {
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid hsl(var(--primary) / 0.3);
-  }
 
   .prose-rema p  { @apply font-serif text-lg my-5 leading-[1.75]; }
 
@@ -402,119 +367,56 @@
     border: 1px solid hsl(var(--border));
   }
 
-  .prose-rema pre code {
-    background: transparent;
-    border: none;
-    padding: 0;
+  .prose-rema pre code { background: transparent; border: none; padding: 0; color: hsl(var(--foreground)); }
+  .prose-rema a { color: hsl(var(--primary)); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+  .prose-rema a:hover { text-decoration-style: solid; }
+  .prose-rema blockquote { @apply border-l-2 pl-5 my-6 italic; border-color: hsl(var(--primary)/0.5); color: hsl(var(--foreground-muted)); }
+  .prose-rema ul, .prose-rema ol { @apply font-serif text-lg my-5 ml-6 space-y-2; }
+  .prose-rema table { @apply font-sans text-sm border-collapse my-6 w-full rounded-lg overflow-hidden; }
+  .prose-rema th, .prose-rema td { @apply border border-[hsl(var(--border))] px-4 py-2.5 text-left; }
+  .prose-rema th { @apply font-sans font-semibold text-xs uppercase tracking-wider; background: hsl(var(--muted)); color: hsl(var(--foreground-muted)); }
+
+  /* ── Input ──────────────────────────────────────────────────── */
+  .input-base {
+    @apply w-full font-sans text-sm px-3.5 py-2.5 rounded-lg outline-none transition-colors duration-150;
+    background: hsl(var(--input));
     color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
   }
-
-  .prose-rema a {
-    color: hsl(var(--primary));
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 3px;
-    transition: text-decoration-style 150ms;
-  }
-
-  .prose-rema a:hover {
-    text-decoration-style: solid;
-  }
-
-  .prose-rema blockquote {
-    @apply border-l-2 pl-5 my-6 italic;
-    border-color: hsl(var(--primary) / 0.5);
-    color: hsl(var(--foreground-muted));
-  }
-
-  .prose-rema ul,
-  .prose-rema ol {
-    @apply font-serif text-lg my-5 ml-6 space-y-2;
-  }
-
-  .prose-rema table {
-    @apply font-sans text-sm border-collapse my-6 w-full rounded-lg overflow-hidden;
-  }
-
-  .prose-rema th,
-  .prose-rema td {
-    @apply border border-[hsl(var(--border))] px-4 py-2.5 text-left;
-  }
-
-  .prose-rema th {
-    @apply font-sans font-semibold text-xs uppercase tracking-wider;
-    background: hsl(var(--muted));
-    color: hsl(var(--foreground-muted));
+  .input-base::placeholder { color: hsl(var(--foreground-muted)); }
+  .input-base:focus {
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
   }
 }
 
 /* ── Utility layer ───────────────────────────────────────────── */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  /* Muted text helpers */
-  .text-muted  { color: hsl(var(--foreground-muted));  }
-  .text-subtle { color: hsl(var(--foreground-subtle)); }
-
-  /* Surface background helpers */
-  .bg-surface { background: hsl(var(--surface)); }
-  .bg-card    { background: hsl(var(--card));    }
-
-  /* Scrollbar: subtle gold, thinner */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(232, 160, 32, 0.25) transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar       { width: 5px; height: 5px; }
-  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(232, 160, 32, 0.25);
-    border-radius: 99px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(232, 160, 32, 0.45);
-  }
-
-  .scrollbar-themed::-webkit-scrollbar       { width: 6px; }
-  .scrollbar-themed::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-themed::-webkit-scrollbar-thumb {
-    background: rgba(232, 160, 32, 0.35);
-    border-radius: 99px;
-  }
-  .scrollbar-themed::-webkit-scrollbar-thumb:hover {
-    background: rgba(232, 160, 32, 0.55);
-  }
-  .scrollbar-themed {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(232, 160, 32, 0.35) transparent;
-  }
+  .text-balance { text-wrap: balance; }
+  .text-muted   { color: hsl(var(--foreground-muted));  }
+  .text-subtle  { color: hsl(var(--foreground-subtle)); }
+  .bg-surface   { background: hsl(var(--surface)); }
+  .bg-card      { background: hsl(var(--card));    }
 }
 
-/* ── Global scrollbar ───────────────────────────────────────────
-   Outside @layer — Tailwind cannot override this.
-   Subtler than before: 6px, lower opacity, rounded thumb.       */
+/* ── Global scrollbar — subtle ───────────────────────────────── */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(232, 160, 32, 0.25) transparent;
+  scrollbar-color: hsl(var(--border-strong)) transparent;
 }
+*::-webkit-scrollbar       { width: 5px; height: 5px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: hsl(var(--border-strong)); border-radius: 99px; }
+*::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground-subtle)); }
 
-*::-webkit-scrollbar {
-  width:  6px;
-  height: 6px;
-}
+/* Themed scrollbar utility */
+.scrollbar-themed::-webkit-scrollbar       { width: 6px; }
+.scrollbar-themed::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-themed::-webkit-scrollbar-thumb { background: rgba(232,160,32,0.35); border-radius: 99px; }
+.scrollbar-themed::-webkit-scrollbar-thumb:hover { background: rgba(232,160,32,0.6); }
+.scrollbar-themed { scrollbar-width: thin; scrollbar-color: rgba(232,160,32,0.35) transparent; }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background:    rgba(232, 160, 32, 0.3);
-  border-radius: 99px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(232, 160, 32, 0.55);
-}
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(232,160,32,0.25) transparent; }
+.scrollbar-thin::-webkit-scrollbar       { width: 5px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(232,160,32,0.25); border-radius: 99px; }
