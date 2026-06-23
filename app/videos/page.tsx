@@ -124,7 +124,7 @@ export default async function VideosPage({ searchParams }: Props) {
 
               {/* ── Thumbnail ── */}
               <div className="relative aspect-video overflow-hidden rounded-lg
-                border border-navy-700/50 group-hover:border-navy-600
+                border border-[hsl(var(--border))] group-hover:border-[hsl(var(--border-strong))]
                 transition-colors">
                 <Image
                   src={getYouTubeThumbnail(v.youtube_id, 'maxres')}
@@ -133,14 +133,14 @@ export default async function VideosPage({ searchParams }: Props) {
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t
-                  from-navy-900/80 via-transparent to-transparent" />
+                  from-black/70 via-transparent to-transparent" />
 
                 {/* Play button on hover — gold as primary action */}
                 <div className="absolute inset-0 flex items-center justify-center
                   opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="w-14 h-14 rounded-full bg-[hsl(var(--primary))]
                     flex items-center justify-center shadow-xl">
-                    <Play className="w-6 h-6 text-navy-950 ml-0.5" fill="currentColor" />
+                    <Play className="w-6 h-6 text-white ml-0.5" fill="currentColor" />
                   </div>
                 </div>
 
@@ -148,7 +148,7 @@ export default async function VideosPage({ searchParams }: Props) {
                 {v.domain && (
                   <span className={`absolute top-3 left-3 font-sans text-xs
                     font-medium px-2 py-0.5 rounded-full
-                    ${DOMAIN_BADGE[v.domain] ?? 'bg-navy-800/90 text-bone-200'}
+                    ${DOMAIN_BADGE[v.domain] ?? 'bg-black/70 text-white'}
                     bg-opacity-90 backdrop-blur-sm`}>
                     {DOMAIN_LABELS[v.domain] ?? v.domain}
                   </span>
@@ -166,7 +166,7 @@ export default async function VideosPage({ searchParams }: Props) {
                 {v.episode_label && (
                   <span className="absolute bottom-3 left-3 font-mono text-[9px]
                     uppercase tracking-wider px-2 py-1
-                    bg-navy-950/90 border border-[hsl(var(--primary)/0.35)]
+                    bg-black/80 border border-[hsl(var(--primary)/0.5)]
                     text-[hsl(var(--primary))] rounded">
                     {v.episode_label}
                   </span>
@@ -175,8 +175,7 @@ export default async function VideosPage({ searchParams }: Props) {
                 {/* Duration */}
                 {v.duration_seconds && (
                   <span className="absolute bottom-3 right-3 font-mono text-xs
-                    px-2 py-1 bg-navy-950/90 border border-navy-700/60
-                    text-bone-200 rounded">
+                    px-2 py-1 bg-black/75 text-white rounded">
                     {formatDuration(v.duration_seconds)}
                   </span>
                 )}
