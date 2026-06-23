@@ -14,6 +14,14 @@ const DOMAIN_LABELS: Record<string, string> = {
   webdev: 'Web Dev',
 };
 
+// Domain badge colours — content metadata tiles
+const DOMAIN_BADGE: Record<string, string> = {
+  rema:   'bg-[rgba(232,160,32,0.12)]  text-[#E8A020] border border-[rgba(232,160,32,0.3)]',
+  cloud:  'bg-[rgba(56,139,253,0.12)]  text-[#58A6FF] border border-[rgba(56,139,253,0.3)]',
+  crypto: 'bg-[rgba(139,92,246,0.12)]  text-[#A78BFA] border border-[rgba(139,92,246,0.3)]',
+  webdev: 'bg-[rgba(34,197,94,0.12)]   text-[#4ADE80] border border-[rgba(34,197,94,0.3)]',
+};
+
 interface Props {
   searchParams: { domain?: string };
 }
@@ -28,7 +36,7 @@ export default async function VideosPage({ searchParams }: Props) {
       'id, slug, youtube_id, title, description, malware_family, category, domain, duration_seconds, difficulty, view_count, episode_label, published_at'
     )
     .eq('is_published', true)
-    .order('order_index', { ascending: false }); // ← single sort: newest/highest first
+    .order('order_index', { ascending: false });
 
   const videos = allVideos ?? [];
 
@@ -42,30 +50,32 @@ export default async function VideosPage({ searchParams }: Props) {
 
   return (
     <div className="container py-16 lg:py-24">
-      <div className="flex items-center gap-3 mb-4">
-        <Video className="w-5 h-5 text-gold-500" />
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
-          // Lessons
-        </div>
+
+      {/* ── Page header ── */}
+      <div className="mb-10">
+        <p className="eyebrow mb-3">Lessons</p>
+        <h1 className="font-display text-4xl lg:text-5xl font-bold
+          text-[hsl(var(--foreground))] mb-4 leading-tight">
+          Video Lessons
+        </h1>
+        <p className="font-serif text-lg text-[hsl(var(--foreground-muted))]
+          max-w-2xl leading-relaxed">
+          Step-by-step lessons across Reverse Engineering, Malware Analysis, Cloud
+          Security, and more. Each episode pairs with articles, resources, and
+          follow-up MCQ assessments in the 4Q course view.
+        </p>
       </div>
 
-      <h1 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 mb-4 leading-tight">
-        Video Lessons
-      </h1>
-      <p className="font-serif text-xl text-bone-200 max-w-3xl leading-relaxed mb-8">
-        Step-by-step lessons across Reverse Engineering, Malware Analysis, Cloud
-        Security, and more. Each episode pairs with articles, resources, and
-        follow-up MCQ assessments in the 4Q course view.
-      </p>
-
+      {/* ── Domain filter pills ── */}
       {domains.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-10">
+        <div className="flex flex-wrap gap-2 mb-8">
           <Link
             href="/videos"
-            className={`font-mono text-xs uppercase tracking-wider px-4 py-1.5 border transition-colors ${
+            className={`font-sans text-sm font-medium px-4 py-1.5 rounded-full
+              transition-colors ${
               !activeDomain
-                ? 'border-gold-500 bg-gold-500/10 text-gold-500'
-                : 'border-navy-700 text-bone-300 hover:border-navy-600 hover:text-bone-100'
+                ? 'bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/0.3)]'
+                : 'text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--card))]'
             }`}
           >
             All Domains
@@ -74,10 +84,11 @@ export default async function VideosPage({ searchParams }: Props) {
             <Link
               key={domain}
               href={`/videos?domain=${encodeURIComponent(domain)}`}
-              className={`font-mono text-xs uppercase tracking-wider px-4 py-1.5 border transition-colors ${
+              className={`font-sans text-sm font-medium px-4 py-1.5 rounded-full
+                transition-colors ${
                 activeDomain === domain
-                  ? 'border-gold-500 bg-gold-500/10 text-gold-500'
-                  : 'border-navy-700 text-bone-300 hover:border-navy-600 hover:text-bone-100'
+                  ? `${DOMAIN_BADGE[domain] ?? 'bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))]'} font-semibold`
+                  : 'text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--card))]'
               }`}
             >
               {DOMAIN_LABELS[domain] ?? domain}
@@ -86,8 +97,9 @@ export default async function VideosPage({ searchParams }: Props) {
         </div>
       )}
 
+      {/* ── Count label ── */}
       {filtered.length > 0 && (
-        <p className="font-mono text-xs text-bone-400 mb-6 uppercase tracking-wider">
+        <p className="text-sm text-[hsl(var(--foreground-muted))] mb-6">
           {filtered.length} {filtered.length === 1 ? 'lesson' : 'lessons'}
           {activeDomain
             ? ` in ${DOMAIN_LABELS[activeDomain] ?? activeDomain}`
@@ -95,10 +107,11 @@ export default async function VideosPage({ searchParams }: Props) {
         </p>
       )}
 
+      {/* ── Empty state ── */}
       {filtered.length === 0 ? (
-        <div className="card-forensic p-12 text-center">
-          <Video className="w-10 h-10 text-gold-500/40 mx-auto mb-4" />
-          <p className="font-mono text-sm text-bone-300">
+        <div className="card p-12 text-center">
+          <Video className="w-10 h-10 text-[hsl(var(--foreground-subtle))] mx-auto mb-4" />
+          <p className="text-sm text-[hsl(var(--foreground-muted))]">
             {activeDomain
               ? `No lessons published yet for "${DOMAIN_LABELS[activeDomain] ?? activeDomain}".`
               : 'No lessons published yet.'}
@@ -108,27 +121,40 @@ export default async function VideosPage({ searchParams }: Props) {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((v) => (
             <Link key={v.id} href={`/videos/${v.slug}`} className="group">
-              <div className="relative aspect-video overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
+
+              {/* ── Thumbnail ── */}
+              <div className="relative aspect-video overflow-hidden rounded-lg
+                border border-navy-700/50 group-hover:border-navy-600
+                transition-colors">
                 <Image
                   src={getYouTubeThumbnail(v.youtube_id, 'maxres')}
                   alt={v.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t
+                  from-navy-900/80 via-transparent to-transparent" />
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-16 h-16 rounded-full bg-gold-500 flex items-center justify-center">
-                    <Play className="w-7 h-7 text-navy-900 ml-1" fill="currentColor" />
+                {/* Play button on hover — gold as primary action */}
+                <div className="absolute inset-0 flex items-center justify-center
+                  opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-14 h-14 rounded-full bg-[hsl(var(--primary))]
+                    flex items-center justify-center shadow-xl">
+                    <Play className="w-6 h-6 text-navy-950 ml-0.5" fill="currentColor" />
                   </div>
                 </div>
 
+                {/* Domain badge — coloured tile, top-left */}
                 {v.domain && (
-                  <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 bg-navy-900/90 border border-gold-500/60 text-gold-500">
+                  <span className={`absolute top-3 left-3 font-sans text-xs
+                    font-medium px-2 py-0.5 rounded-full
+                    ${DOMAIN_BADGE[v.domain] ?? 'bg-navy-800/90 text-bone-200'}
+                    bg-opacity-90 backdrop-blur-sm`}>
                     {DOMAIN_LABELS[v.domain] ?? v.domain}
                   </span>
                 )}
 
+                {/* Malware family badge */}
                 {v.malware_family && (
                   <span className="absolute top-3 right-3 badge-malware">
                     <ShieldAlert className="w-3 h-3" />
@@ -136,34 +162,47 @@ export default async function VideosPage({ searchParams }: Props) {
                   </span>
                 )}
 
+                {/* Episode label — keep mono, it's a content identifier */}
                 {v.episode_label && (
-                  <span className="absolute bottom-3 left-3 font-mono text-[10px] uppercase tracking-[0.2em] px-2 py-1 bg-navy-950/90 border border-gold-500/40 text-gold-500">
+                  <span className="absolute bottom-3 left-3 font-mono text-[9px]
+                    uppercase tracking-wider px-2 py-1
+                    bg-navy-950/90 border border-[hsl(var(--primary)/0.35)]
+                    text-[hsl(var(--primary))] rounded">
                     {v.episode_label}
                   </span>
                 )}
 
+                {/* Duration */}
                 {v.duration_seconds && (
-                  <span className="absolute bottom-3 right-3 px-2 py-1 bg-navy-950/90 border border-navy-700 font-mono text-xs text-bone-100">
+                  <span className="absolute bottom-3 right-3 font-mono text-xs
+                    px-2 py-1 bg-navy-950/90 border border-navy-700/60
+                    text-bone-200 rounded">
                     {formatDuration(v.duration_seconds)}
                   </span>
                 )}
               </div>
 
-              <div className="mt-4 space-y-2">
-                <h3 className="font-mono text-base text-bone-50 group-hover:text-gold-500 transition-colors line-clamp-2 leading-tight">
+              {/* ── Card text ── */}
+              <div className="mt-4 space-y-1.5">
+                <h3 className="font-display text-base font-semibold
+                  text-[hsl(var(--foreground))]
+                  group-hover:text-[hsl(var(--primary))] transition-colors
+                  line-clamp-2 leading-snug">
                   {v.title}
                 </h3>
                 {v.description && (
-                  <p className="font-serif text-sm text-bone-200 leading-relaxed line-clamp-2">
+                  <p className="text-sm text-[hsl(var(--foreground-muted))]
+                    leading-relaxed line-clamp-2">
                     {v.description}
                   </p>
                 )}
-                <div className="flex items-center gap-3 font-mono text-xs text-bone-300 pt-1">
+                <div className="flex items-center gap-3 text-xs
+                  text-[hsl(var(--foreground-subtle))] pt-0.5">
                   {v.category && <span>{v.category}</span>}
                   {v.difficulty && (
                     <>
                       <span>·</span>
-                      <span className="uppercase">{v.difficulty}</span>
+                      <span className="capitalize">{v.difficulty}</span>
                     </>
                   )}
                   {typeof v.view_count === 'number' && v.view_count > 0 && (
