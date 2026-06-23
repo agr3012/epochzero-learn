@@ -1,4 +1,5 @@
 // components/footer.tsx
+// Full CSS-var-based — follows light/dark theme correctly
 import Link from 'next/link';
 import Image from 'next/image';
 import { Youtube, Mail, Github } from 'lucide-react';
@@ -16,7 +17,6 @@ const LINKS = {
     { label: 'Question Banks',  href: '/resources?type=question-bank' },
     { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
     { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
-    { label: 'Research Papers', href: '/resources?type=research-paper' },
   ],
   'Tests & Forum': [
     { label: 'All Tests',       href: '/tests' },
@@ -49,40 +49,42 @@ const SOCIALS = [
 
 export function Footer() {
   return (
-    <footer className="bg-navy-950 border-t border-navy-800/60 mt-auto">
+    <footer
+      className="mt-auto"
+      style={{
+        background:   'hsl(var(--surface))',
+        borderTop:    '1px solid hsl(var(--border))',
+      }}
+    >
       <div className="container py-12 lg:py-14">
 
         {/* ── Main grid ── */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-10">
 
-          {/* Brand — spans 2 cols on lg */}
+          {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-5">
-              <Image
-                src={LOGO}
-                alt="EpochZero"
-                width={34}
-                height={34}
-                className="rounded-md"
-              />
+              <Image src={LOGO} alt="EpochZero" width={34} height={34} className="rounded-md" />
               <div className="leading-none">
-                {/* Sans wordmark — professional */}
-                <div className="font-sans text-sm font-bold text-[hsl(var(--foreground))]">
+                <div className="font-sans text-sm font-bold"
+                  style={{ color: 'hsl(var(--foreground))' }}>
                   EpochZero Learn
                 </div>
-                <div className="text-[11px] text-[hsl(var(--foreground-muted))] mt-0.5">
+                <div className="text-[11px] mt-0.5"
+                  style={{ color: 'hsl(var(--foreground-muted))' }}>
                   Multi-Domain Tech Learning Hub
                 </div>
               </div>
             </Link>
 
-            <p className="text-sm text-[hsl(var(--foreground-muted))]
-              leading-relaxed mb-6 max-w-xs">
-              Structured learning for Reverse Engineering, Cloud Security, Cryptography,
-              and Web Development. Articles, videos, tests, and peer discussion.
+            <p className="text-sm leading-relaxed mb-6 max-w-xs"
+              style={{ color: 'hsl(var(--foreground-muted))' }}>
+              Structured learning for Reverse Engineering, Cloud Security,
+              Cryptography, and Web Development. Articles, videos, tests,
+              and peer discussion.
             </p>
 
-            {/* Social icons — like CyberDefenders: simple icon buttons */}
+            {/* Social icons */}
             <div className="flex items-center gap-2">
               {SOCIALS.map(({ icon: Icon, href, label }) => (
                 <a
@@ -92,10 +94,21 @@ export function Footer() {
                   rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   aria-label={label}
                   className="w-8 h-8 flex items-center justify-center rounded-md
-                    text-[hsl(var(--foreground-muted))]
-                    hover:text-[hsl(var(--foreground))]
-                    hover:bg-[hsl(var(--card))]
-                    transition-colors">
+                    transition-colors"
+                  style={{
+                    color:      'hsl(var(--foreground-muted))',
+                    background: 'hsl(var(--card))',
+                    border:     '1px solid hsl(var(--border))',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'hsl(var(--border-strong))';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'hsl(var(--border))';
+                  }}
+                >
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
@@ -105,18 +118,19 @@ export function Footer() {
           {/* ── Link columns ── */}
           {Object.entries(LINKS).map(([heading, links]) => (
             <div key={heading}>
-              {/* Column heading — muted, no gold */}
-              <h3 className="font-sans font-semibold text-xs uppercase tracking-wide
-                text-[hsl(var(--foreground-muted))] mb-4">
+              <h3 className="font-sans font-semibold text-xs uppercase tracking-wide mb-4"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
                 {heading}
               </h3>
               <ul className="space-y-2.5">
                 {links.map(link => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-[hsl(var(--foreground-muted))]
-                        hover:text-[hsl(var(--foreground))] transition-colors">
+                    <Link href={link.href}
+                      className="text-sm transition-colors"
+                      style={{ color: 'hsl(var(--foreground-muted))' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))'}
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -127,13 +141,14 @@ export function Footer() {
         </div>
 
         {/* ── Bottom bar ── */}
-        <div className="pt-6 border-t border-navy-800/60
-          flex flex-col md:flex-row items-start md:items-center
-          justify-between gap-2">
-          <p className="text-xs text-[hsl(var(--foreground-subtle))]">
+        <div
+          className="pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-2"
+          style={{ borderTop: '1px solid hsl(var(--border))' }}
+        >
+          <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
             © {new Date().getFullYear()} EpochZero Learn. Educational content for learning purposes.
           </p>
-          <p className="text-xs text-[hsl(var(--foreground-subtle))]">
+          <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
             Course Instructor: Ashish Revar
           </p>
         </div>
