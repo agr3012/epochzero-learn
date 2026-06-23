@@ -122,32 +122,61 @@
   ::selection { background: hsl(var(--primary) / 0.2); color: hsl(var(--foreground)); }
 }
 
-/* ── Dark mode background — grid + atmospheric orbs ─────────── */
+/* ── Dark mode background — grid + 5 atmospheric colour splashes ── */
 html.dark body,
 [data-theme="dark"] body {
   background-image:
     /* Fine 64px gold grid */
-    linear-gradient(rgba(232,160,32,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(232,160,32,0.03) 1px, transparent 1px),
-    /* Gold atmospheric orb — top right */
-    radial-gradient(ellipse 65% 52% at 108% -6%, rgba(232,160,32,0.11) 0%, rgba(139,94,26,0.05) 40%, transparent 65%),
-    /* Green atmospheric orb — bottom left */
-    radial-gradient(ellipse 50% 42% at -6% 108%, rgba(27,124,62,0.08) 0%, transparent 60%),
-    /* Very subtle central depth */
-    radial-gradient(ellipse 120% 60% at 50% -15%, rgba(27,41,73,0.6) 0%, transparent 70%);
-  background-size: 64px 64px, 64px 64px, 100% 100%, 100% 100%, 100% 100%;
+    linear-gradient(rgba(232,160,32,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,160,32,0.028) 1px, transparent 1px),
+    /* 1. Gold — top right (primary glow) */
+    radial-gradient(ellipse 65% 52% at 108% -6%,
+      rgba(232,160,32,0.13) 0%, rgba(139,94,26,0.06) 40%, transparent 65%),
+    /* 2. Green — bottom left */
+    radial-gradient(ellipse 55% 45% at -6% 108%,
+      rgba(27,124,62,0.10) 0%, rgba(27,124,62,0.04) 45%, transparent 65%),
+    /* 3. Blue-steel — top left */
+    radial-gradient(ellipse 42% 36% at -4% 12%,
+      rgba(27,95,168,0.08) 0%, rgba(27,95,168,0.03) 45%, transparent 65%),
+    /* 4. Purple — mid right */
+    radial-gradient(ellipse 36% 32% at 108% 52%,
+      rgba(107,58,212,0.07) 0%, rgba(107,58,212,0.03) 45%, transparent 65%),
+    /* 5. Warm amber — bottom center */
+    radial-gradient(ellipse 65% 20% at 50% 108%,
+      rgba(139,94,26,0.05) 0%, transparent 60%),
+    /* Base depth tone */
+    radial-gradient(ellipse 120% 55% at 50% -10%,
+      rgba(27,41,73,0.55) 0%, transparent 70%);
+  background-size:
+    64px 64px, 64px 64px,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
 }
 
-/* ── Light mode background — softer version ─────────────────── */
+/* ── Light mode background — 4 soft colour splashes ─────────── */
 html.light body,
 [data-theme="light"] body {
   background-image:
-    linear-gradient(rgba(184,116,15,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184,116,15,0.04) 1px, transparent 1px),
-    radial-gradient(ellipse 65% 52% at 108% -6%, rgba(184,116,15,0.08) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 42% at -6% 108%, rgba(22,101,52,0.05) 0%, transparent 60%);
-  background-size: 64px 64px, 64px 64px, 100% 100%, 100% 100%;
+    linear-gradient(rgba(184,116,15,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,116,15,0.035) 1px, transparent 1px),
+    /* Gold — top right */
+    radial-gradient(ellipse 65% 52% at 108% -6%,
+      rgba(184,116,15,0.09) 0%, transparent 65%),
+    /* Green — bottom left */
+    radial-gradient(ellipse 55% 45% at -6% 108%,
+      rgba(22,101,52,0.07) 0%, transparent 65%),
+    /* Blue — top left */
+    radial-gradient(ellipse 42% 36% at -4% 12%,
+      rgba(21,78,136,0.05) 0%, transparent 65%),
+    /* Purple — mid right */
+    radial-gradient(ellipse 36% 32% at 108% 52%,
+      rgba(88,46,174,0.04) 0%, transparent 65%);
+  background-size:
+    64px 64px, 64px 64px,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
 }
+
 
 /* ── Components ──────────────────────────────────────────────── */
 @layer components {
