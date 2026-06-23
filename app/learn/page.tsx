@@ -1,12 +1,29 @@
+// app/learn/page.tsx
 import Link from 'next/link';
-import { ArrowRight, GraduationCap, BookOpen } from 'lucide-react';
+import { ArrowRight, GraduationCap, BookOpen, Play, FileText, Globe, ListChecks } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 
 export const revalidate = 60;
 export const metadata = {
   title: 'Learn — UGC 4Q Structured Courses',
-  description:
-    'Structured learning tracks organized by the UGC 4-Quadrant framework: e-Tutorial, e-Content, Web Resources, and Self-Assessment.',
+  description: 'Structured learning tracks organized by the UGC 4-Quadrant framework.',
+};
+
+// Quadrant definitions with CyberDefenders-style solid colors
+const QUADRANTS = [
+  { q: '1', title: 'e-Tutorial',      desc: 'Video lectures, walkthroughs, animated demos.',                color: '#1B5FA8', icon: Play       },
+  { q: '2', title: 'e-Content',       desc: 'Articles, eBook chapters, case studies.',                      color: '#1B7C3E', icon: FileText   },
+  { q: '3', title: 'Web Resources',   desc: 'Curated external references, MITRE links, tools.',             color: '#8B5E1A', icon: Globe      },
+  { q: '4', title: 'Self-Assessment', desc: 'MCQ tests, practice questions, certificates.',                 color: '#6B3AD4', icon: ListChecks },
+];
+
+// Domain → colored tile mapping
+const DOMAIN_COLOR: Record<string, string> = {
+  'rema':           '#8B5E1A',
+  'cloud-security': '#1B5FA8',
+  'cloud':          '#1B5FA8',
+  'crypto':         '#6B3AD4',
+  'webdev':         '#1B7C3E',
 };
 
 export default async function LearnIndexPage() {
@@ -19,89 +36,114 @@ export default async function LearnIndexPage() {
 
   return (
     <div className="container py-16 lg:py-24">
-      <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-        // Structured learning · UGC 4-Quadrant model
-      </div>
-      <h1 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 mb-4 leading-tight">
-        Learn, by topic.
-      </h1>
-      <p className="font-serif text-xl text-bone-200 max-w-3xl leading-relaxed mb-12">
-        Every topic on this hub is structured around the four pedagogical
-        quadrants — <strong className="text-gold-500">e-Tutorial</strong>,{' '}
-        <strong className="text-gold-500">e-Content</strong>,{' '}
-        <strong className="text-gold-500">Web Resources</strong>, and{' '}
-        <strong className="text-gold-500">Self-Assessment</strong>. Pick a
-        course to begin.
-      </p>
 
-      {/* 4Q explainer */}
+      {/* ── Header ── */}
+      <div className="mb-14 max-w-3xl">
+        <p className="eyebrow mb-3">Structured learning · UGC 4-Quadrant model</p>
+        <h1 className="font-display text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+          style={{ color: 'hsl(var(--foreground))' }}>
+          Learn, by topic.
+        </h1>
+        <p className="font-serif text-lg leading-relaxed"
+          style={{ color: 'hsl(var(--foreground-muted))' }}>
+          Every topic on this hub is structured around the four pedagogical
+          quadrants —{' '}
+          <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>e-Tutorial</span>,{' '}
+          <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>e-Content</span>,{' '}
+          <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>Web Resources</span>, and{' '}
+          <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>Self-Assessment</span>.
+          Pick a course to begin.
+        </p>
+      </div>
+
+      {/* ── 4Q explainer — CyberDefenders colored tiles ── */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-        {[
-          { q: 'Q1', title: 'e-Tutorial', desc: 'Video lectures, walkthroughs, animated demos.' },
-          { q: 'Q2', title: 'e-Content', desc: 'Articles, eBook chapters, case studies.' },
-          { q: 'Q3', title: 'Web Resources', desc: 'Curated external references, MITRE links, tools.' },
-          { q: 'Q4', title: 'Self-Assessment', desc: 'MCQ tests, practice questions, certificates.' },
-        ].map((item) => (
-          <div key={item.q} className="card-forensic p-5">
-            <div className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500 mb-2">
-              Quadrant {item.q.slice(1)}
+        {QUADRANTS.map(({ q, title, desc, color, icon: Icon }) => (
+          <div key={q} className="card p-6 group">
+            {/* Colored solid tile — like CyberDefenders lab tiles */}
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
+              style={{ background: color }}>
+              <Icon className="w-5 h-5 text-white" />
             </div>
-            <h3 className="font-mono text-lg text-bone-50 mb-2">{item.title}</h3>
-            <p className="font-serif text-sm text-bone-200 leading-relaxed">{item.desc}</p>
+            <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em] mb-1"
+              style={{ color }}>
+              Quadrant {q}
+            </p>
+            <h3 className="font-display text-base font-semibold mb-2"
+              style={{ color: 'hsl(var(--foreground))' }}>
+              {title}
+            </h3>
+            <p className="text-sm leading-relaxed"
+              style={{ color: 'hsl(var(--foreground-muted))' }}>
+              {desc}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Courses */}
-      <h2 className="font-mono text-2xl uppercase tracking-wider text-bone-50 mb-6">
-        Available courses
-      </h2>
+      {/* ── Available Courses ── */}
+      <div className="mb-8 flex items-center justify-between">
+        <h2 className="font-display text-2xl font-semibold"
+          style={{ color: 'hsl(var(--foreground))' }}>
+          Available courses
+        </h2>
+      </div>
 
       {!courses || courses.length === 0 ? (
-        <div className="card-forensic p-12 text-center">
-          <p className="font-mono text-sm text-bone-300">
-            No courses published yet. Run migration 003 first.
+        <div className="card p-12 text-center">
+          <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
+            No courses published yet.
           </p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-6">
-          {courses.map((c) => (
-            <Link
-              key={c.id}
-              href={`/learn/${c.slug}`}
-              className="card-forensic p-8 group"
-            >
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-12 h-12 border border-gold-500/40 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-6 h-6 text-gold-500" />
+        <div className="grid md:grid-cols-2 gap-4">
+          {courses.map((c) => {
+            const tileColor = DOMAIN_COLOR[c.slug] ?? '#1B5FA8';
+            return (
+              <Link key={c.id} href={`/learn/${c.slug}`}
+                className="card card-interactive p-7 group flex flex-col">
+                <div className="flex items-start gap-4 mb-5">
+                  {/* Domain colored tile */}
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: tileColor }}>
+                    <GraduationCap className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    {c.short_title && (
+                      <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em] mb-1"
+                        style={{ color: tileColor }}>
+                        {c.short_title}
+                      </p>
+                    )}
+                    <h3 className="font-display text-xl font-semibold leading-snug
+                      group-hover:text-[hsl(var(--primary))] transition-colors"
+                      style={{ color: 'hsl(var(--foreground))' }}>
+                      {c.title}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  {c.short_title && (
-                    <span className="font-mono text-xs uppercase tracking-wider text-gold-500">
-                      {c.short_title}
-                    </span>
-                  )}
-                  <h3 className="font-mono text-xl text-bone-50 group-hover:text-gold-500 transition-colors leading-tight mt-1">
-                    {c.title}
-                  </h3>
+                {c.description && (
+                  <p className="font-serif text-sm leading-relaxed mb-6"
+                    style={{ color: 'hsl(var(--foreground-muted))' }}>
+                    {c.description}
+                  </p>
+                )}
+                <div className="mt-auto pt-4 flex items-center justify-between"
+                  style={{ borderTop: '1px solid hsl(var(--border))' }}>
+                  <span className="text-xs inline-flex items-center gap-1.5"
+                    style={{ color: 'hsl(var(--foreground-muted))' }}>
+                    <BookOpen className="w-3.5 h-3.5" />
+                    {(c.units as any[])?.length ?? 0} units
+                  </span>
+                  <span className="font-sans text-sm font-medium inline-flex items-center gap-1
+                    group-hover:gap-2 transition-all"
+                    style={{ color: 'hsl(var(--primary))' }}>
+                    Open <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
                 </div>
-              </div>
-              {c.description && (
-                <p className="font-serif text-bone-200 leading-relaxed mb-6">
-                  {c.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between pt-4 border-t border-navy-700">
-                <span className="font-mono text-xs text-bone-300 inline-flex items-center gap-1.5">
-                  <BookOpen className="w-3 h-3 text-gold-500" />
-                  {(c.units as any[])?.length ?? 0} units
-                </span>
-                <span className="font-mono text-xs uppercase tracking-wider text-gold-500 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Open <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
