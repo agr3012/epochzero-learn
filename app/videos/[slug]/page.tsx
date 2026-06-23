@@ -333,7 +333,7 @@ export default async function VideoDetailPage({ params }: Props) {
 
         {/* ── Sidebar — Up Next ── */}
         <aside className="lg:sticky lg:top-20 lg:self-start
-          lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1 scrollbar-thin">
+          lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1">
           <p className="eyebrow mb-4">Up Next</p>
           <div className="space-y-3">
             {sidebarVideos?.map((r) => {
