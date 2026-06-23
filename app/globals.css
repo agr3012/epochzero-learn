@@ -3,105 +3,96 @@
 @tailwind utilities;
 
 /* ============================================================
-   EPOCHZERO LEARN — Design System v2.1
+   EPOCHZERO LEARN — Design System v2.2
    ============================================================ */
 
 @layer base {
 
-  /* ── Dark mode (default) ─────────────────────────────────── */
+  /* ── Dark (default) ─────────────────────────────────────── */
   :root,
   html.dark,
   [data-theme="dark"] {
-    /* Backgrounds — matched to CyberDefenders dark palette */
-    --background:   222 47% 9%;    /* #0d1117 — very deep blue-black */
-    --surface:      222 42% 12%;   /* #111927 — navbar/sidebar bg    */
-    --card:         222 38% 16%;   /* #182030 — card bg              */
-    --card-hover:   222 35% 20%;   /* #1e293b — card hover           */
+    --background:   222 47% 9%;
+    --surface:      222 42% 12%;
+    --card:         222 38% 16%;
+    --card-hover:   222 35% 20%;
     --card-foreground: 210 20% 90%;
-
     --popover:      222 38% 16%;
     --popover-foreground: 210 20% 90%;
 
-    /* Text — from CyberDefenders: --text-color: #cfd7e2, --text-muted: #899bb4 */
-    --foreground:         210 22% 89%;   /* #cfd7e2 */
-    --foreground-muted:   215 20% 62%;   /* #899bb4 */
-    --foreground-subtle:  215 18% 44%;
+    --foreground:        210 22% 89%;   /* #cfd7e2 */
+    --foreground-muted:  215 20% 62%;   /* #899bb4 */
+    --foreground-subtle: 215 18% 44%;
 
-    /* Gold accent — used sparingly */
-    --primary:      38 85% 52%;    /* amber gold #E8A020 */
+    --primary:      38 85% 52%;   /* gold */
     --primary-foreground: 222 47% 9%;
     --primary-hover: 35 80% 43%;
 
     --secondary:    222 35% 20%;
     --secondary-foreground: 210 22% 89%;
-
     --muted:        222 35% 18%;
     --muted-foreground: 215 20% 62%;
-
     --accent:       38 85% 52%;
     --accent-foreground: 222 47% 9%;
-
     --destructive:  2 56% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Borders — very subtle in dark */
-    --border:       222 30% 20%;
+    --border:        222 30% 20%;
     --border-strong: 222 28% 28%;
-    --input:        222 35% 18%;
-    --ring:         38 85% 52%;
+    --input:         222 35% 18%;
+    --ring:          38 85% 52%;
+    --radius:        0.625rem;
 
-    --radius: 0.625rem; /* 10px */
-
-    /* Shadow tokens */
-    --shadow-card: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-card:     0 2px 8px rgba(0,0,0,0.4);
     --shadow-dropdown: 0 4px 16px rgba(0,0,0,0.5);
+
+    /* Atmospheric palette — used in gradient cards + bg orbs */
+    --orb-gold:   rgba(232,160,32, 1);
+    --orb-green:  rgba(27,124,62,  1);
+    --orb-blue:   rgba(27,95,168,  1);
+    --orb-purple: rgba(107,58,212, 1);
   }
 
-  /* ── Light mode ──────────────────────────────────────────── */
+  /* ── Light ──────────────────────────────────────────────── */
   html.light,
   [data-theme="light"] {
-    /* CyberDefenders light: clean white cards on light grey bg */
-    --background:   220 16% 94%;   /* #f0f2f5 — light grey page bg */
-    --surface:      0   0%  100%;  /* #ffffff — white navbar       */
-    --card:         0   0%  100%;  /* #ffffff — white cards        */
-    --card-hover:   220 14% 96%;   /* very light grey hover        */
+    --background:   220 16% 94%;
+    --surface:      0   0%  100%;
+    --card:         0   0%  100%;
+    --card-hover:   220 14% 96%;
     --card-foreground: 215 55% 10%;
-
     --popover:      0   0%  100%;
     --popover-foreground: 215 55% 10%;
 
-    /* Text — from CyberDefenders: --text-color: #344a68, --text-muted: #5a6a8a */
-    --foreground:        215 42% 30%;   /* #344a68 */
-    --foreground-muted:  215 22% 45%;   /* #5a6a8a */
+    --foreground:        215 42% 30%;
+    --foreground-muted:  215 22% 45%;
     --foreground-subtle: 215 16% 62%;
 
-    /* Darker gold for light bg */
-    --primary:      35 90% 38%;    /* #B8740F */
+    --primary:      35 90% 38%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 35 85% 30%;
-
     --secondary:    220 14% 92%;
     --secondary-foreground: 215 42% 30%;
-
     --muted:        220 14% 92%;
     --muted-foreground: 215 22% 45%;
-
     --accent:       35 90% 38%;
     --accent-foreground: 0 0% 100%;
-
     --destructive:  2 56% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Light mode borders — subtle */
-    --border:       220 14% 88%;
+    --border:        220 14% 88%;
     --border-strong: 220 12% 78%;
-    --input:        220 14% 88%;
-    --ring:         35 90% 38%;
+    --input:         220 14% 88%;
+    --ring:          35 90% 38%;
+    --radius:        0.625rem;
 
-    --radius: 0.625rem;
-
-    --shadow-card: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+    --shadow-card:     0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
     --shadow-dropdown: 0 4px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05);
+
+    --orb-gold:   rgba(184,116,15, 1);
+    --orb-green:  rgba(22,101,52,  1);
+    --orb-blue:   rgba(21,78,136,  1);
+    --orb-purple: rgba(88,46,174,  1);
   }
 }
 
@@ -109,11 +100,7 @@
 @layer base {
   * { @apply border-border; }
 
-  html {
-    @apply scroll-smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  html { @apply scroll-smooth; -webkit-font-smoothing: antialiased; }
 
   body {
     @apply font-sans;
@@ -122,10 +109,6 @@
     font-size: 15px;
     line-height: 1.6;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Very subtle depth — no gold tinge */
-    background-image:
-      radial-gradient(ellipse 100% 40% at 50% -5%,
-        hsl(var(--surface) / 0.6), transparent 70%);
     background-attachment: fixed;
   }
 
@@ -135,20 +118,41 @@
     line-height: 1.25;
   }
 
-  code, kbd, samp { @apply font-mono text-sm; }
-  pre             { @apply font-mono text-sm; }
-
-  ::selection {
-    background: hsl(var(--primary) / 0.2);
-    color: hsl(var(--foreground));
-  }
+  code, kbd, samp, pre { @apply font-mono; }
+  ::selection { background: hsl(var(--primary) / 0.2); color: hsl(var(--foreground)); }
 }
 
-/* ── Component library ───────────────────────────────────────── */
+/* ── Dark mode background — grid + atmospheric orbs ─────────── */
+html.dark body,
+[data-theme="dark"] body {
+  background-image:
+    /* Fine 64px gold grid */
+    linear-gradient(rgba(232,160,32,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,160,32,0.03) 1px, transparent 1px),
+    /* Gold atmospheric orb — top right */
+    radial-gradient(ellipse 65% 52% at 108% -6%, rgba(232,160,32,0.11) 0%, rgba(139,94,26,0.05) 40%, transparent 65%),
+    /* Green atmospheric orb — bottom left */
+    radial-gradient(ellipse 50% 42% at -6% 108%, rgba(27,124,62,0.08) 0%, transparent 60%),
+    /* Very subtle central depth */
+    radial-gradient(ellipse 120% 60% at 50% -15%, rgba(27,41,73,0.6) 0%, transparent 70%);
+  background-size: 64px 64px, 64px 64px, 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* ── Light mode background — softer version ─────────────────── */
+html.light body,
+[data-theme="light"] body {
+  background-image:
+    linear-gradient(rgba(184,116,15,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,116,15,0.04) 1px, transparent 1px),
+    radial-gradient(ellipse 65% 52% at 108% -6%, rgba(184,116,15,0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 42% at -6% 108%, rgba(22,101,52,0.05) 0%, transparent 60%);
+  background-size: 64px 64px, 64px 64px, 100% 100%, 100% 100%;
+}
+
+/* ── Components ──────────────────────────────────────────────── */
 @layer components {
 
-  /* ── Navbar glass ─────────────────────────────────────────── */
-  /* Theme-aware — white in light, dark navy in dark */
+  /* ── Navbar ── */
   .navbar-glass {
     background: hsl(var(--surface) / 0.95);
     border-bottom: 1px solid hsl(var(--border));
@@ -156,43 +160,15 @@
     -webkit-backdrop-filter: blur(12px);
   }
 
-  /* Nav link — CyberDefenders: pill hover, no border */
-  .nav-link-pill {
-    @apply flex items-center gap-1 px-3 py-1.5 rounded-[18px]
-           font-sans font-medium text-sm transition-colors;
-    color: hsl(var(--foreground-muted));
-  }
-
-  .nav-link-pill:hover {
-    background: hsl(var(--border));
-    color: hsl(var(--foreground));
-  }
-
-  .nav-link-pill.active {
-    background: hsl(var(--border));
-    color: hsl(var(--foreground));
-  }
-
-  /* Desktop nav link with underline (top-level) */
   .nav-link-underline {
-    @apply flex items-center gap-1 px-3 h-16
-           font-sans font-medium text-sm transition-colors;
+    @apply flex items-center gap-1 px-3 h-16 font-sans font-medium text-sm transition-colors;
     color: hsl(var(--foreground-muted));
     border-bottom: 2px solid transparent;
-    text-decoration: none;
   }
+  .nav-link-underline:hover  { color: hsl(var(--foreground)); border-bottom-color: hsl(var(--border-strong)); }
+  .nav-link-underline.active { color: hsl(var(--foreground)); border-bottom-color: hsl(var(--primary)); }
 
-  .nav-link-underline:hover {
-    color: hsl(var(--foreground));
-    border-bottom-color: hsl(var(--border-strong));
-  }
-
-  .nav-link-underline.active {
-    color: hsl(var(--foreground));
-    border-bottom-color: hsl(var(--primary));
-  }
-
-  /* ── Cards ─────────────────────────────────────────────────── */
+  /* ── Cards ── */
   .card {
     background: hsl(var(--card));
     border-radius: var(--radius);
@@ -205,178 +181,171 @@
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow-card);
-    transition: box-shadow 200ms ease, transform 200ms ease,
-                background-color 200ms ease;
+    transition: box-shadow 200ms, transform 200ms, background-color 200ms;
     cursor: pointer;
   }
-
   .card-interactive:hover {
     background: hsl(var(--card-hover));
     box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     transform: translateY(-1px);
   }
 
-  /* Legacy card-forensic — kept, modernised */
   .card-forensic {
     @apply rounded-lg overflow-hidden;
     background: hsl(var(--card));
     box-shadow: var(--shadow-card);
     transition: background-color 200ms, box-shadow 200ms;
   }
+  .card-forensic:hover { background: hsl(var(--card-hover)); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
 
-  .card-forensic:hover {
-    background: hsl(var(--card-hover));
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  /* ── Gradient cards — CyberDefenders-inspired ── */
+  /* Gold-primary gradient: used for featured CTAs, highlight sections */
+  .gradient-card-gold {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg,
+      rgba(139,94,26,0.55) 0%,
+      rgba(27,95,168,0.30) 55%,
+      rgba(13,17,23,0.20) 100%
+    );
+    border: 1px solid rgba(232,160,32,0.35);
+  }
+  .gradient-card-gold::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(232,160,32,0.12) 0%, transparent 65%);
+    pointer-events: none;
   }
 
-  /* ── Domain content tiles — CyberDefenders pattern ───────── */
-  /* Solid colored, work in BOTH light and dark mode            */
-  .domain-tile {
-    @apply flex items-center justify-center rounded-lg
-           font-display font-bold text-white;
-    background: var(--tile-color, #1B5FA8);
+  /* Blue-green gradient: info/secondary feature highlights */
+  .gradient-card-blue {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg,
+      rgba(27,95,168,0.55) 0%,
+      rgba(27,124,62,0.25) 55%,
+      rgba(13,17,23,0.20) 100%
+    );
+    border: 1px solid rgba(27,95,168,0.40);
+  }
+  .gradient-card-blue::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(27,95,168,0.14) 0%, transparent 65%);
+    pointer-events: none;
   }
 
-  .domain-tile-rema   { --tile-color: #8B5E1A; }  /* deep amber */
-  .domain-tile-cloud  { --tile-color: #1B5FA8; }  /* blue       */
-  .domain-tile-crypto { --tile-color: #6B3AD4; }  /* purple     */
-  .domain-tile-webdev { --tile-color: #1B7C3E; }  /* green      */
+  /* Green gradient: success / achievement / campus */
+  .gradient-card-green {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg,
+      rgba(27,124,62,0.55) 0%,
+      rgba(107,58,212,0.20) 60%,
+      rgba(13,17,23,0.20) 100%
+    );
+    border: 1px solid rgba(27,124,62,0.40);
+  }
+  .gradient-card-green::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(27,124,62,0.14) 0%, transparent 65%);
+    pointer-events: none;
+  }
 
-  /* ── Buttons ────────────────────────────────────────────────── */
+  /* Purple gradient: self-assessment, certificates */
+  .gradient-card-purple {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg,
+      rgba(107,58,212,0.55) 0%,
+      rgba(27,95,168,0.25) 55%,
+      rgba(13,17,23,0.20) 100%
+    );
+    border: 1px solid rgba(107,58,212,0.40);
+  }
+  .gradient-card-purple::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -60px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(107,58,212,0.14) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* ── Domain content tiles ── */
+  .domain-tile          { @apply flex items-center justify-center rounded-lg font-display font-bold text-white; background: var(--tile-color, #1B5FA8); }
+  .domain-tile-rema     { --tile-color: #8B5E1A; }
+  .domain-tile-cloud    { --tile-color: #1B5FA8; }
+  .domain-tile-crypto   { --tile-color: #6B3AD4; }
+  .domain-tile-webdev   { --tile-color: #1B7C3E; }
+
+  /* ── Buttons ── */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2
-           font-sans font-semibold text-sm
-           px-5 py-2.5 rounded-lg
-           transition-all duration-150 select-none;
+    @apply inline-flex items-center justify-center gap-2 font-sans font-semibold text-sm px-5 py-2.5 rounded-lg transition-all duration-150 select-none;
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
   }
-
-  .btn-primary:hover   { background: hsl(var(--primary-hover)); }
-  .btn-primary:active  { transform: scale(0.98); }
+  .btn-primary:hover  { background: hsl(var(--primary-hover)); }
+  .btn-primary:active { transform: scale(0.98); }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2
-           font-sans font-medium text-sm
-           px-5 py-2.5 rounded-lg
-           transition-all duration-150 select-none;
+    @apply inline-flex items-center justify-center gap-2 font-sans font-medium text-sm px-5 py-2.5 rounded-lg transition-all duration-150 select-none;
     color: hsl(var(--foreground-muted));
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
   }
+  .btn-ghost:hover { background: hsl(var(--card-hover)); color: hsl(var(--foreground)); }
 
-  .btn-ghost:hover {
-    background: hsl(var(--card-hover));
-    color: hsl(var(--foreground));
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2
-           font-sans font-medium text-sm
-           px-5 py-2.5 rounded-lg
-           transition-all duration-150 select-none;
-    background: hsl(var(--muted));
-    color: hsl(var(--foreground));
-  }
-
-  .btn-secondary:hover { background: hsl(var(--card-hover)); }
-
-  /* ── Badges ─────────────────────────────────────────────────── */
+  /* ── Badges ── */
   .badge {
-    @apply inline-flex items-center gap-1.5
-           font-sans font-medium text-xs
-           px-2.5 py-0.5 rounded-full;
+    @apply inline-flex items-center gap-1.5 font-sans font-medium text-xs px-2.5 py-0.5 rounded-full;
   }
-
   .badge-tag {
     @apply badge;
     background: hsl(var(--muted));
     color: hsl(var(--foreground-muted));
     border: 1px solid hsl(var(--border));
   }
-
   .badge-malware {
-    @apply inline-flex items-center gap-1.5
-           font-sans font-medium text-xs
-           px-2.5 py-0.5 rounded-full;
-    background: rgba(199, 62, 58, 0.10);
+    @apply inline-flex items-center gap-1.5 font-sans font-medium text-xs px-2.5 py-0.5 rounded-full;
+    background: rgba(199,62,58,0.10);
     color: #D85A56;
-    border: 1px solid rgba(199, 62, 58, 0.25);
+    border: 1px solid rgba(199,62,58,0.25);
   }
 
-  /* Domain colour badges */
-  .badge-domain-rema   { @apply badge; background: rgba(232,160,32,0.12); color:#E8A020; border: 1px solid rgba(232,160,32,0.25); }
-  .badge-domain-cloud  { @apply badge; background: rgba(56,139,253,0.12); color:#58A6FF; border: 1px solid rgba(56,139,253,0.25); }
-  .badge-domain-crypto { @apply badge; background: rgba(139,92,246,0.12); color:#A78BFA; border: 1px solid rgba(139,92,246,0.25); }
-  .badge-domain-webdev { @apply badge; background: rgba(34,197,94,0.12);  color:#4ADE80; border: 1px solid rgba(34,197,94,0.25);  }
+  /* Green "success" badge — for completed items, active status */
+  .badge-success {
+    @apply badge;
+    background: rgba(27,124,62,0.12);
+    color: #22c55e;
+    border: 1px solid rgba(27,124,62,0.30);
+  }
+  /* Gold "active" badge */
+  .badge-active {
+    @apply badge;
+    background: rgba(232,160,32,0.12);
+    color: #E8A020;
+    border: 1px solid rgba(232,160,32,0.30);
+  }
 
-  /* ── Typography ─────────────────────────────────────────────── */
+  /* ── Typography ── */
   .eyebrow {
     @apply font-sans font-semibold text-xs uppercase tracking-[0.12em];
     color: hsl(var(--primary));
   }
 
-  .heading-display {
-    @apply font-display font-bold tracking-tight;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    line-height: 1.1;
-    color: hsl(var(--foreground));
-  }
-
-  .heading-section {
-    @apply font-display font-semibold text-2xl tracking-tight;
-    color: hsl(var(--foreground));
-  }
-
-  /* Terminal — keep mono, it's intentional */
-  .terminal-prompt::before { content: "$ "; @apply font-mono; color: hsl(var(--primary)); opacity: 0.7; }
-  .text-display { @apply font-mono uppercase tracking-[0.18em]; }
-
-  /* ── Layout ─────────────────────────────────────────────────── */
-  .container-prose { @apply max-w-3xl mx-auto px-6; }
-  .border-grid {
-    background-image:
-      linear-gradient(rgba(255,200,87,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,200,87,0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-
-  /* ── Prose ──────────────────────────────────────────────────── */
-  .prose-rema { @apply leading-relaxed; color: hsl(var(--foreground)); }
-
-  .prose-rema h1, .prose-rema h2, .prose-rema h3 {
-    @apply font-display font-semibold tracking-tight mt-10 mb-4;
-    color: hsl(var(--foreground));
-  }
-  .prose-rema h1 { @apply text-3xl; }
-  .prose-rema h2 { @apply text-2xl; padding-bottom: 0.5rem; border-bottom: 2px solid hsl(var(--primary) / 0.3); }
-  .prose-rema h3 { @apply text-xl; }
-
-  .prose-rema p  { @apply font-serif text-lg my-5 leading-[1.75]; }
-
-  .prose-rema code {
-    @apply font-mono text-sm px-1.5 py-0.5 rounded-sm;
-    background: hsl(var(--muted));
-    color: hsl(var(--primary));
-    border: 1px solid hsl(var(--border));
-  }
-
-  .prose-rema pre {
-    @apply font-mono text-sm rounded-lg p-5 overflow-x-auto my-6;
-    background: hsl(var(--surface));
-    border: 1px solid hsl(var(--border));
-  }
-
-  .prose-rema pre code { background: transparent; border: none; padding: 0; color: hsl(var(--foreground)); }
-  .prose-rema a { color: hsl(var(--primary)); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
-  .prose-rema a:hover { text-decoration-style: solid; }
-  .prose-rema blockquote { @apply border-l-2 pl-5 my-6 italic; border-color: hsl(var(--primary)/0.5); color: hsl(var(--foreground-muted)); }
-  .prose-rema ul, .prose-rema ol { @apply font-serif text-lg my-5 ml-6 space-y-2; }
-  .prose-rema table { @apply font-sans text-sm border-collapse my-6 w-full rounded-lg overflow-hidden; }
-  .prose-rema th, .prose-rema td { @apply border border-[hsl(var(--border))] px-4 py-2.5 text-left; }
-  .prose-rema th { @apply font-sans font-semibold text-xs uppercase tracking-wider; background: hsl(var(--muted)); color: hsl(var(--foreground-muted)); }
-
-  /* ── Input ──────────────────────────────────────────────────── */
+  /* ── Input ── */
   .input-base {
     @apply w-full font-sans text-sm px-3.5 py-2.5 rounded-lg outline-none transition-colors duration-150;
     background: hsl(var(--input));
@@ -388,9 +357,43 @@
     border-color: hsl(var(--primary) / 0.6);
     box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
   }
+
+  /* ── Prose ── */
+  .prose-rema { @apply leading-relaxed; color: hsl(var(--foreground)); }
+  .prose-rema h1, .prose-rema h2, .prose-rema h3 {
+    @apply font-display font-semibold tracking-tight mt-10 mb-4;
+    color: hsl(var(--foreground));
+  }
+  .prose-rema h1 { @apply text-3xl; }
+  .prose-rema h2 { @apply text-2xl; padding-bottom: 0.5rem; border-bottom: 2px solid hsl(var(--primary) / 0.3); }
+  .prose-rema h3 { @apply text-xl; }
+  .prose-rema p  { @apply font-serif text-lg my-5 leading-[1.75]; }
+  .prose-rema code {
+    @apply font-mono text-sm px-1.5 py-0.5 rounded-sm;
+    background: hsl(var(--muted));
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--border));
+  }
+  .prose-rema pre {
+    @apply font-mono text-sm rounded-lg p-5 overflow-x-auto my-6;
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--border));
+  }
+  .prose-rema pre code { background: transparent; border: none; padding: 0; color: hsl(var(--foreground)); }
+  .prose-rema a { color: hsl(var(--primary)); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+  .prose-rema a:hover { text-decoration-style: solid; }
+  .prose-rema blockquote { @apply border-l-2 pl-5 my-6 italic; border-color: hsl(var(--primary)/0.5); color: hsl(var(--foreground-muted)); }
+  .prose-rema ul, .prose-rema ol { @apply font-serif text-lg my-5 ml-6 space-y-2; }
+  .prose-rema table { @apply font-sans text-sm border-collapse my-6 w-full rounded-lg overflow-hidden; }
+  .prose-rema th, .prose-rema td { @apply border border-[hsl(var(--border))] px-4 py-2.5 text-left; }
+  .prose-rema th { @apply font-sans font-semibold text-xs uppercase tracking-wider; background: hsl(var(--muted)); color: hsl(var(--foreground-muted)); }
+
+  /* ── Green accent border utility ── */
+  .border-green-accent { border-color: rgba(27,124,62,0.4) !important; }
+  .ring-green-accent   { box-shadow: 0 0 0 1px rgba(27,124,62,0.4); }
 }
 
-/* ── Utility layer ───────────────────────────────────────────── */
+/* ── Utilities ───────────────────────────────────────────────── */
 @layer utilities {
   .text-balance { text-wrap: balance; }
   .text-muted   { color: hsl(var(--foreground-muted));  }
@@ -399,7 +402,7 @@
   .bg-card      { background: hsl(var(--card));    }
 }
 
-/* ── Global scrollbar — subtle ───────────────────────────────── */
+/* ── Global scrollbar ────────────────────────────────────────── */
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--border-strong)) transparent;
@@ -409,14 +412,10 @@
 *::-webkit-scrollbar-thumb { background: hsl(var(--border-strong)); border-radius: 99px; }
 *::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground-subtle)); }
 
-/* Themed scrollbar utility */
-.scrollbar-themed::-webkit-scrollbar       { width: 6px; }
-.scrollbar-themed::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-themed::-webkit-scrollbar-thumb { background: rgba(232,160,32,0.35); border-radius: 99px; }
-.scrollbar-themed::-webkit-scrollbar-thumb:hover { background: rgba(232,160,32,0.6); }
-.scrollbar-themed { scrollbar-width: thin; scrollbar-color: rgba(232,160,32,0.35) transparent; }
-
-.scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(232,160,32,0.25) transparent; }
-.scrollbar-thin::-webkit-scrollbar       { width: 5px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(232,160,32,0.25); border-radius: 99px; }
+/* Gold scrollbar for scrollable content zones */
+.scrollbar-gold {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232,160,32,0.3) transparent;
+}
+.scrollbar-gold::-webkit-scrollbar-thumb { background: rgba(232,160,32,0.3); border-radius: 99px; }
+.scrollbar-gold::-webkit-scrollbar-thumb:hover { background: rgba(232,160,32,0.55); }
