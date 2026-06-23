@@ -1,52 +1,19 @@
 // app/forum/page.tsx
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { MessageSquare, Shield, Cloud, Lock, Code2, ChevronRight } from 'lucide-react';
+import { MessageSquare, Shield, Cloud, Lock, Code2, ArrowRight } from 'lucide-react';
 
 export const revalidate = 60;
-
 export const metadata = {
   title: 'Discussion Forum — EpochZero Learn',
-  description: 'Ask questions, share knowledge, and discuss cybersecurity topics with fellow students. UGC Quadrant IV.',
+  description: 'Ask questions, share knowledge, and discuss cybersecurity topics. UGC Quadrant IV.',
 };
 
 const DOMAINS = [
-  {
-    slug:   'rema',
-    label:  'REMA',
-    full:   'Reverse Engineering & Malware Analysis',
-    icon:   Shield,
-    color:  'text-gold-500 border-gold-500/40 hover:border-gold-500',
-    bg:     'bg-gold-500/5',
-    topics: ['Static analysis', 'Dynamic analysis', 'YARA rules', 'Unpacking', 'IOC extraction'],
-  },
-  {
-    slug:   'cloud',
-    label:  'Cloud',
-    full:   'Cloud Security',
-    icon:   Cloud,
-    color:  'text-blue-400 border-blue-400/40 hover:border-blue-400',
-    bg:     'bg-blue-400/5',
-    topics: ['IaaS/PaaS/SaaS', 'Cloud threats', 'IAM', 'Data protection', 'Cloud forensics'],
-  },
-  {
-    slug:   'crypto',
-    label:  'Cryptography',
-    full:   'Cryptography & Applied Security',
-    icon:   Lock,
-    color:  'text-purple-400 border-purple-400/40 hover:border-purple-400',
-    bg:     'bg-purple-400/5',
-    topics: ['Symmetric/Asymmetric', 'PKI', 'Hash functions', 'TLS/SSL', 'Cryptanalysis'],
-  },
-  {
-    slug:   'webdev',
-    label:  'Web Dev',
-    full:   'Full Stack Web Development',
-    icon:   Code2,
-    color:  'text-green-400 border-green-400/40 hover:border-green-400',
-    bg:     'bg-green-400/5',
-    topics: ['React / Next.js', 'Node.js', 'Databases', 'APIs', 'Deployment'],
-  },
+  { slug: 'rema',   label: 'REMA',         full: 'Reverse Engineering & Malware Analysis', icon: Shield,  color: '#8B5E1A', topics: ['Static analysis','Dynamic analysis','YARA rules','Unpacking','IOC extraction'] },
+  { slug: 'cloud',  label: 'Cloud',         full: 'Cloud Security',                         icon: Cloud,   color: '#1B5FA8', topics: ['IaaS/PaaS/SaaS','Cloud threats','IAM','Data protection','Cloud forensics'] },
+  { slug: 'crypto', label: 'Cryptography',  full: 'Cryptography & Applied Security',        icon: Lock,    color: '#6B3AD4', topics: ['Symmetric/Asymmetric','PKI','Hash functions','TLS/SSL','Cryptanalysis'] },
+  { slug: 'webdev', label: 'Web Dev',       full: 'Full Stack Web Development',             icon: Code2,   color: '#1B7C3E', topics: ['React / Next.js','Node.js','Databases','APIs','Deployment'] },
 ];
 
 const RULES = [
@@ -60,65 +27,51 @@ const RULES = [
 
 export default async function ForumPage() {
   const supabase = createClient();
-
-  const { data: counts } = await supabase
-    .from('forum_threads')
-    .select('domain')
-    .eq('status', 'published');
-
+  const { data: counts } = await supabase.from('forum_threads').select('domain').eq('status', 'published');
   const countMap: Record<string, number> = {};
-  for (const row of counts ?? []) {
-    countMap[row.domain] = (countMap[row.domain] ?? 0) + 1;
-  }
+  for (const row of counts ?? []) countMap[row.domain] = (countMap[row.domain] ?? 0) + 1;
   const total = Object.values(countMap).reduce((s, v) => s + v, 0);
 
-  const { data: recent } = await supabase
-    .from('forum_threads')
+  const { data: recent } = await supabase.from('forum_threads')
     .select('id, title, domain, author_name, reply_count, created_at')
-    .eq('status', 'published')
-    .order('created_at', { ascending: false })
-    .limit(6);
+    .eq('status', 'published').order('created_at', { ascending: false }).limit(6);
 
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh' }}>
 
-      {/* ── Hero ── */}
-      <section className="border-b border-navy-700 bg-navy-950 relative overflow-hidden">
-        <div className="absolute inset-0 border-grid opacity-20" aria-hidden />
-        <div className="container py-12 relative">
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-            // UGC Quadrant IV — Discussion Forum
-          </div>
-          <h1 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 mb-4">
+      {/* ── Header ── */}
+      <section style={{ background: 'hsl(var(--surface))', borderBottom: '1px solid hsl(var(--border))' }}>
+        <div className="container py-14">
+          <p className="eyebrow mb-3">UGC Quadrant IV — Discussion Forum</p>
+          <h1 className="font-display text-4xl lg:text-5xl font-bold mb-4"
+            style={{ color: 'hsl(var(--foreground))' }}>
             Forum
           </h1>
-          <p className="font-serif text-lg text-bone-200 max-w-xl leading-relaxed mb-6">
+          <p className="font-serif text-lg max-w-xl leading-relaxed mb-6"
+            style={{ color: 'hsl(var(--foreground-muted))' }}>
             Ask questions, share knowledge, and discuss with peers across all four domains.
             Anyone can read — sign in to post.
           </p>
-          <div className="flex gap-6 font-mono text-sm">
-            <div className="border-l-2 border-gold-500 pl-3">
-              <span className="text-2xl font-bold text-bone-50">{total}</span>
-              <span className="text-bone-400 ml-2 text-xs uppercase tracking-wider">Threads</span>
-            </div>
-            <div className="border-l-2 border-gold-500 pl-3">
-              <span className="text-2xl font-bold text-bone-50">4</span>
-              <span className="text-bone-400 ml-2 text-xs uppercase tracking-wider">Domains</span>
-            </div>
+          <div className="flex gap-6">
+            {[{ val: total, label: 'Threads' }, { val: 4, label: 'Domains' }].map(({ val, label }) => (
+              <div key={label} className="pl-4" style={{ borderLeft: '2px solid hsl(var(--primary))' }}>
+                <span className="font-display text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{val}</span>
+                <span className="text-xs ml-2 uppercase tracking-wider" style={{ color: 'hsl(var(--foreground-muted))' }}>{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Forum Rules — full width, prominent ── */}
-      <section className="border-b border-navy-700 bg-navy-900/60">
-        <div className="container py-6">
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-            // Forum Rules
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* ── Forum rules ── */}
+      <section style={{ background: 'hsl(var(--card))', borderBottom: '1px solid hsl(var(--border))' }}>
+        <div className="container py-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {RULES.map((r, i) => (
-              <div key={r} className="flex items-start gap-2 font-mono text-[11px] text-bone-300 leading-relaxed">
-                <span className="text-gold-500 shrink-0 mt-0.5">0{i + 1}</span>
+              <div key={r} className="flex items-start gap-2 text-xs leading-relaxed"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
+                <span className="font-display font-bold shrink-0 mt-0.5"
+                  style={{ color: 'hsl(var(--primary))' }}>0{i + 1}</span>
                 <span>{r}</span>
               </div>
             ))}
@@ -126,52 +79,58 @@ export default async function ForumPage() {
         </div>
       </section>
 
-      {/* ── Main content ── */}
+      {/* ── Main ── */}
       <div className="container py-10 grid lg:grid-cols-[1fr_300px] gap-10 items-start">
 
         {/* Domain cards */}
         <div>
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-5">
-            // Choose a domain
-          </div>
+          <p className="eyebrow mb-5">Choose a domain</p>
           <div className="grid sm:grid-cols-2 gap-4">
-            {DOMAINS.map(({ slug, label, full, icon: Icon, color, bg, topics }) => (
+            {DOMAINS.map(({ slug, label, full, icon: Icon, color, topics }) => (
               <Link key={slug} href={`/forum/${slug}`}
-                className={`border ${color} ${bg} p-6 group transition-all block`}>
-                <div className="flex items-start justify-between mb-4">
-                  <Icon className={`w-7 h-7 ${color.split(' ')[0]}`} />
-                  <span className="font-mono text-xs text-bone-400">
+                className="card card-interactive p-6 group block">
+                {/* Colour tile + count */}
+                <div className="flex items-start justify-between mb-5">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+                    style={{ background: color }}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                     {countMap[slug] ?? 0} thread{(countMap[slug] ?? 0) !== 1 ? 's' : ''}
                   </span>
                 </div>
-                <div className="font-mono text-xl font-bold text-bone-50 mb-1 group-hover:text-gold-500 transition-colors">
+                <h3 className="font-display text-xl font-semibold mb-1
+                  group-hover:text-[hsl(var(--primary))] transition-colors"
+                  style={{ color: 'hsl(var(--foreground))' }}>
                   {label}
-                </div>
-                <div className="font-mono text-xs text-bone-400 mb-4">{full}</div>
-                <div className="flex flex-wrap gap-1 mb-5">
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'hsl(var(--foreground-muted))' }}>{full}</p>
+                {/* Topic chips */}
+                <div className="flex flex-wrap gap-1.5 mb-5">
                   {topics.map(t => (
-                    <span key={t} className="font-mono text-[9px] px-1.5 py-0.5 border border-navy-600 text-bone-400">
+                    <span key={t} className="text-xs px-2 py-0.5 rounded-md"
+                      style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-muted))', border: '1px solid hsl(var(--border))' }}>
                       {t}
                     </span>
                   ))}
                 </div>
-                <div className="font-mono text-xs uppercase tracking-wider text-gold-500 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Enter forum <ChevronRight className="w-3 h-3" />
-                </div>
+                <span className="font-sans text-sm font-medium inline-flex items-center gap-1
+                  group-hover:gap-2 transition-all" style={{ color }}>
+                  Enter forum <ArrowRight className="w-3.5 h-3.5" />
+                </span>
               </Link>
             ))}
           </div>
         </div>
 
-        {/* Recent Activity sidebar — only recent threads, no rules */}
+        {/* Recent activity */}
         <div className="lg:sticky lg:top-24">
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-            // Recent activity
-          </div>
+          <p className="eyebrow mb-4">Recent activity</p>
           {(!recent || recent.length === 0) ? (
-            <div className="border border-dashed border-navy-700 p-8 text-center">
-              <MessageSquare className="w-8 h-8 text-gold-500/20 mx-auto mb-3" />
-              <p className="font-mono text-sm text-bone-400">No threads yet.</p>
+            <div className="card p-8 text-center">
+              <MessageSquare className="w-8 h-8 mx-auto mb-3" style={{ color: 'hsl(var(--foreground-subtle))' }} />
+              <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>No threads yet.</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -179,17 +138,20 @@ export default async function ForumPage() {
                 const d = DOMAINS.find(d => d.slug === t.domain);
                 return (
                   <Link key={t.id} href={`/forum/${t.domain}/${t.id}`}
-                    className="block border border-navy-700 hover:border-gold-500/40 p-4 transition-colors group">
+                    className="card card-interactive block p-4 group">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className={`font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 border ${d?.color ?? ''}`}>
+                      <span className="font-sans text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ background: `${d?.color ?? '#1B5FA8'}18`, color: d?.color ?? '#1B5FA8', border: `1px solid ${d?.color ?? '#1B5FA8'}40` }}>
                         {t.domain}
                       </span>
-                      <span className="font-mono text-[10px] text-bone-400 truncate">{t.author_name}</span>
+                      <span className="text-xs truncate" style={{ color: 'hsl(var(--foreground-muted))' }}>{t.author_name}</span>
                     </div>
-                    <div className="font-mono text-sm text-bone-100 group-hover:text-gold-500 transition-colors leading-snug line-clamp-2">
+                    <div className="font-sans text-sm leading-snug line-clamp-2 mb-2
+                      group-hover:text-[hsl(var(--primary))] transition-colors"
+                      style={{ color: 'hsl(var(--foreground))' }}>
                       {t.title}
                     </div>
-                    <div className="font-mono text-[10px] text-bone-400 mt-2 flex items-center gap-1">
+                    <div className="flex items-center gap-1 text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
                       <MessageSquare className="w-3 h-3" />
                       {t.reply_count} {t.reply_count === 1 ? 'reply' : 'replies'}
                     </div>
@@ -199,7 +161,6 @@ export default async function ForumPage() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );
