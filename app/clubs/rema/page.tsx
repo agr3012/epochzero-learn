@@ -1,225 +1,108 @@
+// app/clubs/rema/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  Shield,
-  Users,
-  Trophy,
-  Code2,
-  Target,
-  ChevronRight,
-  Calendar,
-  MapPin,
-  ExternalLink,
-  GraduationCap,
-  BookOpen,
-  Swords,
-  FlaskConical,
-  Network,
-  Cpu,
-} from 'lucide-react';
+import { Shield, Users, Trophy, Code2, ChevronRight, Calendar, MapPin, ExternalLink, Swords, FlaskConical, Network, Cpu } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { ClubRegistrationForm } from './RegistrationForm';
 
 export const revalidate = 3600;
+export const metadata = { title: 'REMA Club — Reverse. Reveal. Respond.' };
 
-export const metadata = {
-  title: 'REMA Club — Reverse. Reveal. Respond.',
-  description:
-    'The REMA Club at SITAICS, RRU — a specialized technical club for Reverse Engineering and Malware Analysis. CTF events, workshops, and hands-on labs.',
-};
-
-// ── Interest areas matching registration form ──────────────────────────────
-const INTEREST_ICONS: Record<string, any> = {
-  ctf:        Swords,
-  malware:    Shield,
-  yara:       Code2,
-  tools:      Cpu,
-  osint:      Network,
-  ml:         FlaskConical,
-};
+const COLOR = '#8B5E1A';
 
 export default async function REMAClubPage() {
   const supabase = createClient();
-
   const [clubRes, membersRes, eventsRes, projectsRes] = await Promise.all([
     supabase.from('clubs').select('*').eq('slug', 'rema').single(),
-    supabase
-      .from('club_members')
-      .select('*')
-      .eq('club_id', (await supabase.from('clubs').select('id').eq('slug', 'rema').single()).data?.id)
-      .order('order_index', { ascending: true }),
-    supabase
-      .from('club_events')
-      .select('*')
-      .eq('club_id', (await supabase.from('clubs').select('id').eq('slug', 'rema').single()).data?.id)
-      .eq('is_published', true)
-      .order('event_date', { ascending: false }),
-    supabase
-      .from('club_projects')
-      .select('*')
-      .eq('club_id', (await supabase.from('clubs').select('id').eq('slug', 'rema').single()).data?.id)
-      .eq('is_published', true)
-      .order('order_index', { ascending: true }),
+    supabase.from('club_members').select('*').eq('club_id', (await supabase.from('clubs').select('id').eq('slug', 'rema').single()).data?.id).order('order_index'),
+    supabase.from('club_events').select('*').eq('club_id', (await supabase.from('clubs').select('id').eq('slug', 'rema').single()).data?.id).eq('is_published', true).order('event_date', { ascending: false }),
+    supabase.from('club_projects').select('*').eq('club_id', (await supabase.from('clubs').select('id').eq('slug', 'rema').single()).data?.id).eq('is_published', true).order('order_index'),
   ]);
-
-  const club = clubRes.data;
-  const members = membersRes.data ?? [];
-  const events = eventsRes.data ?? [];
+  const club     = clubRes.data;
+  const members  = membersRes.data  ?? [];
+  const events   = eventsRes.data   ?? [];
   const projects = projectsRes.data ?? [];
-
-  const currentMembers = members.filter((m) => m.status === 'current');
-  const alumni = members.filter((m) => m.status === 'alumni');
-
+  const current  = members.filter(m => m.status === 'current');
+  const alumni   = members.filter(m => m.status === 'alumni');
   if (!club) return null;
 
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh' }}>
 
-      {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-navy-700 bg-navy-950">
-        <div className="absolute inset-0 border-grid opacity-30" aria-hidden />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(900px circle at 60% 50%, rgba(255,200,87,0.07), transparent 55%)',
-          }}
-          aria-hidden
-        />
-        <div className="absolute inset-0 bg-scanlines pointer-events-none opacity-30" aria-hidden />
-
-        <div className="container relative py-20 lg:py-28">
+      {/* HERO */}
+      <section style={{ background: 'hsl(var(--surface))', borderBottom: '1px solid hsl(var(--border))' }}>
+        <div className="container py-16 lg:py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-
-            {/* Left */}
             <div>
-              {/* Breadcrumb */}
-              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-bone-400 mb-8">
-                <Link href="/clubs" className="hover:text-gold-500 transition-colors">
-                  Tech Clubs
-                </Link>
-                <ChevronRight className="w-3 h-3" />
-                <span className="text-gold-500">REMA Club</span>
-              </div>
-
-              <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
-                // SITAICS · Rashtriya Raksha University
-              </div>
-
-              <h1 className="font-mono text-5xl lg:text-7xl font-bold text-bone-50 leading-[0.95] mb-4">
-                REMA<br />
-                <span className="text-gold-500">Club</span>
+              <nav className="flex items-center gap-2 text-sm mb-6"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
+                <Link href="/clubs" className="hover:text-[hsl(var(--foreground))] transition-colors">Tech Clubs</Link>
+                <ChevronRight className="w-3.5 h-3.5" />
+                <span style={{ color: COLOR }}>REMA Club</span>
+              </nav>
+              <p className="eyebrow mb-3">SITAICS · Rashtriya Raksha University</p>
+              <h1 className="font-display font-bold leading-tight mb-3"
+                style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', color: 'hsl(var(--foreground))' }}>
+                REMA<br /><span style={{ color: COLOR }}>Club</span>
               </h1>
-
-              <p className="font-mono text-lg text-bone-300 tracking-[0.2em] uppercase mb-6">
+              <p className="font-sans text-lg tracking-wide mb-5" style={{ color: COLOR }}>
                 Reverse. Reveal. Respond.
               </p>
-
-              <p className="font-serif text-lg text-bone-200 leading-relaxed max-w-lg mb-10">
+              <p className="font-serif text-lg leading-relaxed max-w-lg mb-8"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
                 {club.description}
               </p>
-
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="#register"
-                  className="btn-primary"
-                >
-                  <Shield className="w-4 h-4" />
-                  Join the Club
-                </a>
-                <a
-                  href="#events"
-                  className="btn-ghost"
-                >
-                  <Trophy className="w-4 h-4" />
-                  Our CTFs
-                </a>
+              <div className="flex flex-wrap gap-3 mb-10">
+                <a href="#register" className="btn-primary"><Shield className="w-4 h-4" /> Join the Club</a>
+                <a href="#events"   className="btn-ghost"><Trophy className="w-4 h-4" /> Our CTFs</a>
               </div>
-
-              {/* Stats strip */}
-              <div className="mt-12 flex gap-8 font-mono">
-                <div className="border-l-2 border-gold-500 pl-4">
-                  <div className="text-2xl font-bold text-bone-50">{members.length}</div>
-                  <div className="text-xs uppercase tracking-wider text-bone-400">Members</div>
-                </div>
-                <div className="border-l-2 border-gold-500 pl-4">
-                  <div className="text-2xl font-bold text-bone-50">{events.length}</div>
-                  <div className="text-xs uppercase tracking-wider text-bone-400">CTF Events</div>
-                </div>
-                <div className="border-l-2 border-gold-500 pl-4">
-                  <div className="text-2xl font-bold text-bone-50">{club.founded_year}</div>
-                  <div className="text-xs uppercase tracking-wider text-bone-400">Founded</div>
-                </div>
+              <div className="flex gap-8">
+                {[{ v: members.length, l: 'Members' }, { v: events.length, l: 'CTF Events' }, { v: club.founded_year, l: 'Founded' }].map(({ v, l }) => (
+                  <div key={l} className="pl-4" style={{ borderLeft: `2px solid ${COLOR}` }}>
+                    <div className="font-display text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{v}</div>
+                    <div className="text-xs uppercase tracking-wider" style={{ color: 'hsl(var(--foreground-muted))' }}>{l}</div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Right — logo */}
             <div className="flex items-center justify-center lg:justify-end">
-              <div className="relative">
-                <div
-                  className="absolute inset-0 rounded-full blur-3xl opacity-20 bg-gold-500"
-                  style={{ transform: 'scale(1.2)' }}
-                />
-                <Image
-                  src="https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/REMA_Club_Logo.png"
-                  alt="REMA Club Logo"
-                  width={320}
-                  height={320}
-                  className="relative drop-shadow-2xl"
-                  priority
-                />
-              </div>
+              <Image src="https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/REMA_Club_Logo.png"
+                alt="REMA Club Logo" width={280} height={280} className="drop-shadow-2xl" priority />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── ABOUT + OBJECTIVES ────────────────────────────────────────── */}
-      <section className="container py-20 border-b border-navy-700">
+      {/* ABOUT + ACTIVITIES */}
+      <SectionDivider />
+      <section className="container py-16">
         <div className="grid lg:grid-cols-2 gap-16">
-
-          {/* Charter */}
           <div>
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-              // Charter
-            </div>
-            <h2 className="font-mono text-3xl font-bold text-bone-50 mb-6">
-              About the club
-            </h2>
-            <div className="border-l-2 border-gold-500/40 pl-6 font-serif text-bone-200 leading-relaxed space-y-4">
+            <p className="eyebrow mb-3">Charter</p>
+            <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: 'hsl(var(--foreground))' }}>About the club</h2>
+            <div className="font-serif text-sm leading-relaxed space-y-4 pl-5"
+              style={{ color: 'hsl(var(--foreground-muted))', borderLeft: `2px solid ${COLOR}40` }}>
               <p>{club.charter}</p>
-              <p>
-                The club is mentored by{' '}
-                <span className="text-gold-500 font-mono">{club.mentor_name}</span>,{' '}
-                {club.mentor_title}, and operates under the School of Information
-                Technology, Artificial Intelligence and Cyber Security (SITAICS).
-              </p>
+              <p>Mentored by <span className="font-semibold" style={{ color: COLOR }}>{club.mentor_name}</span>, {club.mentor_title}.</p>
             </div>
           </div>
-
-          {/* What we do */}
           <div>
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-              // Activities
-            </div>
-            <h2 className="font-mono text-3xl font-bold text-bone-50 mb-6">
-              What we do
-            </h2>
-            <div className="space-y-3">
+            <p className="eyebrow mb-3">Activities</p>
+            <h2 className="font-display text-2xl font-semibold mb-6" style={{ color: 'hsl(var(--foreground))' }}>What we do</h2>
+            <div className="space-y-2">
               {[
-                { icon: Swords,       label: 'Capture The Flag (CTF) competitions'                },
-                { icon: Shield,       label: 'Static and dynamic malware analysis labs'            },
-                { icon: Code2,        label: 'YARA and Sigma detection rule writing'               },
-                { icon: Cpu,          label: 'Tool development and scripting for automation'       },
-                { icon: Network,      label: 'OSINT for threat hunting'                            },
-                { icon: FlaskConical, label: 'Machine learning for polymorphic malware detection'  },
+                { icon: Swords,       label: 'Capture The Flag (CTF) competitions' },
+                { icon: Shield,       label: 'Static and dynamic malware analysis labs' },
+                { icon: Code2,        label: 'YARA and Sigma detection rule writing' },
+                { icon: Cpu,          label: 'Tool development and scripting for automation' },
+                { icon: Network,      label: 'OSINT for threat hunting' },
+                { icon: FlaskConical, label: 'Machine learning for polymorphic malware detection' },
               ].map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  className="flex items-start gap-3 p-4 border border-navy-700 hover:border-gold-500/40 transition-colors"
-                >
-                  <Icon className="w-4 h-4 text-gold-500 mt-0.5 shrink-0" />
-                  <span className="font-mono text-sm text-bone-100">{label}</span>
+                <div key={label} className="card card-interactive flex items-center gap-3 p-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: COLOR }}>
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm" style={{ color: 'hsl(var(--foreground))' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -227,376 +110,298 @@ export default async function REMAClubPage() {
         </div>
       </section>
 
-      {/* ── CURRENT MEMBERS ───────────────────────────────────────────── */}
-      <section className="container py-20 border-b border-navy-700">
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-          // Active
-        </div>
-        <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
-          Current members
-        </h2>
-
-        {currentMembers.length === 0 ? (
-          <p className="font-mono text-sm text-bone-400">
-            No current members listed yet.
-          </p>
+      {/* MEMBERS */}
+      <SectionDivider />
+      <section className="container py-16">
+        <p className="eyebrow mb-3">Active</p>
+        <h2 className="font-display text-2xl font-semibold mb-8" style={{ color: 'hsl(var(--foreground))' }}>Current members</h2>
+        {current.length === 0 ? (
+          <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>No members listed yet.</p>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentMembers.map((m) => (
-              <div
-                key={m.id}
-                className="card-forensic p-6 border-gold-500/20 hover:border-gold-500/50 transition-colors"
-              >
-                {/* Avatar placeholder */}
-                <div className="w-14 h-14 border-2 border-gold-500/40 bg-navy-800 flex items-center justify-center mb-4 font-mono text-xl text-gold-500 font-bold">
-                  {m.name.replace(/Mr\.|Ms\./, '').trim().charAt(0)}
-                </div>
-                <div className="font-mono text-base text-bone-50 mb-1">{m.name}</div>
-                <div className="font-mono text-xs text-gold-500 uppercase tracking-wider mb-1">
-                  {m.role}
-                </div>
-                <div className="font-mono text-xs text-bone-400">{m.program}</div>
-                <div className="font-mono text-xs text-bone-400">{m.batch_year}</div>
-                <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-0.5 border border-gold-500/30 bg-gold-500/5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse" />
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-gold-500">
-                    Active
-                  </span>
-                </div>
-              </div>
-            ))}
+            {current.map(m => <MemberCard key={m.id} m={m} color={COLOR} active />)}
           </div>
         )}
       </section>
 
-      {/* ── ALUMNI ────────────────────────────────────────────────────── */}
-      <section className="container py-20 border-b border-navy-700">
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-          // Past members
-        </div>
-        <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
-          Alumni
-        </h2>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {alumni.map((m) => (
-            <div
-              key={m.id}
-              className="p-5 border border-navy-700 hover:border-navy-600 transition-colors"
-            >
-              <div className="w-10 h-10 border border-navy-600 bg-navy-800 flex items-center justify-center mb-3 font-mono text-base text-bone-300 font-bold">
-                {m.name.replace(/Mr\.|Ms\./, '').trim().charAt(0)}
-              </div>
-              <div className="font-mono text-sm text-bone-100 mb-1">{m.name}</div>
-              <div className="font-mono text-xs text-bone-400">{m.program}</div>
-              <div className="font-mono text-xs text-bone-400">{m.batch_year}</div>
-              <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-bone-500">
-                Alumni
-              </div>
+      {alumni.length > 0 && (
+        <>
+          <SectionDivider />
+          <section className="container py-16">
+            <p className="eyebrow mb-3">Past members</p>
+            <h2 className="font-display text-2xl font-semibold mb-8" style={{ color: 'hsl(var(--foreground))' }}>Alumni</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {alumni.map(m => <MemberCard key={m.id} m={m} color={COLOR} />)}
             </div>
-          ))}
+          </section>
+        </>
+      )}
+
+      {/* EVENTS */}
+      <SectionDivider />
+      <section id="events" className="container py-16 scroll-mt-20">
+        <p className="eyebrow mb-3">Competitions</p>
+        <h2 className="font-display text-2xl font-semibold mb-8" style={{ color: 'hsl(var(--foreground))' }}>CTF events</h2>
+        <div className="space-y-4">
+          {events.map((ev, i) => <EventCard key={ev.id} ev={ev} color={COLOR} index={events.length - i} />)}
         </div>
       </section>
 
-      {/* ── EVENTS & CTFs ─────────────────────────────────────────────── */}
-      <section id="events" className="container py-20 border-b border-navy-700 scroll-mt-20">
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-          // Competitions
-        </div>
-        <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
-          CTF events
-        </h2>
-
-        <div className="space-y-6">
-          {events.map((ev, i) => (
-            <div
-              key={ev.id}
-              className="card-forensic p-8 group hover:border-gold-500/40 transition-colors"
-            >
-              <div className="grid lg:grid-cols-[1fr_200px] gap-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-gold-500/60 text-gold-500 bg-gold-500/5">
-                      {ev.event_type?.toUpperCase()}
-                    </span>
-                    <span className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
-                      ev.status === 'upcoming'
-                        ? 'border-green-500/60 text-green-400 bg-green-500/5'
-                        : 'border-navy-600 text-bone-400'
-                    }`}>
-                      {ev.status}
-                    </span>
-                  </div>
-
-                  <h3 className="font-mono text-2xl font-bold text-bone-50 mb-1">
-                    {ev.title}
-                  </h3>
-                  {ev.subtitle && (
-                    <p className="font-mono text-sm text-gold-500/80 mb-4">{ev.subtitle}</p>
-                  )}
-                  {ev.description && (
-                    <p className="font-serif text-bone-200 leading-relaxed mb-4">
-                      {ev.description}
-                    </p>
-                  )}
-                  {ev.results_summary && (
-                    <div className="border-l-2 border-gold-500/40 pl-4 font-serif text-sm text-bone-300 italic">
-                      {ev.results_summary}
-                    </div>
-                  )}
-                </div>
-
-                <div className="border border-navy-700 bg-navy-950/60 p-4 flex flex-col gap-3 font-mono text-xs text-bone-300 min-w-[180px] self-start">
-                  {ev.event_date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-gold-500 shrink-0" />
-                      <span>{new Date(ev.event_date).toLocaleDateString('en-IN', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}</span>
-                    </div>
-                  )}
-                  {ev.venue && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
-                      <span className="leading-snug">{ev.venue}</span>
-                    </div>
-                  )}
-                  {(ev.registrations_count || ev.participants_count) && (
-                    <div className="flex items-start gap-2">
-                      <Users className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
-                      <div className="flex flex-col gap-0.5">
-                        {ev.registrations_count && (
-                          <span><span className="text-bone-50 font-bold">{ev.registrations_count}</span> registered</span>
-                        )}
-                        {ev.participants_count && (
-                          <span><span className="text-bone-50 font-bold">{ev.participants_count}+</span> attended</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {ev.report_url && (
-                    <a href={ev.report_url} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-gold-500 hover:text-gold-400 transition-colors mt-1">
-                      <ExternalLink className="w-3 h-3 shrink-0" />
-                      View report
-                    </a>
-                  )}
-                  <div className="font-mono text-3xl font-bold text-navy-700 mt-2 pt-2 border-t border-navy-700">
-                    #{String(events.length - i).padStart(2, '0')}
-                  </div>
-                </div>
-              </div>
+      {/* PROJECTS */}
+      {projects.length > 0 && (
+        <>
+          <SectionDivider />
+          <section className="container py-16">
+            <p className="eyebrow mb-3">Research & Development</p>
+            <h2 className="font-display text-2xl font-semibold mb-8" style={{ color: 'hsl(var(--foreground))' }}>Projects</h2>
+            <div className="grid lg:grid-cols-2 gap-4">
+              {projects.map(p => <ProjectCard key={p.id} p={p} color={COLOR} />)}
             </div>
-          ))}
+          </section>
+        </>
+      )}
+
+      {/* MENTOR */}
+      <SectionDivider />
+      <section style={{ background: 'hsl(var(--surface))', borderTop: '1px solid hsl(var(--border))' }}>
+        <div className="container py-16">
+          <p className="eyebrow mb-3">Leadership</p>
+          <h2 className="font-display text-2xl font-semibold mb-8" style={{ color: 'hsl(var(--foreground))' }}>Club mentor</h2>
+          <MentorCard club={club} color={COLOR}
+            roles={['Researcher · ML & Malware Analysis', 'Club Founder & Mentor']}
+            bio="Founder and mentor of the REMA Club at SITAICS, RRU. Active researcher in ML and malware analysis with a focus on automated detection and cloud security. Teaches Reverse Engineering and Malware Analysis across B.Tech, M.Sc., and M.Tech programmes."
+            highlights={[
+              { label: 'Research interests',   value: 'Machine Learning, Malware Analysis, Cloud Security' },
+              { label: 'Training engagements', value: 'Bharat NCX, SEBI, MHA, Gujarat Police, Nepal Police (ITEC)' },
+              { label: 'Teaching domains',     value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev' },
+            ]}
+          />
         </div>
       </section>
 
-      {/* ── PROJECTS ──────────────────────────────────────────────────── */}
-      <section className="container py-20 border-b border-navy-700">
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-          // Research & Development
-        </div>
-        <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
-          Projects
-        </h2>
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          {projects.map((p) => (
-            <div key={p.id} className="card-forensic p-8 hover:border-gold-500/40 transition-colors">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <span className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border ${
-                  p.status === 'active'
-                    ? 'border-gold-500/60 text-gold-500 bg-gold-500/5'
-                    : 'border-navy-600 text-bone-400'
-                }`}>
-                  {p.status}
-                </span>
-                {p.github_url && (
-                  <a
-                    href={p.github_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-bone-400 hover:text-gold-500 transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-
-              <h3 className="font-mono text-xl font-bold text-bone-50 mb-3">
-                {p.title}
-              </h3>
-              <p className="font-serif text-bone-200 leading-relaxed mb-6">
-                {p.description}
-              </p>
-
-              {Array.isArray(p.tech_stack) && p.tech_stack.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {p.tech_stack.map((t: string) => (
-                    <span
-                      key={t}
-                      className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 border border-navy-600 text-bone-400 bg-navy-800"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── MENTOR ────────────────────────────────────────────────────── */}
-      <section className="border-b border-navy-700 bg-navy-950/60">
-        <div className="container py-20">
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-            // Leadership
-          </div>
-          <h2 className="font-mono text-3xl font-bold text-bone-50 mb-10">
-            Club mentor
-          </h2>
-
-          {/* Full-width two-column mentor card */}
-          <div className="border border-gold-500/30 bg-navy-900 grid lg:grid-cols-[280px_1fr] overflow-hidden">
-            {/* Left panel — identity */}
-            <div className="bg-navy-800 border-b lg:border-b-0 lg:border-r border-gold-500/20 p-10 flex flex-col items-center justify-center text-center">
-              <div className="w-24 h-24 border-2 border-gold-500 bg-navy-950 flex items-center justify-center font-mono text-4xl text-gold-500 font-bold mb-6">
-                AR
-              </div>
-              <div className="font-mono text-xl font-bold text-bone-50 mb-1">
-                {club.mentor_name}
-              </div>
-              <div className="font-mono text-xs text-gold-500 uppercase tracking-wider mb-4">
-                {club.mentor_title}
-              </div>
-              <div className="flex flex-col gap-1.5 font-mono text-[10px] uppercase tracking-wider text-bone-400">
-                <span className="px-2 py-0.5 border border-navy-600 bg-navy-900">
-                  Researcher · ML &amp; Malware Analysis
-                </span>
-                <span className="px-2 py-0.5 border border-navy-600 bg-navy-900">
-                  Club Founder &amp; Mentor
-                </span>
-              </div>
-            </div>
-
-            {/* Right panel — details */}
-            <div className="p-10">
-              <div className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500 mb-6">
-                // About the mentor
-              </div>
-              <p className="font-serif text-bone-200 leading-relaxed mb-6 text-lg">
-                Founder and mentor of the REMA Club at SITAICS, Rashtriya Raksha University.
-                An active researcher in the areas of machine learning and malware analysis,
-                with a focus on automated detection and cloud security. Teaches Reverse
-                Engineering and Malware Analysis across B.Tech, M.Sc., and M.Tech programmes.
-              </p>
-
-              {/* Training highlights */}
-              <div className="grid sm:grid-cols-2 gap-4 mb-8">
-                {[
-                  { label: 'Research interests',    value: 'Machine Learning, Malware Analysis, Cloud Security'         },
-                  { label: 'Training engagements', value: 'Bharat NCX, SEBI, MHA, Gujarat Police, Nepal Police (ITEC)'  },
-                  { label: 'Teaching domains',     value: 'Malware Analysis, Cloud Security, Cryptography, Web Dev'     },
-                ].map(({ label, value }) => (
-                  <div key={label} className="border-l-2 border-gold-500/30 pl-4">
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-bone-400 mb-1">
-                      {label}
-                    </div>
-                    <div className="font-serif text-sm text-bone-200 leading-snug">{value}</div>
-                  </div>
-                ))}
-              </div>
-
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors border border-gold-500/40 hover:border-gold-500 px-4 py-2"
-              >
-                Full profile <ChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── REGISTRATION FORM ─────────────────────────────────────────── */}
-      <section id="register" className="container py-20 scroll-mt-20">
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-3">
-          // Membership
-        </div>
-        <h2 className="font-mono text-3xl font-bold text-bone-50 mb-3">
-          Join the REMA Club
-        </h2>
-        <p className="font-serif text-bone-200 max-w-2xl mb-12 leading-relaxed">
-          Registration is open to all students of Rashtriya Raksha University. You must
-          use your official RRU email address (<span className="font-mono text-gold-500 text-sm">@student.rru.ac.in</span>{' '}
-          or <span className="font-mono text-gold-500 text-sm">@rru.ac.in</span>) to register.
-          Registrations are reviewed by the club mentor and you will be notified on your
-          RRU email once approved.
+      {/* REGISTRATION */}
+      <section id="register" className="container py-16 scroll-mt-20">
+        <p className="eyebrow mb-3">Membership</p>
+        <h2 className="font-display text-2xl font-semibold mb-3" style={{ color: 'hsl(var(--foreground))' }}>Join the REMA Club</h2>
+        <p className="font-serif text-base leading-relaxed max-w-2xl mb-10"
+          style={{ color: 'hsl(var(--foreground-muted))' }}>
+          Open to all RRU students. Use your official RRU email (<span className="font-mono text-sm" style={{ color: COLOR }}>@student.rru.ac.in</span> or <span className="font-mono text-sm" style={{ color: COLOR }}>@rru.ac.in</span>). Registrations are reviewed by the club mentor.
         </p>
-
-        {/* Registration form — full width */}
         <ClubRegistrationForm clubId={club.id} clubName={club.name} />
+        <RegistrationInfo color={COLOR}
+          benefits={['Access to exclusive CTF challenges','Hands-on malware analysis labs','Mentorship from faculty and researchers','Participation in REMA CTF events','Certificate of membership and participation','Networking with cybersecurity professionals']}
+        />
+      </section>
+    </div>
+  );
+}
 
-        {/* 3-column info blocks below the form */}
-        <div className="grid md:grid-cols-3 gap-6 mt-16 pt-12 border-t border-navy-700">
-          <div className="border border-navy-700 bg-navy-900 p-6">
-            <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
-              What happens next
-            </div>
-            <ol className="space-y-4">
-              {[
-                { n: '01', text: 'Submit the form with your RRU email address.' },
-                { n: '02', text: 'The club mentor reviews your application within 1-2 working days.' },
-                { n: '03', text: 'You receive an approval email on your RRU address.' },
-                { n: '04', text: 'Approved members are added to the club group and invited to the next session.' },
-              ].map(({ n, text }) => (
-                <li key={n} className="flex gap-3">
-                  <span className="font-mono text-base text-gold-500/40 font-bold shrink-0 leading-tight">{n}</span>
-                  <span className="font-serif text-sm text-bone-200 leading-relaxed">{text}</span>
-                </li>
-              ))}
-            </ol>
+// ── Shared sub-components ──────────────────────────────────────────────────
+
+function SectionDivider() {
+  return <div style={{ borderTop: '1px solid hsl(var(--border))' }} />;
+}
+
+function MemberCard({ m, color, active }: { m: any; color: string; active?: boolean }) {
+  const initials = m.name.replace(/Mr\.|Ms\./, '').trim().charAt(0);
+  return (
+    <div className="card p-6">
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 font-display text-lg font-bold text-white"
+        style={{ background: active ? color : 'hsl(var(--border-strong))' }}>
+        {initials}
+      </div>
+      <div className="font-sans font-semibold text-sm mb-0.5" style={{ color: 'hsl(var(--foreground))' }}>{m.name}</div>
+      <div className="font-sans text-xs font-semibold uppercase tracking-wide mb-1" style={{ color }}>{m.role}</div>
+      <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>{m.program}</div>
+      <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>{m.batch_year}</div>
+      {active && (
+        <div className="mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full"
+          style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+          Active
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EventCard({ ev, color, index }: { ev: any; color: string; index: number }) {
+  return (
+    <div className="card p-6 lg:p-8">
+      <div className="grid lg:grid-cols-[1fr_200px] gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className="font-sans text-xs font-medium px-2.5 py-0.5 rounded-full"
+              style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
+              {ev.event_type?.toUpperCase()}
+            </span>
+            <span className={`font-sans text-xs font-medium px-2.5 py-0.5 rounded-full ${ev.status === 'upcoming' ? 'bg-green-500/10 text-green-500 border border-green-500/30' : ''}`}
+              style={ev.status !== 'upcoming' ? { background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-muted))', border: '1px solid hsl(var(--border))' } : {}}>
+              {ev.status}
+            </span>
           </div>
-
-          <div className="border border-navy-700 bg-navy-900 p-6">
-            <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
-              As a member you get
+          <h3 className="font-display text-xl font-semibold mb-2" style={{ color: 'hsl(var(--foreground))' }}>{ev.title}</h3>
+          {ev.subtitle   && <p className="font-sans text-sm mb-3" style={{ color }}>{ev.subtitle}</p>}
+          {ev.description && <p className="font-serif text-sm leading-relaxed" style={{ color: 'hsl(var(--foreground-muted))' }}>{ev.description}</p>}
+          {ev.results_summary && (
+            <div className="mt-4 pl-4 font-serif text-sm italic" style={{ borderLeft: `2px solid ${color}40`, color: 'hsl(var(--foreground-muted))' }}>
+              {ev.results_summary}
             </div>
-            <ul className="space-y-2 font-serif text-sm text-bone-200">
-              {[
-                'Access to exclusive CTF challenges',
-                'Hands-on malware analysis lab sessions',
-                'Mentorship from faculty and senior researchers',
-                'Participation in REMA CTF events',
-                'Certificate of membership and participation',
-                'Networking with cybersecurity professionals',
-              ].map((item) => (
-                <li key={item} className="flex gap-2">
-                  <span className="text-gold-500 shrink-0">·</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="border border-navy-700 bg-navy-900 p-6">
-            <div className="font-mono text-xs uppercase tracking-wider text-gold-500 mb-4">
-              Questions?
+          )}
+        </div>
+        <div className="card p-4 flex flex-col gap-3 text-xs self-start" style={{ borderLeft: `3px solid ${color}` }}>
+          {ev.event_date && (
+            <div className="flex items-center gap-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
+              <Calendar className="w-3.5 h-3.5 shrink-0" style={{ color }} />
+              {new Date(ev.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
-            <p className="font-serif text-sm text-bone-200 leading-relaxed mb-4">
-              Contact the club mentor directly at SITAICS, RRU Gandhinagar, or reach
-              out through the EpochZero platform.
-            </p>
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-gold-500 hover:text-gold-400 transition-colors"
-            >
-              Contact <ChevronRight className="w-3 h-3" />
-            </Link>
+          )}
+          {ev.venue && (
+            <div className="flex items-start gap-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
+              <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color }} />
+              <span className="leading-snug">{ev.venue}</span>
+            </div>
+          )}
+          {(ev.registrations_count || ev.participants_count) && (
+            <div className="flex items-start gap-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
+              <Users className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color }} />
+              <div className="flex flex-col gap-0.5">
+                {ev.registrations_count && <span><span style={{ color: 'hsl(var(--foreground))' }} className="font-bold">{ev.registrations_count}</span> registered</span>}
+                {ev.participants_count  && <span><span style={{ color: 'hsl(var(--foreground))' }} className="font-bold">{ev.participants_count}+</span> attended</span>}
+              </div>
+            </div>
+          )}
+          {ev.report_url && (
+            <a href={ev.report_url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 transition-colors hover:underline"
+              style={{ color }}>
+              <ExternalLink className="w-3 h-3 shrink-0" /> View report
+            </a>
+          )}
+          <div className="font-display text-3xl font-bold pt-3 mt-1"
+            style={{ borderTop: '1px solid hsl(var(--border))', color: 'hsl(var(--border-strong))' }}>
+            #{String(index).padStart(2, '0')}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({ p, color }: { p: any; color: string }) {
+  return (
+    <div className="card p-6 lg:p-8">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <span className="font-sans text-xs font-medium px-2.5 py-0.5 rounded-full"
+          style={p.status === 'active'
+            ? { background: `${color}18`, color, border: `1px solid ${color}40` }
+            : { background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-muted))', border: '1px solid hsl(var(--border))' }}>
+          {p.status}
+        </span>
+        {p.github_url && (
+          <a href={p.github_url} target="_blank" rel="noopener noreferrer"
+            className="hover:text-[hsl(var(--primary))] transition-colors"
+            style={{ color: 'hsl(var(--foreground-muted))' }}>
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        )}
+      </div>
+      <h3 className="font-display text-lg font-semibold mb-3" style={{ color: 'hsl(var(--foreground))' }}>{p.title}</h3>
+      <p className="font-serif text-sm leading-relaxed mb-5" style={{ color: 'hsl(var(--foreground-muted))' }}>{p.description}</p>
+      {Array.isArray(p.tech_stack) && p.tech_stack.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {p.tech_stack.map((t: string) => (
+            <span key={t} className="font-mono text-xs px-2 py-0.5 rounded"
+              style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-muted))', border: '1px solid hsl(var(--border))' }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MentorCard({ club, color, roles, bio, highlights }: { club: any; color: string; roles: string[]; bio: string; highlights: { label: string; value: string }[] }) {
+  return (
+    <div className="card rounded-xl overflow-hidden grid lg:grid-cols-[260px_1fr]">
+      {/* Left identity panel */}
+      <div className="p-10 flex flex-col items-center justify-center text-center"
+        style={{ background: `${color}12`, borderRight: '1px solid hsl(var(--border))' }}>
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center font-display text-3xl font-bold text-white mb-5"
+          style={{ background: color }}>
+          AR
+        </div>
+        <div className="font-display text-lg font-semibold mb-1" style={{ color: 'hsl(var(--foreground))' }}>{club.mentor_name}</div>
+        <div className="font-sans text-xs font-semibold uppercase tracking-wide mb-4" style={{ color }}>{club.mentor_title}</div>
+        <div className="flex flex-col gap-2 w-full">
+          {roles.map(r => (
+            <span key={r} className="text-xs px-3 py-1.5 rounded-lg"
+              style={{ background: 'hsl(var(--card))', color: 'hsl(var(--foreground-muted))', border: '1px solid hsl(var(--border))' }}>
+              {r}
+            </span>
+          ))}
+        </div>
+      </div>
+      {/* Right details */}
+      <div className="p-10">
+        <p className="eyebrow mb-5">About the mentor</p>
+        <p className="font-serif text-base leading-relaxed mb-6" style={{ color: 'hsl(var(--foreground-muted))' }}>{bio}</p>
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          {highlights.map(({ label, value }) => (
+            <div key={label} className="pl-4" style={{ borderLeft: `2px solid ${color}40` }}>
+              <div className="font-sans text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'hsl(var(--foreground-muted))' }}>{label}</div>
+              <div className="font-serif text-sm" style={{ color: 'hsl(var(--foreground))' }}>{value}</div>
+            </div>
+          ))}
+        </div>
+        <Link href="/about" className="btn-ghost inline-flex items-center gap-2">
+          Full profile <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function RegistrationInfo({ color, benefits }: { color: string; benefits: string[] }) {
+  return (
+    <div className="grid md:grid-cols-3 gap-5 mt-14 pt-12"
+      style={{ borderTop: '1px solid hsl(var(--border))' }}>
+      <div className="card p-6">
+        <h4 className="font-sans font-semibold text-sm mb-4" style={{ color }}>What happens next</h4>
+        <ol className="space-y-3">
+          {[
+            'Submit the form with your RRU email address.',
+            'The club mentor reviews within 1-2 working days.',
+            'You receive an approval email on your RRU address.',
+            'Approved members are added to the club group.',
+          ].map((text, n) => (
+            <li key={n} className="flex gap-3">
+              <span className="font-display font-bold text-sm shrink-0" style={{ color: `${color}60` }}>0{n+1}</span>
+              <span className="font-serif text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>{text}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div className="card p-6">
+        <h4 className="font-sans font-semibold text-sm mb-4" style={{ color }}>As a member you get</h4>
+        <ul className="space-y-2">
+          {benefits.map(item => (
+            <li key={item} className="flex gap-2 font-serif text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
+              <span style={{ color }} className="shrink-0">·</span>{item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="card p-6">
+        <h4 className="font-sans font-semibold text-sm mb-4" style={{ color }}>Questions?</h4>
+        <p className="font-serif text-sm leading-relaxed mb-4" style={{ color: 'hsl(var(--foreground-muted))' }}>
+          Contact the club mentor directly at SITAICS, RRU Gandhinagar, or reach out through the EpochZero platform.
+        </p>
+        <Link href="/about" className="inline-flex items-center gap-1.5 text-sm font-medium hover:gap-2 transition-all" style={{ color }}>
+          Contact <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
     </div>
   );
 }
