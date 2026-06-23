@@ -10,12 +10,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 const LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type LearnItem = { label: string; href: string; soon?: boolean };
 type DropItem  = { label: string; href: string; soon?: boolean } | 'sep';
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> = [
   {
@@ -91,30 +87,50 @@ const CAMPUS_ITEMS: DropItem[] = [
   { label: 'Hackathons',          href: '/events?type=hackathon', soon: true },
 ];
 
-// ─── Dropdown component ───────────────────────────────────────────────────────
+// ── Dropdown ──────────────────────────────────────────────────────────────────
+// Uses CSS vars — works in both light and dark
 
 function Dropdown({ items }: { items: DropItem[] }) {
   return (
-    <div className="absolute top-full left-0 min-w-[200px] mt-0
-      bg-navy-900 border border-navy-700/80 rounded-lg shadow-2xl z-50 py-1.5 overflow-hidden">
+    <div className="absolute top-full left-0 mt-1 min-w-[200px] z-50 py-1.5
+      rounded-xl overflow-hidden"
+      style={{
+        background: 'hsl(var(--card))',
+        boxShadow: 'var(--shadow-dropdown)',
+        border: '1px solid hsl(var(--border))',
+      }}>
       {items.map((item, i) =>
         item === 'sep' ? (
-          <div key={i} className="my-1 mx-2 border-t border-navy-800" />
+          <div key={i} className="my-1 mx-2"
+            style={{ borderTop: '1px solid hsl(var(--border))' }} />
         ) : (
-          <Link
-            key={item.href}
+          <Link key={item.href}
             href={item.soon ? '#' : item.href}
             className={cn(
-              'flex items-center justify-between px-3.5 py-2 mx-1 rounded-md',
+              'flex items-center justify-between px-3.5 py-2 mx-1 rounded-lg',
               'font-sans text-sm transition-colors',
-              item.soon
-                ? 'text-bone-400/50 pointer-events-none'
-                : 'text-bone-200 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
-            )}>
+              item.soon ? 'pointer-events-none opacity-40' : '',
+            )}
+            style={{
+              color: item.soon ? 'hsl(var(--foreground-subtle))' : 'hsl(var(--foreground-muted))',
+            }}
+            onMouseEnter={e => {
+              if (!item.soon) {
+                (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))';
+                (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))';
+              }
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = '';
+              (e.currentTarget as HTMLElement).style.color = item.soon
+                ? 'hsl(var(--foreground-subtle))'
+                : 'hsl(var(--foreground-muted))';
+            }}
+          >
             <span>{item.label}</span>
             {item.soon && (
-              <span className="ml-3 font-sans text-[9px] font-medium
-                px-1.5 py-0.5 rounded bg-navy-800 text-bone-400 leading-none">
+              <span className="ml-2 font-sans text-[9px] font-medium px-1.5 py-0.5 rounded"
+                style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-subtle))' }}>
                 soon
               </span>
             )}
@@ -125,7 +141,7 @@ function Dropdown({ items }: { items: DropItem[] }) {
   );
 }
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
+// ── Navbar ────────────────────────────────────────────────────────────────────
 
 export function Navbar() {
   const pathname = usePathname();
@@ -148,41 +164,34 @@ export function Navbar() {
   const isActive = (paths: string[]) =>
     paths.some(p => pathname === p || (p !== '/' && pathname.startsWith(p)));
 
-  // Nav link style — sans font, no uppercase, gold underline when active
-  const btnCls = (active: boolean) => cn(
-    'flex items-center gap-1 px-3 py-2 h-16',
-    'font-sans font-medium text-sm transition-colors border-b-2',
-    active
-      ? 'text-[hsl(var(--primary))] border-[hsl(var(--primary))]'
-      : 'text-bone-200 hover:text-[hsl(var(--foreground))] border-transparent',
-  );
-
   return (
-    <header className="sticky top-0 z-40 w-full
-      border-b border-navy-800/80 bg-navy-900/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full navbar-glass">
       <div className="container flex h-16 items-center justify-between gap-4">
 
         {/* ── Logo ── */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image src={LOGO} alt="EpochZero Learn" width={40} height={40} />
+          <Image src={LOGO} alt="EpochZero Learn" width={38} height={38}
+            className="rounded-md" />
           <div className="flex flex-col leading-none">
-            {/* Wordmark: sans font, clean */}
-            <span className="font-sans text-sm font-bold text-[hsl(var(--foreground))]">
+            <span className="font-sans text-sm font-bold"
+              style={{ color: 'hsl(var(--foreground))' }}>
               EpochZero Learn
             </span>
-            <span className="text-[10px] text-[hsl(var(--foreground-muted))] hidden xl:block">
+            <span className="text-[10px] hidden xl:block"
+              style={{ color: 'hsl(var(--foreground-muted))' }}>
               Multi-Domain Tech Learning Hub
             </span>
           </div>
         </Link>
 
         {/* ── Desktop nav ── */}
-        <nav className="hidden lg:flex items-center gap-0 h-16 relative">
+        <nav className="hidden lg:flex items-center h-16 relative">
 
           {/* Learn */}
           <div onMouseEnter={() => enter('learn')} onMouseLeave={leave}
             className="h-full flex items-center">
-            <button className={btnCls(isActive(['/learn', '/articles', '/videos', '/podcast', '/resources']))}>
+            <button className={cn('nav-link-underline',
+              isActive(['/learn', '/articles', '/videos', '/podcast', '/resources']) && 'active')}>
               Learn
               <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openKey === 'learn' && 'rotate-180')} />
@@ -192,7 +201,7 @@ export function Navbar() {
           {/* Tests */}
           <div onMouseEnter={() => enter('tests')} onMouseLeave={leave}
             className="relative h-full flex items-center">
-            <button className={btnCls(isActive(['/tests']))}>
+            <button className={cn('nav-link-underline', isActive(['/tests']) && 'active')}>
               Tests
               <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openKey === 'tests' && 'rotate-180')} />
@@ -203,7 +212,7 @@ export function Navbar() {
           {/* Forum */}
           <div onMouseEnter={() => enter('forum')} onMouseLeave={leave}
             className="relative h-full flex items-center">
-            <button className={btnCls(isActive(['/forum']))}>
+            <button className={cn('nav-link-underline', isActive(['/forum']) && 'active')}>
               Forum
               <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openKey === 'forum' && 'rotate-180')} />
@@ -214,7 +223,7 @@ export function Navbar() {
           {/* Campus */}
           <div onMouseEnter={() => enter('campus')} onMouseLeave={leave}
             className="relative h-full flex items-center">
-            <button className={btnCls(isActive(['/clubs', '/events']))}>
+            <button className={cn('nav-link-underline', isActive(['/clubs', '/events']) && 'active')}>
               Campus
               <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openKey === 'campus' && 'rotate-180')} />
@@ -223,94 +232,138 @@ export function Navbar() {
           </div>
 
           {/* About */}
-          <Link href="/about" className={btnCls(pathname === '/about')}>
+          <Link href="/about"
+            className={cn('nav-link-underline', pathname === '/about' && 'active')}>
             About
           </Link>
 
-          {/* ── Icon row — right side ── */}
+          {/* ── Right icons — matches CyberDefenders icon row ── */}
           <div className="ml-4 flex items-center gap-1">
-            {/* Theme toggle (sun/moon — like CyberDefenders) */}
             <ThemeToggle />
-
-            {/* Dashboard */}
             <Link href="/dashboard"
               className={cn(
-                'flex items-center gap-1.5 px-3.5 py-1.5 rounded-md ml-1',
+                'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg ml-1',
                 'font-sans font-medium text-sm transition-colors',
-                pathname.startsWith('/dashboard')
-                  ? 'bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))]'
-                  : 'text-bone-200 hover:bg-navy-800 hover:text-[hsl(var(--foreground))]',
-              )}>
-              <User className="w-3.5 h-3.5" />
-              Dashboard
+              )}
+              style={{
+                color: pathname.startsWith('/dashboard')
+                  ? 'hsl(var(--primary))'
+                  : 'hsl(var(--foreground-muted))',
+                background: pathname.startsWith('/dashboard')
+                  ? 'hsl(var(--primary) / 0.1)'
+                  : 'transparent',
+              }}
+              onMouseEnter={e => {
+                if (!pathname.startsWith('/dashboard')) {
+                  (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))';
+                  (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!pathname.startsWith('/dashboard')) {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))';
+                }
+              }}
+            >
+              <User className="w-3.5 h-3.5" /> Dashboard
             </Link>
           </div>
 
           {/* ── Learn mega menu ── */}
           {openKey === 'learn' && (
-            <div
-              onMouseEnter={() => enter('learn')}
-              onMouseLeave={leave}
-              className="absolute top-full right-0 w-[720px]
-                bg-navy-900 border border-navy-700/80 rounded-b-xl shadow-2xl z-50 overflow-hidden">
+            <div onMouseEnter={() => enter('learn')} onMouseLeave={leave}
+              className="absolute top-full right-0 w-[700px] z-50 rounded-xl overflow-hidden"
+              style={{
+                background: 'hsl(var(--card))',
+                boxShadow: 'var(--shadow-dropdown)',
+                border: '1px solid hsl(var(--border))',
+                marginTop: '0px',
+              }}>
 
               {/* Domain strip */}
-              <div className="grid grid-cols-4 divide-x divide-navy-800 border-b border-navy-700 bg-navy-950/60">
+              <div className="grid grid-cols-4 border-b"
+                style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--surface))' }}>
                 {[
-                  { label: 'REMA',            sub: 'Reverse Engineering',    href: '/learn?domain=rema',   soon: false },
-                  { label: 'Cloud Security',  sub: 'Architecture & Threats', href: '/learn?domain=cloud',  soon: false },
-                  { label: 'Cryptography',    sub: 'Applied & PKI',          href: '/learn?domain=crypto', soon: true  },
-                  { label: 'Web Development', sub: 'Full Stack & Secure',    href: '/learn?domain=webdev', soon: true  },
+                  { label: 'REMA',            sub: 'Reverse Engineering',    href: '/learn?domain=rema',   color: '#8B5E1A', soon: false },
+                  { label: 'Cloud Security',  sub: 'Architecture & Threats', href: '/learn?domain=cloud',  color: '#1B5FA8', soon: false },
+                  { label: 'Cryptography',    sub: 'Applied & PKI',          href: '/learn?domain=crypto', color: '#6B3AD4', soon: true  },
+                  { label: 'Web Development', sub: 'Full Stack & Secure',    href: '/learn?domain=webdev', color: '#1B7C3E', soon: true  },
                 ].map(d => (
                   <Link key={d.href}
                     href={d.soon ? '#' : d.href}
                     className={cn(
-                      'px-4 py-3 group transition-colors',
-                      d.soon ? 'pointer-events-none opacity-40' : 'hover:bg-navy-800',
-                    )}>
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className={cn(
-                        'font-sans font-semibold text-sm transition-colors',
-                        d.soon ? 'text-bone-400' : 'text-bone-100 group-hover:text-[hsl(var(--primary))]',
-                      )}>
+                      'px-4 py-3 transition-colors group',
+                      d.soon ? 'pointer-events-none opacity-40' : '',
+                    )}
+                    style={{}}
+                    onMouseEnter={e => {
+                      if (!d.soon) (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.background = '';
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-0.5">
+                      {/* Tiny domain colour dot */}
+                      <span className="w-2 h-2 rounded-full shrink-0"
+                        style={{ background: d.color }} />
+                      <span className="font-sans font-semibold text-sm"
+                        style={{ color: 'hsl(var(--foreground))' }}>
                         {d.label}
                       </span>
-                      {d.soon
-                        ? <span className="font-sans text-[9px] font-medium px-1.5 rounded bg-navy-700 text-bone-500">soon</span>
-                        : <span className="text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity text-sm">→</span>
-                      }
+                      {d.soon && (
+                        <span className="text-[9px] font-sans font-medium px-1 py-0.5 rounded"
+                          style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-subtle))' }}>
+                          soon
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs text-bone-400">
+                    <div className="text-xs pl-4"
+                      style={{ color: 'hsl(var(--foreground-muted))' }}>
                       {d.sub}
                     </div>
                   </Link>
                 ))}
               </div>
 
-              {/* Content type columns */}
-              <div className="grid grid-cols-4 divide-x divide-navy-800">
+              {/* Content columns */}
+              <div className="grid grid-cols-4 divide-x"
+                style={{ '--tw-divide-opacity': '1' } as React.CSSProperties}>
                 {LEARN_COLS.map(col => (
                   <div key={col.heading} className="py-4">
-                    {/* Column heading — muted, small */}
                     <Link href={col.href}
-                      className="block font-sans font-semibold text-xs uppercase tracking-wide
-                        text-bone-400 hover:text-[hsl(var(--primary))] mb-2 px-4 transition-colors">
+                      className="block font-sans font-semibold text-xs uppercase tracking-wide mb-2 px-4 transition-colors"
+                      style={{ color: 'hsl(var(--foreground-subtle))' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'hsl(var(--primary))'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-subtle))'}
+                    >
                       {col.heading}
                     </Link>
                     {col.items.map((item: LearnItem) => (
                       <Link key={item.href}
                         href={item.soon ? '#' : item.href}
                         className={cn(
-                          'flex items-center justify-between',
-                          'font-sans text-sm px-4 py-1.5 mx-1 rounded-md transition-colors',
-                          item.soon
-                            ? 'text-bone-500/50 pointer-events-none'
-                            : 'text-bone-300 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
-                        )}>
+                          'flex items-center justify-between font-sans text-sm',
+                          'px-4 py-1.5 mx-1 rounded-lg transition-colors',
+                          item.soon ? 'pointer-events-none opacity-40' : '',
+                        )}
+                        style={{ color: 'hsl(var(--foreground-muted))' }}
+                        onMouseEnter={e => {
+                          if (!item.soon) {
+                            (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))';
+                            (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLElement).style.background = '';
+                          (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))';
+                        }}
+                      >
                         <span>{item.label}</span>
                         {item.soon && (
-                          <span className="ml-2 font-sans text-[9px] font-medium
-                            px-1.5 py-0.5 rounded bg-navy-800 text-bone-500 leading-none">
+                          <span className="text-[9px] font-sans font-medium px-1.5 py-0.5 rounded"
+                            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-subtle))' }}>
                             soon
                           </span>
                         )}
@@ -324,8 +377,8 @@ export function Navbar() {
         </nav>
 
         {/* Mobile toggle */}
-        <button
-          className="lg:hidden p-2 text-bone-200 hover:text-[hsl(var(--foreground))] transition-colors"
+        <button className="lg:hidden p-2 rounded-lg transition-colors"
+          style={{ color: 'hsl(var(--foreground-muted))' }}
           onClick={() => setMobileOpen(v => !v)}>
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -333,8 +386,11 @@ export function Navbar() {
 
       {/* ── Mobile drawer ── */}
       {mobileOpen && (
-        <nav className="lg:hidden border-t border-navy-800 bg-navy-900
-          max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <nav className="lg:hidden border-t max-h-[calc(100vh-4rem)] overflow-y-auto"
+          style={{
+            borderColor: 'hsl(var(--border))',
+            background: 'hsl(var(--surface))',
+          }}>
           <div className="container py-3 flex flex-col gap-0.5">
 
             {/* Learn accordion */}
@@ -342,28 +398,29 @@ export function Navbar() {
               <button
                 onClick={() => setMobileExp(mobileExp === 'learn' ? null : 'learn')}
                 className="w-full flex items-center justify-between px-3 py-3
-                  font-sans font-medium text-sm text-bone-200">
+                  font-sans font-medium text-sm rounded-lg transition-colors"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
                 Learn
                 <ChevronDown className={cn('w-4 h-4 transition-transform',
                   mobileExp === 'learn' && 'rotate-180')} />
               </button>
               {mobileExp === 'learn' && (
-                <div className="pb-2 grid grid-cols-2 gap-0 pl-2">
+                <div className="pb-2 grid grid-cols-2 pl-2">
                   {LEARN_COLS.map(col => (
                     <div key={col.heading} className="px-3 pb-3">
                       <Link href={col.href} onClick={() => setMobileOpen(false)}
-                        className="block font-sans font-semibold text-xs uppercase tracking-wide
-                          text-bone-400 py-1 mb-1">
+                        className="block font-sans font-semibold text-xs uppercase tracking-wide py-1 mb-1"
+                        style={{ color: 'hsl(var(--foreground-subtle))' }}>
                         {col.heading}
                       </Link>
                       {col.items.map((item: LearnItem) => (
                         <Link key={item.href}
                           href={item.soon ? '#' : item.href}
                           onClick={item.soon ? undefined : () => setMobileOpen(false)}
-                          className={cn(
-                            'block font-sans text-sm px-2 py-1.5 rounded-md',
-                            item.soon ? 'text-bone-500/50' : 'text-bone-300 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
-                          )}>
+                          className="block font-sans text-sm px-2 py-1.5 rounded-lg"
+                          style={{
+                            color: item.soon ? 'hsl(var(--foreground-subtle))' : 'hsl(var(--foreground-muted))',
+                          }}>
                           {item.label}{item.soon ? ' ·' : ''}
                         </Link>
                       ))}
@@ -381,16 +438,17 @@ export function Navbar() {
               open={mobileExp} setOpen={setMobileExp} onClose={() => setMobileOpen(false)} />
 
             <Link href="/about" onClick={() => setMobileOpen(false)}
-              className="block px-3 py-3 font-sans font-medium text-sm
-                text-bone-200 hover:text-[hsl(var(--foreground))] transition-colors">
+              className="block px-3 py-3 font-sans font-medium text-sm rounded-lg"
+              style={{ color: 'hsl(var(--foreground-muted))' }}>
               About
             </Link>
 
-            <div className="flex items-center gap-3 px-3 py-3 border-t border-navy-800 mt-1">
+            <div className="flex items-center gap-3 px-3 py-3 border-t mt-1"
+              style={{ borderColor: 'hsl(var(--border))' }}>
               <ThemeToggle />
               <Link href="/dashboard" onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 font-sans font-medium text-sm
-                  text-bone-200 hover:text-[hsl(var(--foreground))] transition-colors">
+                className="flex items-center gap-2 font-sans font-medium text-sm"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
                 <User className="w-4 h-4" /> Dashboard
               </Link>
             </div>
@@ -401,7 +459,7 @@ export function Navbar() {
   );
 }
 
-// ─── Mobile accordion helper ──────────────────────────────────────────────────
+// ── Mobile accordion ──────────────────────────────────────────────────────────
 
 function MobileAccordion({ label, id, items, open, setOpen, onClose }: {
   label: string; id: string; items: DropItem[];
@@ -410,32 +468,31 @@ function MobileAccordion({ label, id, items, open, setOpen, onClose }: {
 }) {
   return (
     <div>
-      <button
-        onClick={() => setOpen(open === id ? null : id)}
+      <button onClick={() => setOpen(open === id ? null : id)}
         className="w-full flex items-center justify-between px-3 py-3
-          font-sans font-medium text-sm text-bone-200">
+          font-sans font-medium text-sm rounded-lg"
+        style={{ color: 'hsl(var(--foreground-muted))' }}>
         {label}
-        <ChevronDown className={cn('w-4 h-4 transition-transform',
-          open === id && 'rotate-180')} />
+        <ChevronDown className={cn('w-4 h-4 transition-transform', open === id && 'rotate-180')} />
       </button>
       {open === id && (
         <div className="pl-3 pb-2">
           {items.map((item, i) =>
             item === 'sep' ? (
-              <div key={i} className="my-1.5 mx-3 border-t border-navy-800" />
+              <div key={i} className="my-1.5 mx-3 border-t"
+                style={{ borderColor: 'hsl(var(--border))' }} />
             ) : (
               <Link key={item.href}
                 href={item.soon ? '#' : item.href}
                 onClick={item.soon ? undefined : onClose}
-                className={cn(
-                  'flex items-center justify-between px-3 py-2 rounded-md',
-                  'font-sans text-sm transition-colors',
-                  item.soon ? 'text-bone-500/50' : 'text-bone-300 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
-                )}>
+                className="flex items-center justify-between px-3 py-2 rounded-lg font-sans text-sm transition-colors"
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
                 <span>{item.label}</span>
                 {item.soon && (
-                  <span className="font-sans text-[9px] font-medium
-                    px-1.5 rounded bg-navy-800 text-bone-500">soon</span>
+                  <span className="text-[9px] font-sans font-medium px-1.5 rounded"
+                    style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-subtle))' }}>
+                    soon
+                  </span>
                 )}
               </Link>
             )
