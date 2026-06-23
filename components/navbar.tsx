@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const LOGO = 'https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/EpochZeroLogo.png';
 
@@ -40,11 +41,11 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
   {
     heading: 'Podcast', href: '/podcast',
     items: [
-      { label: 'All Episodes',   href: '/podcast' },
-      { label: 'REMA',           href: '/podcast?tag=REMA' },
-      { label: 'Cloud Security', href: '/podcast?tag=cloud' },
-      { label: 'Cryptography',   href: '/podcast?tag=crypto',  soon: true },
-      { label: 'Web Dev',        href: '/podcast?tag=webdev',  soon: true },
+      { label: 'All Episodes',    href: '/podcast' },
+      { label: 'REMA',            href: '/podcast?tag=REMA' },
+      { label: 'Cloud Security',  href: '/podcast?tag=cloud' },
+      { label: 'Cryptography',    href: '/podcast?tag=crypto',  soon: true },
+      { label: 'Web Dev',         href: '/podcast?tag=webdev',  soon: true },
     ],
   },
   {
@@ -90,30 +91,30 @@ const CAMPUS_ITEMS: DropItem[] = [
   { label: 'Hackathons',          href: '/events?type=hackathon', soon: true },
 ];
 
-// ─── Shared dropdown component ────────────────────────────────────────────────
+// ─── Dropdown component ───────────────────────────────────────────────────────
 
 function Dropdown({ items }: { items: DropItem[] }) {
   return (
-    <div className="absolute top-full left-0 min-w-[210px]
-      bg-navy-900 border border-navy-700 shadow-xl z-50 py-1.5">
+    <div className="absolute top-full left-0 min-w-[200px] mt-0
+      bg-navy-900 border border-navy-700/80 rounded-lg shadow-2xl z-50 py-1.5 overflow-hidden">
       {items.map((item, i) =>
         item === 'sep' ? (
-          <div key={i} className="my-1 border-t border-navy-800" />
+          <div key={i} className="my-1 mx-2 border-t border-navy-800" />
         ) : (
           <Link
             key={item.href}
             href={item.soon ? '#' : item.href}
             className={cn(
-              'flex items-center justify-between px-4 py-2',
-              'font-mono text-xs uppercase tracking-wider transition-colors',
+              'flex items-center justify-between px-3.5 py-2 mx-1 rounded-md',
+              'font-sans text-sm transition-colors',
               item.soon
-                ? 'text-bone-500 pointer-events-none'
-                : 'text-bone-200 hover:text-gold-500 hover:bg-navy-800',
+                ? 'text-bone-400/50 pointer-events-none'
+                : 'text-bone-200 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
             )}>
-            <span className={item.soon ? 'opacity-50' : ''}>{item.label}</span>
+            <span>{item.label}</span>
             {item.soon && (
-              <span className="ml-3 font-mono text-[9px] uppercase tracking-wider
-                px-1.5 py-0.5 border border-navy-600 text-bone-500 leading-none">
+              <span className="ml-3 font-sans text-[9px] font-medium
+                px-1.5 py-0.5 rounded bg-navy-800 text-bone-400 leading-none">
                 soon
               </span>
             )}
@@ -141,46 +142,45 @@ export function Navbar() {
     timer.current = setTimeout(() => setOpenKey(null), 150);
   }
 
-  // Clear timer on unmount
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  // Close on route change
   useEffect(() => { setMobileOpen(false); setOpenKey(null); }, [pathname]);
 
   const isActive = (paths: string[]) =>
     paths.some(p => pathname === p || (p !== '/' && pathname.startsWith(p)));
 
+  // Nav link style — sans font, no uppercase, gold underline when active
   const btnCls = (active: boolean) => cn(
     'flex items-center gap-1 px-3 py-2 h-16',
-    'font-mono text-xs uppercase tracking-wider transition-colors border-b-2',
+    'font-sans font-medium text-sm transition-colors border-b-2',
     active
-      ? 'text-gold-500 border-gold-500'
-      : 'text-bone-200 hover:text-gold-500 border-transparent',
+      ? 'text-[hsl(var(--primary))] border-[hsl(var(--primary))]'
+      : 'text-bone-200 hover:text-[hsl(var(--foreground))] border-transparent',
   );
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-navy-700 bg-navy-900/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full
+      border-b border-navy-800/80 bg-navy-900/85 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between gap-4">
 
-        {/* Logo */}
+        {/* ── Logo ── */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image src={LOGO} alt="EpochZero Learn" width={44} height={44} />
+          <Image src={LOGO} alt="EpochZero Learn" width={40} height={40} />
           <div className="flex flex-col leading-none">
-            <span className="font-mono text-sm font-bold tracking-tight text-bone-50">
+            {/* Wordmark: sans font, clean */}
+            <span className="font-sans text-sm font-bold text-[hsl(var(--foreground))]">
               EpochZero Learn
             </span>
-            <span className="font-mono text-[9px] tracking-[0.25em] text-gold-500 uppercase hidden xl:block">
+            <span className="text-[10px] text-[hsl(var(--foreground-muted))] hidden xl:block">
               Multi-Domain Tech Learning Hub
             </span>
           </div>
         </Link>
 
-        {/* ── Desktop nav — position:relative so mega menu anchors here ── */}
+        {/* ── Desktop nav ── */}
         <nav className="hidden lg:flex items-center gap-0 h-16 relative">
 
-          {/* Learn button — no relative wrapper needed, mega menu lives in nav */}
-          <div
-            onMouseEnter={() => enter('learn')}
-            onMouseLeave={leave}
+          {/* Learn */}
+          <div onMouseEnter={() => enter('learn')} onMouseLeave={leave}
             className="h-full flex items-center">
             <button className={btnCls(isActive(['/learn', '/articles', '/videos', '/podcast', '/resources']))}>
               Learn
@@ -190,9 +190,7 @@ export function Navbar() {
           </div>
 
           {/* Tests */}
-          <div
-            onMouseEnter={() => enter('tests')}
-            onMouseLeave={leave}
+          <div onMouseEnter={() => enter('tests')} onMouseLeave={leave}
             className="relative h-full flex items-center">
             <button className={btnCls(isActive(['/tests']))}>
               Tests
@@ -203,9 +201,7 @@ export function Navbar() {
           </div>
 
           {/* Forum */}
-          <div
-            onMouseEnter={() => enter('forum')}
-            onMouseLeave={leave}
+          <div onMouseEnter={() => enter('forum')} onMouseLeave={leave}
             className="relative h-full flex items-center">
             <button className={btnCls(isActive(['/forum']))}>
               Forum
@@ -216,9 +212,7 @@ export function Navbar() {
           </div>
 
           {/* Campus */}
-          <div
-            onMouseEnter={() => enter('campus')}
-            onMouseLeave={leave}
+          <div onMouseEnter={() => enter('campus')} onMouseLeave={leave}
             className="relative h-full flex items-center">
             <button className={btnCls(isActive(['/clubs', '/events']))}>
               Campus
@@ -233,27 +227,34 @@ export function Navbar() {
             About
           </Link>
 
-          {/* Dashboard */}
-          <Link href="/dashboard"
-            className={cn(
-              'ml-3 flex items-center gap-1.5 px-3 py-1.5',
-              'font-mono text-xs uppercase tracking-wider transition-colors border',
-              pathname.startsWith('/dashboard')
-                ? 'border-gold-500 text-gold-500 bg-gold-500/10'
-                : 'border-navy-700 text-bone-300 hover:border-gold-500/60 hover:text-gold-500',
-            )}>
-            <User className="w-3.5 h-3.5" /> Dashboard
-          </Link>
+          {/* ── Icon row — right side ── */}
+          <div className="ml-4 flex items-center gap-1">
+            {/* Theme toggle (sun/moon — like CyberDefenders) */}
+            <ThemeToggle />
 
-          {/* ── Learn mega menu — right-aligned inside <nav> ── */}
+            {/* Dashboard */}
+            <Link href="/dashboard"
+              className={cn(
+                'flex items-center gap-1.5 px-3.5 py-1.5 rounded-md ml-1',
+                'font-sans font-medium text-sm transition-colors',
+                pathname.startsWith('/dashboard')
+                  ? 'bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))]'
+                  : 'text-bone-200 hover:bg-navy-800 hover:text-[hsl(var(--foreground))]',
+              )}>
+              <User className="w-3.5 h-3.5" />
+              Dashboard
+            </Link>
+          </div>
+
+          {/* ── Learn mega menu ── */}
           {openKey === 'learn' && (
             <div
               onMouseEnter={() => enter('learn')}
               onMouseLeave={leave}
-              className="absolute top-full right-0 w-[760px]
-                bg-navy-900 border border-navy-700 shadow-2xl z-50">
+              className="absolute top-full right-0 w-[720px]
+                bg-navy-900 border border-navy-700/80 rounded-b-xl shadow-2xl z-50 overflow-hidden">
 
-              {/* ── Domain / Track strip ── */}
+              {/* Domain strip */}
               <div className="grid grid-cols-4 divide-x divide-navy-800 border-b border-navy-700 bg-navy-950/60">
                 {[
                   { label: 'REMA',            sub: 'Reverse Engineering',    href: '/learn?domain=rema',   soon: false },
@@ -269,54 +270,54 @@ export function Navbar() {
                     )}>
                     <div className="flex items-center justify-between mb-0.5">
                       <span className={cn(
-                        'font-mono text-xs font-semibold uppercase tracking-wider transition-colors',
-                        d.soon ? 'text-bone-500' : 'text-bone-50 group-hover:text-gold-500',
+                        'font-sans font-semibold text-sm transition-colors',
+                        d.soon ? 'text-bone-400' : 'text-bone-100 group-hover:text-[hsl(var(--primary))]',
                       )}>
                         {d.label}
                       </span>
                       {d.soon
-                        ? <span className="font-mono text-[8px] uppercase tracking-wider px-1.5 border border-navy-600 text-bone-600">soon</span>
-                        : <span className="font-mono text-[9px] text-gold-500 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                        ? <span className="font-sans text-[9px] font-medium px-1.5 rounded bg-navy-700 text-bone-500">soon</span>
+                        : <span className="text-[hsl(var(--primary))] opacity-0 group-hover:opacity-100 transition-opacity text-sm">→</span>
                       }
                     </div>
-                    <div className="font-mono text-[9px] text-bone-500 uppercase tracking-wider">
+                    <div className="text-xs text-bone-400">
                       {d.sub}
                     </div>
                   </Link>
                 ))}
               </div>
 
-              {/* ── Content type columns ── */}
+              {/* Content type columns */}
               <div className="grid grid-cols-4 divide-x divide-navy-800">
                 {LEARN_COLS.map(col => (
-                <div key={col.heading} className="py-5">
-                  <Link href={col.href}
-                    className="block font-mono text-[10px] uppercase tracking-[0.2em]
-                      text-gold-500 mb-3 px-4 hover:text-gold-400 transition-colors">
-                    {col.heading}
-                  </Link>
-                  {col.items.map((item: LearnItem) => (
-                    <Link key={item.href}
-                      href={item.soon ? '#' : item.href}
-                      className={cn(
-                        'flex items-center justify-between',
-                        'font-mono text-xs uppercase tracking-wider px-4 py-1.5 transition-colors',
-                        item.soon
-                          ? 'text-bone-600 pointer-events-none'
-                          : 'text-bone-300 hover:text-gold-500 hover:bg-navy-800',
-                      )}>
-                      <span className={item.soon ? 'opacity-50' : ''}>{item.label}</span>
-                      {item.soon && (
-                        <span className="ml-2 font-mono text-[9px] uppercase tracking-wider
-                          px-1.5 py-0.5 border border-navy-600 text-bone-500 leading-none">
-                          soon
-                        </span>
-                      )}
+                  <div key={col.heading} className="py-4">
+                    {/* Column heading — muted, small */}
+                    <Link href={col.href}
+                      className="block font-sans font-semibold text-xs uppercase tracking-wide
+                        text-bone-400 hover:text-[hsl(var(--primary))] mb-2 px-4 transition-colors">
+                      {col.heading}
                     </Link>
-                  ))}
-
-                </div>
-              ))}
+                    {col.items.map((item: LearnItem) => (
+                      <Link key={item.href}
+                        href={item.soon ? '#' : item.href}
+                        className={cn(
+                          'flex items-center justify-between',
+                          'font-sans text-sm px-4 py-1.5 mx-1 rounded-md transition-colors',
+                          item.soon
+                            ? 'text-bone-500/50 pointer-events-none'
+                            : 'text-bone-300 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
+                        )}>
+                        <span>{item.label}</span>
+                        {item.soon && (
+                          <span className="ml-2 font-sans text-[9px] font-medium
+                            px-1.5 py-0.5 rounded bg-navy-800 text-bone-500 leading-none">
+                            soon
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -324,24 +325,24 @@ export function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="lg:hidden p-2 text-bone-100 hover:text-gold-500 transition-colors"
+          className="lg:hidden p-2 text-bone-200 hover:text-[hsl(var(--foreground))] transition-colors"
           onClick={() => setMobileOpen(v => !v)}>
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
       {/* ── Mobile drawer ── */}
       {mobileOpen && (
-        <nav className="lg:hidden border-t border-navy-700 bg-navy-900
+        <nav className="lg:hidden border-t border-navy-800 bg-navy-900
           max-h-[calc(100vh-4rem)] overflow-y-auto">
-          <div className="container py-4 flex flex-col gap-1">
+          <div className="container py-3 flex flex-col gap-0.5">
 
             {/* Learn accordion */}
             <div>
               <button
                 onClick={() => setMobileExp(mobileExp === 'learn' ? null : 'learn')}
-                className="w-full flex items-center justify-between px-4 py-3
-                  font-mono text-sm uppercase tracking-wider text-bone-200">
+                className="w-full flex items-center justify-between px-3 py-3
+                  font-sans font-medium text-sm text-bone-200">
                 Learn
                 <ChevronDown className={cn('w-4 h-4 transition-transform',
                   mobileExp === 'learn' && 'rotate-180')} />
@@ -351,8 +352,8 @@ export function Navbar() {
                   {LEARN_COLS.map(col => (
                     <div key={col.heading} className="px-3 pb-3">
                       <Link href={col.href} onClick={() => setMobileOpen(false)}
-                        className="block font-mono text-[9px] uppercase tracking-widest
-                          text-gold-500 py-1 mb-1">
+                        className="block font-sans font-semibold text-xs uppercase tracking-wide
+                          text-bone-400 py-1 mb-1">
                         {col.heading}
                       </Link>
                       {col.items.map((item: LearnItem) => (
@@ -360,10 +361,10 @@ export function Navbar() {
                           href={item.soon ? '#' : item.href}
                           onClick={item.soon ? undefined : () => setMobileOpen(false)}
                           className={cn(
-                            'block font-mono text-xs uppercase tracking-wider px-2 py-1.5',
-                            item.soon ? 'text-bone-500' : 'text-bone-300 hover:text-gold-500 hover:bg-navy-800',
+                            'block font-sans text-sm px-2 py-1.5 rounded-md',
+                            item.soon ? 'text-bone-500/50' : 'text-bone-300 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
                           )}>
-                          {item.label}{item.soon ? ' ›' : ''}
+                          {item.label}{item.soon ? ' ·' : ''}
                         </Link>
                       ))}
                     </div>
@@ -380,16 +381,19 @@ export function Navbar() {
               open={mobileExp} setOpen={setMobileExp} onClose={() => setMobileOpen(false)} />
 
             <Link href="/about" onClick={() => setMobileOpen(false)}
-              className="block px-4 py-3 font-mono text-sm uppercase tracking-wider
-                text-bone-200 hover:text-gold-500 transition-colors">
+              className="block px-3 py-3 font-sans font-medium text-sm
+                text-bone-200 hover:text-[hsl(var(--foreground))] transition-colors">
               About
             </Link>
-            <Link href="/dashboard" onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 px-4 py-3
-                font-mono text-sm uppercase tracking-wider
-                text-bone-200 hover:text-gold-500 transition-colors">
-              <User className="w-4 h-4" /> Dashboard
-            </Link>
+
+            <div className="flex items-center gap-3 px-3 py-3 border-t border-navy-800 mt-1">
+              <ThemeToggle />
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 font-sans font-medium text-sm
+                  text-bone-200 hover:text-[hsl(var(--foreground))] transition-colors">
+                <User className="w-4 h-4" /> Dashboard
+              </Link>
+            </div>
           </div>
         </nav>
       )}
@@ -408,30 +412,30 @@ function MobileAccordion({ label, id, items, open, setOpen, onClose }: {
     <div>
       <button
         onClick={() => setOpen(open === id ? null : id)}
-        className="w-full flex items-center justify-between px-4 py-3
-          font-mono text-sm uppercase tracking-wider text-bone-200">
+        className="w-full flex items-center justify-between px-3 py-3
+          font-sans font-medium text-sm text-bone-200">
         {label}
         <ChevronDown className={cn('w-4 h-4 transition-transform',
           open === id && 'rotate-180')} />
       </button>
       {open === id && (
-        <div className="pl-4 pb-2">
+        <div className="pl-3 pb-2">
           {items.map((item, i) =>
             item === 'sep' ? (
-              <div key={i} className="my-1.5 mx-4 border-t border-navy-800" />
+              <div key={i} className="my-1.5 mx-3 border-t border-navy-800" />
             ) : (
               <Link key={item.href}
                 href={item.soon ? '#' : item.href}
                 onClick={item.soon ? undefined : onClose}
                 className={cn(
-                  'flex items-center justify-between px-4 py-2',
-                  'font-mono text-xs uppercase tracking-wider transition-colors',
-                  item.soon ? 'text-bone-500' : 'text-bone-300 hover:text-gold-500',
+                  'flex items-center justify-between px-3 py-2 rounded-md',
+                  'font-sans text-sm transition-colors',
+                  item.soon ? 'text-bone-500/50' : 'text-bone-300 hover:text-[hsl(var(--foreground))] hover:bg-navy-800',
                 )}>
-                <span className={item.soon ? 'opacity-50' : ''}>{item.label}</span>
+                <span>{item.label}</span>
                 {item.soon && (
-                  <span className="font-mono text-[9px] uppercase tracking-wider
-                    px-1.5 border border-navy-600 text-bone-500">soon</span>
+                  <span className="font-sans text-[9px] font-medium
+                    px-1.5 rounded bg-navy-800 text-bone-500">soon</span>
                 )}
               </Link>
             )
