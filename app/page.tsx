@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   MessageSquare, ArrowRight, BookOpen, Video,
-  GraduationCap, FileText, Award, Mic,
+  GraduationCap, FileText, Award, Mic, Terminal,
   Calendar, Users, Shield, Zap, CheckCircle,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
