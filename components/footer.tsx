@@ -1,5 +1,6 @@
 // components/footer.tsx
-// Full CSS-var-based — follows light/dark theme correctly
+// Server component — NO event handlers allowed
+// All hover effects use Tailwind hover: classes (static CSS, no JS)
 import Link from 'next/link';
 import Image from 'next/image';
 import { Youtube, Mail, Github } from 'lucide-react';
@@ -9,35 +10,35 @@ const LOGO =
 
 const LINKS = {
   Learn: [
-    { label: 'Learning Path',   href: '/learn' },
-    { label: 'All Articles',    href: '/articles' },
-    { label: 'Video Lessons',   href: '/videos' },
-    { label: 'Podcast',         href: '/podcast' },
-    { label: 'eBooks & PDFs',   href: '/resources?type=ebook' },
-    { label: 'Question Banks',  href: '/resources?type=question-bank' },
-    { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
-    { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
+    { label: 'Learning Path',   href: '/learn'                          },
+    { label: 'All Articles',    href: '/articles'                       },
+    { label: 'Video Lessons',   href: '/videos'                         },
+    { label: 'Podcast',         href: '/podcast'                        },
+    { label: 'eBooks & PDFs',   href: '/resources?type=ebook'           },
+    { label: 'Question Banks',  href: '/resources?type=question-bank'   },
+    { label: 'Cheatsheets',     href: '/resources?type=cheatsheet'      },
+    { label: 'MCQ Banks',       href: '/resources?type=mcq-bank'        },
   ],
   'Tests & Forum': [
-    { label: 'All Tests',       href: '/tests' },
-    { label: 'REMA Tests',      href: '/tests?domain=rema' },
-    { label: 'Cloud Tests',     href: '/tests?domain=cloud' },
-    { label: 'Forum',           href: '/forum' },
-    { label: 'REMA Forum',      href: '/forum/rema' },
-    { label: 'Cloud Forum',     href: '/forum/cloud' },
+    { label: 'All Tests',       href: '/tests'                          },
+    { label: 'REMA Tests',      href: '/tests?domain=rema'              },
+    { label: 'Cloud Tests',     href: '/tests?domain=cloud'             },
+    { label: 'Forum',           href: '/forum'                          },
+    { label: 'REMA Forum',      href: '/forum/rema'                     },
+    { label: 'Cloud Forum',     href: '/forum/cloud'                    },
   ],
   Campus: [
-    { label: 'REMA Club',           href: '/clubs/rema' },
-    { label: 'Full Stack Dev Club', href: '/clubs/fullstack' },
-    { label: 'Events',              href: '/events' },
-    { label: 'CTF Competitions',    href: '/events?type=ctf' },
-    { label: 'Workshops',           href: '/events?type=workshop' },
-    { label: 'Industrial Visits',   href: '/events?type=industry' },
+    { label: 'REMA Club',           href: '/clubs/rema'                     },
+    { label: 'Full Stack Dev Club', href: '/clubs/fullstack'                },
+    { label: 'Events',              href: '/events'                         },
+    { label: 'CTF Competitions',    href: '/events?type=ctf'                },
+    { label: 'Workshops',           href: '/events?type=workshop'           },
+    { label: 'Industrial Visits',   href: '/events?type=industry'           },
   ],
   Platform: [
-    { label: 'Dashboard',          href: '/dashboard' },
-    { label: 'About',              href: '/about' },
-    { label: 'Verify Certificate', href: '/verify-certificate' },
+    { label: 'Dashboard',          href: '/dashboard'                       },
+    { label: 'About',              href: '/about'                           },
+    { label: 'Verify Certificate', href: '/verify-certificate'              },
   ],
 };
 
@@ -52,8 +53,8 @@ export function Footer() {
     <footer
       className="mt-auto"
       style={{
-        background:   'hsl(var(--surface))',
-        borderTop:    '1px solid hsl(var(--border))',
+        background: 'hsl(var(--surface))',
+        borderTop:  '1px solid hsl(var(--border))',
       }}
     >
       <div className="container py-12 lg:py-14">
@@ -84,7 +85,7 @@ export function Footer() {
               and peer discussion.
             </p>
 
-            {/* Social icons */}
+            {/* Social icons — hover via Tailwind class only, no JS */}
             <div className="flex items-center gap-2">
               {SOCIALS.map(({ icon: Icon, href, label }) => (
                 <a
@@ -94,19 +95,13 @@ export function Footer() {
                   rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   aria-label={label}
                   className="w-8 h-8 flex items-center justify-center rounded-md
-                    transition-colors"
+                    transition-colors
+                    hover:text-[hsl(var(--foreground))]
+                    hover:border-[hsl(var(--border-strong))]"
                   style={{
                     color:      'hsl(var(--foreground-muted))',
                     background: 'hsl(var(--card))',
                     border:     '1px solid hsl(var(--border))',
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'hsl(var(--border-strong))';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'hsl(var(--border))';
                   }}
                 >
                   <Icon className="w-4 h-4" />
@@ -125,11 +120,12 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {links.map(link => (
                   <li key={link.href}>
-                    <Link href={link.href}
-                      className="text-sm transition-colors"
+                    {/* hover:text uses Tailwind — static CSS, no event handlers */}
+                    <Link
+                      href={link.href}
+                      className="text-sm transition-colors
+                        hover:text-[hsl(var(--foreground))]"
                       style={{ color: 'hsl(var(--foreground-muted))' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))'}
                     >
                       {link.label}
                     </Link>
@@ -142,11 +138,13 @@ export function Footer() {
 
         {/* ── Bottom bar ── */}
         <div
-          className="pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-2"
+          className="pt-6 flex flex-col md:flex-row items-start md:items-center
+            justify-between gap-2"
           style={{ borderTop: '1px solid hsl(var(--border))' }}
         >
           <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
-            © {new Date().getFullYear()} EpochZero Learn. Educational content for learning purposes.
+            © {new Date().getFullYear()} EpochZero Learn.
+            Educational content for learning purposes.
           </p>
           <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
             Course Instructor: Ashish Revar
