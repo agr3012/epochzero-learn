@@ -343,11 +343,8 @@ export default async function VideoDetailPage({ params }: Props) {
                   className="flex gap-3 group items-start">
                   {/* Thumbnail */}
                   <div className="relative w-[120px] aspect-video shrink-0 overflow-hidden rounded-md
-                    border transition-colors"
-                    style={{ borderColor: 'hsl(var(--border))' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = epColor}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'hsl(var(--border))'}
-                  >
+                    border border-[hsl(var(--border))] group-hover:border-[hsl(var(--border-strong))]
+                    transition-colors">
                     <Image
                       src={getYouTubeThumbnail(r.youtube_id, 'hq')}
                       alt={r.title}
