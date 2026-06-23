@@ -35,68 +35,88 @@ const LINKS = {
     { label: 'Industrial Visits',   href: '/events?type=industry' },
   ],
   Platform: [
-    { label: 'Dashboard',           href: '/dashboard' },
-    { label: 'About',               href: '/about' },
-    { label: 'Verify Certificate',  href: '/verify-certificate' },
+    { label: 'Dashboard',          href: '/dashboard' },
+    { label: 'About',              href: '/about' },
+    { label: 'Verify Certificate', href: '/verify-certificate' },
   ],
 };
 
 const SOCIALS = [
-  { icon: Youtube, href: 'https://youtube.com/@EpochZeroNet',    label: 'YouTube' },
-  { icon: Mail,    href: 'mailto:epochzero.net@gmail.com',        label: 'Email' },
-  { icon: Github,  href: 'https://github.com/agr3012',            label: 'GitHub' },
+  { icon: Youtube, href: 'https://youtube.com/@EpochZeroNet', label: 'YouTube' },
+  { icon: Mail,    href: 'mailto:epochzero.net@gmail.com',     label: 'Email'   },
+  { icon: Github,  href: 'https://github.com/agr3012',         label: 'GitHub'  },
 ];
 
 export function Footer() {
   return (
-    <footer className="bg-navy-950 border-t border-navy-800 mt-auto">
-      <div className="container py-12">
+    <footer className="bg-navy-950 border-t border-navy-800/60 mt-auto">
+      <div className="container py-12 lg:py-14">
 
-        {/* Main grid */}
+        {/* ── Main grid ── */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-10">
 
           {/* Brand — spans 2 cols on lg */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-3 mb-4">
-              <Image src={LOGO} alt="EpochZero" width={36} height={36} className="rounded" />
+            <Link href="/" className="flex items-center gap-3 mb-5">
+              <Image
+                src={LOGO}
+                alt="EpochZero"
+                width={34}
+                height={34}
+                className="rounded-md"
+              />
               <div className="leading-none">
-                <div className="font-mono text-sm font-bold text-bone-50">EpochZero Learn</div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-gold-500 mt-0.5">
+                {/* Sans wordmark — professional */}
+                <div className="font-sans text-sm font-bold text-[hsl(var(--foreground))]">
+                  EpochZero Learn
+                </div>
+                <div className="text-[11px] text-[hsl(var(--foreground-muted))] mt-0.5">
                   Multi-Domain Tech Learning Hub
                 </div>
               </div>
             </Link>
-            <p className="font-mono text-xs text-bone-400 leading-relaxed mb-5 max-w-xs">
+
+            <p className="text-sm text-[hsl(var(--foreground-muted))]
+              leading-relaxed mb-6 max-w-xs">
               Structured learning for Reverse Engineering, Cloud Security, Cryptography,
               and Web Development. Articles, videos, tests, and peer discussion.
             </p>
+
+            {/* Social icons — like CyberDefenders: simple icon buttons */}
             <div className="flex items-center gap-2">
               {SOCIALS.map(({ icon: Icon, href, label }) => (
-                <a key={label} href={href}
+                <a
+                  key={label}
+                  href={href}
                   target={href.startsWith('http') ? '_blank' : undefined}
                   rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   aria-label={label}
-                  className="p-2 border border-navy-700 text-bone-400
-                    hover:border-gold-500/50 hover:text-gold-500 transition-colors">
+                  className="w-8 h-8 flex items-center justify-center rounded-md
+                    text-[hsl(var(--foreground-muted))]
+                    hover:text-[hsl(var(--foreground))]
+                    hover:bg-[hsl(var(--card))]
+                    transition-colors">
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Link columns */}
+          {/* ── Link columns ── */}
           {Object.entries(LINKS).map(([heading, links]) => (
             <div key={heading}>
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.2em]
-                text-gold-500 mb-4">
+              {/* Column heading — muted, no gold */}
+              <h3 className="font-sans font-semibold text-xs uppercase tracking-wide
+                text-[hsl(var(--foreground-muted))] mb-4">
                 {heading}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {links.map(link => (
                   <li key={link.href}>
-                    <Link href={link.href}
-                      className="font-mono text-xs text-bone-400
-                        hover:text-bone-100 transition-colors">
+                    <Link
+                      href={link.href}
+                      className="text-sm text-[hsl(var(--foreground-muted))]
+                        hover:text-[hsl(var(--foreground))] transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -106,13 +126,14 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
-        <div className="pt-6 border-t border-navy-800 flex flex-col md:flex-row
-          items-start md:items-center justify-between gap-3">
-          <p className="font-mono text-[11px] text-bone-500">
+        {/* ── Bottom bar ── */}
+        <div className="pt-6 border-t border-navy-800/60
+          flex flex-col md:flex-row items-start md:items-center
+          justify-between gap-2">
+          <p className="text-xs text-[hsl(var(--foreground-subtle))]">
             © {new Date().getFullYear()} EpochZero Learn. Educational content for learning purposes.
           </p>
-          <p className="font-mono text-[11px] text-bone-500">
+          <p className="text-xs text-[hsl(var(--foreground-subtle))]">
             Course Instructor: Ashish Revar
           </p>
         </div>
