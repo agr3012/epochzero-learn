@@ -233,19 +233,21 @@ html.light body,
     position: relative;
     overflow: hidden;
     border-radius: var(--radius);
-    background: linear-gradient(135deg,
-      rgba(139,94,26,0.55) 0%,
-      rgba(27,95,168,0.30) 55%,
-      rgba(13,17,23,0.20) 100%
+    /* Dark navy base — always visible in both light and dark themes */
+    background-color: #101825;
+    background-image: linear-gradient(135deg,
+      rgba(139,94,26,0.75) 0%,
+      rgba(27,95,168,0.40) 55%,
+      rgba(8,14,28,0.25) 100%
     );
-    border: 1px solid rgba(232,160,32,0.35);
+    border: 1px solid rgba(232,160,32,0.40);
   }
   .gradient-card-gold::before {
     content: '';
     position: absolute;
     top: -80px; right: -60px;
     width: 260px; height: 260px;
-    background: radial-gradient(circle, rgba(232,160,32,0.12) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(232,160,32,0.15) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -254,19 +256,20 @@ html.light body,
     position: relative;
     overflow: hidden;
     border-radius: var(--radius);
-    background: linear-gradient(135deg,
-      rgba(27,95,168,0.55) 0%,
-      rgba(27,124,62,0.25) 55%,
-      rgba(13,17,23,0.20) 100%
+    background-color: #070f1e;
+    background-image: linear-gradient(135deg,
+      rgba(27,95,168,0.75) 0%,
+      rgba(27,124,62,0.35) 55%,
+      rgba(8,14,28,0.25) 100%
     );
-    border: 1px solid rgba(27,95,168,0.40);
+    border: 1px solid rgba(27,95,168,0.45);
   }
   .gradient-card-blue::before {
     content: '';
     position: absolute;
     top: -80px; right: -60px;
     width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(27,95,168,0.14) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(27,95,168,0.18) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -275,19 +278,20 @@ html.light body,
     position: relative;
     overflow: hidden;
     border-radius: var(--radius);
-    background: linear-gradient(135deg,
-      rgba(27,124,62,0.55) 0%,
-      rgba(107,58,212,0.20) 60%,
-      rgba(13,17,23,0.20) 100%
+    background-color: #060f0a;
+    background-image: linear-gradient(135deg,
+      rgba(27,124,62,0.75) 0%,
+      rgba(107,58,212,0.30) 60%,
+      rgba(8,14,20,0.25) 100%
     );
-    border: 1px solid rgba(27,124,62,0.40);
+    border: 1px solid rgba(27,124,62,0.45);
   }
   .gradient-card-green::before {
     content: '';
     position: absolute;
     top: -80px; right: -60px;
     width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(27,124,62,0.14) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(27,124,62,0.18) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -296,19 +300,20 @@ html.light body,
     position: relative;
     overflow: hidden;
     border-radius: var(--radius);
-    background: linear-gradient(135deg,
-      rgba(107,58,212,0.55) 0%,
-      rgba(27,95,168,0.25) 55%,
-      rgba(13,17,23,0.20) 100%
+    background-color: #0e0820;
+    background-image: linear-gradient(135deg,
+      rgba(107,58,212,0.75) 0%,
+      rgba(27,95,168,0.35) 55%,
+      rgba(8,10,24,0.25) 100%
     );
-    border: 1px solid rgba(107,58,212,0.40);
+    border: 1px solid rgba(107,58,212,0.45);
   }
   .gradient-card-purple::before {
     content: '';
     position: absolute;
     top: -80px; right: -60px;
     width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(107,58,212,0.14) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(107,58,212,0.18) 0%, transparent 65%);
     pointer-events: none;
   }
 
