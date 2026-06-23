@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   MessageSquare, ArrowRight, BookOpen, Video,
-  GraduationCap, FileText, Award, Terminal,
+  GraduationCap, FileText, Award, Mic,
   Calendar, Users, Shield, Zap, CheckCircle,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
@@ -73,14 +73,14 @@ export default async function HomePage() {
           HERO
           ══════════════════════════════════════════════════════ */}
       <section style={{ borderBottom: '1px solid hsl(var(--border))', position: 'relative', overflow: 'hidden' }}>
-        <div className="container pt-10 pb-14 lg:pt-14 lg:pb-20">
+        <div className="container pt-5 pb-6 lg:pt-8 lg:pb-8">
           <div className="grid lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6"
                 style={{ background: 'rgba(232,160,32,0.08)', border: '1px solid rgba(232,160,32,0.25)' }}>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'hsl(var(--primary))' }} />
                 <span className="font-sans text-xs font-semibold" style={{ color: 'hsl(var(--primary))' }}>
-                  Live Platform · SITAICS, RRU
+                  Cybersecurity Learning Platform
                 </span>
               </div>
               <h1 className="font-display font-bold leading-[1.0] tracking-tight mb-5"
@@ -163,10 +163,10 @@ export default async function HomePage() {
               { icon: Award,         label: 'MCQ Tests',        value: stats.tests,     color: '#6B3AD4' },
               { icon: Zap,           label: 'MCQ Questions',    value: stats.questions, color: '#1B7C3E' },
               { icon: MessageSquare, label: 'Forum Threads',    value: stats.forum,     color: '#8B5E1A' },
-              { icon: Terminal,      label: 'Podcast Episodes', value: stats.podcasts,  color: '#1B5FA8' },
+              { icon: Mic,           label: 'Podcast Episodes', value: stats.podcasts,  color: '#1B5FA8' },
             ].map(({ icon: Icon, label, value, color }, i) => (
               <div key={label}
-                className="group flex flex-col items-center py-6 px-4 text-center cursor-default select-none transition-colors duration-200"
+                className="group flex flex-col items-center py-4 px-4 text-center cursor-default select-none transition-colors duration-200"
                 style={{ borderRight: i < 5 ? '1px solid hsl(var(--border))' : 'none' }}>
                 <Icon className="w-5 h-5 mb-3 transition-transform duration-200 group-hover:scale-125"
                   style={{ color }} />
@@ -238,42 +238,40 @@ export default async function HomePage() {
             </Link>
           </FadeIn>
 
-          {/* Right column — 4 cards in 2×2, each with Explore footer so height fills evenly */}
+          {/* Right column — 4 cards in 2×2, centred big-icon layout */}
           {[
-            { icon: BookOpen,  color: '#1B5FA8', title: 'Articles & Writeups',      desc: 'In-depth technical writeups — malware analysis, cloud threats, cryptography.',  href: '/articles'  },
-            { icon: Video,     color: '#1B7C3E', title: 'Video Lessons',            desc: 'Paired with lab notes and exercises. YouTube-embedded one-click viewing.',       href: '/videos'    },
-            { icon: Award,     color: '#6B3AD4', title: 'MCQ Tests + Certificates', desc: 'Pass the test, receive a verifiable PDF certificate instantly by email.',         href: '/tests'     },
+            { icon: BookOpen,  color: '#1B5FA8', title: 'Articles & Writeups',      desc: 'In-depth technical writeups across malware analysis, cloud security, and cryptography.',  href: '/articles'  },
+            { icon: Video,     color: '#1B7C3E', title: 'Video Lessons',            desc: 'Step-by-step lessons paired with lab notes and exercises.',       href: '/videos'    },
+            { icon: Award,     color: '#6B3AD4', title: 'MCQ Tests + Certificates', desc: 'Pass the test and receive a verifiable PDF certificate by email.',         href: '/tests'     },
             { icon: FileText,  color: '#8B5E1A', title: 'eBooks & Cheatsheets',     desc: 'Course textbooks, cheatsheets, and question banks — all free.',                  href: '/resources' },
           ].map(({ icon: Icon, color, title, desc, href }, i) => (
             <FadeIn key={title} delay={0.05 + i * 0.07}>
-              <Link href={href} className="card card-interactive p-5 group flex flex-col justify-between h-full">
-                {/* Top: icon + content */}
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              <Link href={href}
+                className="card card-interactive p-6 group
+                  flex flex-col items-center text-center justify-between h-full">
+                {/* Centered big icon + text */}
+                <div className="flex flex-col items-center flex-1">
+                  {/* Large icon tile */}
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
                     style={{ background: color }}>
-                    <Icon className="w-4 h-4 text-white" />
+                    <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <div>
-                    <h3 className="font-display text-sm font-semibold mb-1.5
-                      group-hover:text-[hsl(var(--primary))] transition-colors"
-                      style={{ color: 'hsl(var(--foreground))' }}>
-                      {title}
-                    </h3>
-                    <p className="text-xs leading-relaxed"
-                      style={{ color: 'hsl(var(--foreground-muted))' }}>
-                      {desc}
-                    </p>
-                  </div>
+                  <h3 className="font-display text-base font-bold mb-2
+                    group-hover:text-[hsl(var(--primary))] transition-colors leading-tight"
+                    style={{ color: 'hsl(var(--foreground))' }}>
+                    {title}
+                  </h3>
+                  <p className="text-xs leading-relaxed"
+                    style={{ color: 'hsl(var(--foreground-muted))' }}>
+                    {desc}
+                  </p>
                 </div>
-                {/* Bottom: explore link always at bottom */}
-                <div className="mt-4 pt-3 flex items-center justify-end"
-                  style={{ borderTop: '1px solid hsl(var(--border))' }}>
-                  <span className="font-sans text-xs font-semibold inline-flex items-center gap-1
-                    group-hover:gap-2 transition-all"
-                    style={{ color }}>
-                    Explore <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
+                {/* Explore link pinned to bottom */}
+                <span className="mt-5 font-sans text-xs font-semibold inline-flex items-center gap-1
+                  group-hover:gap-2 transition-all"
+                  style={{ color }}>
+                  Explore <ArrowRight className="w-3 h-3" />
+                </span>
               </Link>
             </FadeIn>
           ))}
@@ -539,7 +537,7 @@ export default async function HomePage() {
                       </div>
                       <p className="text-sm leading-relaxed flex-1 mb-5" style={{ color: 'hsl(var(--foreground-muted))' }}>{club.tagline}</p>
                       <div className="flex items-center justify-between pt-4 mt-auto" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-                        <span className="text-xs font-sans font-medium" style={{ color: c }}>SITAICS, RRU</span>
+                        <span className="text-xs font-sans font-medium" style={{ color: c }}>Rashtriya Raksha University</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: 'hsl(var(--foreground-subtle))' }} />
                       </div>
                     </div>
