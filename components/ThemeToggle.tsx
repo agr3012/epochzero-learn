@@ -1,5 +1,4 @@
 // components/ThemeToggle.tsx
-// Add this button to your Navbar (top-right icon area — like CyberDefenders)
 'use client';
 
 import { Sun, Moon } from 'lucide-react';
@@ -12,9 +11,20 @@ export function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="w-8 h-8 flex items-center justify-center rounded-md
-        text-[hsl(var(--foreground-muted))] hover:text-[hsl(var(--foreground))]
-        hover:bg-[hsl(var(--card))] transition-colors duration-150"
+      className="w-9 h-9 flex items-center justify-center rounded-full
+        transition-colors duration-150"
+      style={{
+        color: 'hsl(var(--foreground-muted))',
+        background: 'hsl(var(--border))',
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.background = 'hsl(var(--border-strong))';
+        (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground))';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.background = 'hsl(var(--border))';
+        (e.currentTarget as HTMLElement).style.color = 'hsl(var(--foreground-muted))';
+      }}
     >
       {theme === 'dark'
         ? <Sun  className="w-4 h-4" />
