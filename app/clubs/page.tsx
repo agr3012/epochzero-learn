@@ -1,10 +1,17 @@
+// app/clubs/page.tsx
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, ChevronRight, Users, Trophy } from 'lucide-react';
+import { Shield, Users, Trophy, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 
 export const revalidate = 3600;
 export const metadata = { title: 'Tech Clubs — EpochZero Learn' };
+
+const CLUB_COLOR: Record<string, string> = {
+  rema:      '#8B5E1A',
+  fullstack: '#1B5FA8',
+  extension: '#1B7C3E',
+};
 
 export default async function ClubsIndexPage() {
   const supabase = createClient();
@@ -15,107 +22,95 @@ export default async function ClubsIndexPage() {
     .order('order_index', { ascending: true });
 
   return (
-    <div className="container py-16 lg:py-24">
-      <div className="flex items-center gap-3 mb-4">
-        <Shield className="w-5 h-5 text-gold-500" />
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
-          // Student Communities
-        </div>
+    <div className="container py-16 lg:py-20">
+
+      {/* ── Header ── */}
+      <div className="mb-12 max-w-3xl">
+        <p className="eyebrow mb-3">Student communities</p>
+        <h1 className="font-display text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+          style={{ color: 'hsl(var(--foreground))' }}>
+          Tech Clubs at SITAICS
+        </h1>
+        <p className="font-serif text-lg leading-relaxed"
+          style={{ color: 'hsl(var(--foreground-muted))' }}>
+          Hands-on technical communities at SITAICS, RRU — CTF competitions,
+          research projects, hackathons, and outreach activities led by faculty mentors.
+        </p>
       </div>
 
-      <h1 className="font-mono text-4xl lg:text-5xl font-bold text-bone-50 mb-4 leading-tight">
-        Tech Clubs
-      </h1>
-      <p className="font-serif text-xl text-bone-200 max-w-3xl leading-relaxed mb-12">
-        Specialized technical clubs at SITAICS, RRU — hands-on communities for students
-        who want to go beyond the classroom. CTF competitions, research projects, and
-        workshops led by faculty mentors.
-      </p>
+      {/* ── Club cards ── */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {(clubs ?? []).map((club: any) => {
+          const c = CLUB_COLOR[club.slug] ?? '#1B5FA8';
+          const memberCount = club.club_members?.[0]?.count ?? 0;
+          const eventCount  = club.club_events?.[0]?.count  ?? 0;
+          return (
+            <Link key={club.id} href={`/clubs/${club.slug}`}
+              className="card card-interactive group flex flex-col overflow-hidden">
+              {/* Colour accent bar */}
+              <div className="h-1.5 w-full shrink-0" style={{ background: c }} />
+              <div className="p-7 flex flex-col flex-1">
+                {/* Logo + name */}
+                <div className="flex items-start gap-4 mb-5">
+                  {club.logo_url ? (
+                    <Image src={club.logo_url} alt={club.name} width={52} height={52}
+                      className="rounded-xl shrink-0" />
+                  ) : (
+                    <div className="w-13 h-13 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: c, width: 52, height: 52 }}>
+                      <Shield className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.1em] mb-0.5"
+                      style={{ color: c }}>
+                      Student Club · SITAICS
+                    </p>
+                    <h2 className="font-display text-lg font-semibold leading-snug
+                      group-hover:text-[hsl(var(--primary))] transition-colors"
+                      style={{ color: 'hsl(var(--foreground))' }}>
+                      {club.name}
+                    </h2>
+                  </div>
+                </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* REMA Club — live */}
-        <Link
-          href="/clubs/rema"
-          className="card-forensic overflow-hidden group hover:border-gold-500/40 transition-colors"
-        >
-          <div className="p-8 flex items-start gap-6">
-            <Image
-              src="https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/REMA_Club_Logo.png"
-              alt="REMA Club"
-              width={80}
-              height={80}
-              className="shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-gold-500 mb-2">
-                Active · SITAICS · RRU
-              </div>
-              <h2 className="font-mono text-2xl font-bold text-bone-50 mb-1 group-hover:text-gold-500 transition-colors">
-                REMA Club
-              </h2>
-              <p className="font-mono text-sm text-bone-400 mb-3 italic">
-                Reverse. Reveal. Respond.
-              </p>
-              <p className="font-serif text-sm text-bone-200 leading-relaxed mb-4 line-clamp-2">
-                A specialized technical club for Reverse Engineering and Malware Analysis.
-                CTF events, hands-on workshops, and research projects.
-              </p>
-              <div className="flex items-center gap-4 font-mono text-xs text-bone-400">
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="w-3 h-3 text-gold-500" />
-                  12 members
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Trophy className="w-3 h-3 text-gold-500" />
-                  2 CTF events
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-bone-400 group-hover:text-gold-500 transition-colors shrink-0 mt-1" />
-          </div>
-        </Link>
+                {/* Tagline */}
+                <p className="font-sans text-sm italic mb-3"
+                  style={{ color: 'hsl(var(--primary))' }}>
+                  {club.tagline}
+                </p>
 
-        {/* Full Stack Club — live */}
-        <Link
-          href="/clubs/fullstack"
-          className="card-forensic overflow-hidden group hover:border-gold-500/40 transition-colors"
-        >
-          <div className="p-8 flex items-start gap-6">
-            <Image
-              src="https://nqyruorkiqaomqzgixgo.supabase.co/storage/v1/object/public/club/FSD_Club_Logo.png"
-              alt="Full Stack Development Club"
-              width={80}
-              height={80}
-              className="shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-gold-500 mb-2">
-                Active · SITAICS · RRU
+                {/* Description */}
+                {club.description && (
+                  <p className="font-serif text-sm leading-relaxed mb-5 flex-1 line-clamp-3"
+                    style={{ color: 'hsl(var(--foreground-muted))' }}>
+                    {club.description}
+                  </p>
+                )}
+
+                {/* Footer */}
+                <div className="mt-auto pt-4 flex items-center justify-between"
+                  style={{ borderTop: '1px solid hsl(var(--border))' }}>
+                  <div className="flex items-center gap-4 text-xs"
+                    style={{ color: 'hsl(var(--foreground-muted))' }}>
+                    {memberCount > 0 && (
+                      <span className="inline-flex items-center gap-1">
+                        <Users className="w-3 h-3" /> {memberCount}
+                      </span>
+                    )}
+                    {eventCount > 0 && (
+                      <span className="inline-flex items-center gap-1">
+                        <Trophy className="w-3 h-3" /> {eventCount}
+                      </span>
+                    )}
+                  </div>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                    style={{ color: 'hsl(var(--primary))' }} />
+                </div>
               </div>
-              <h2 className="font-mono text-2xl font-bold text-bone-50 mb-1 group-hover:text-gold-500 transition-colors">
-                Full Stack Development Club
-              </h2>
-              <p className="font-mono text-sm text-bone-400 mb-3 italic">
-                Build. Deploy. Scale.
-              </p>
-              <p className="font-serif text-sm text-bone-200 leading-relaxed mb-4 line-clamp-2">
-                A club for end-to-end web and application development. Hackathons,
-                workshops, real-world project sprints, and cloud deployment training.
-              </p>
-              <div className="flex items-center gap-4 font-mono text-xs text-bone-400">
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="w-3 h-3 text-gold-500" />
-                  4 members
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Trophy className="w-3 h-3 text-gold-500" />
-                  Hackathons coming soon
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-bone-400 group-hover:text-gold-500 transition-colors shrink-0 mt-1" />
-          </div>
-        </Link>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
