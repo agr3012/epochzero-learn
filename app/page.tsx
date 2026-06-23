@@ -11,7 +11,6 @@ import { createClient } from '@/lib/supabase/server';
 import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
 import { StatCounter } from '@/components/StatCounter';
 import { FadeIn } from '@/components/FadeIn';
-import { GradientRing } from '@/components/GradientRing';
 
 export const revalidate = 3600;
 
@@ -103,38 +102,21 @@ export default async function HomePage() {
                 <Link href="/learn" className="btn-primary"><GraduationCap className="w-4 h-4" /> Start Learning</Link>
                 <Link href="/tests" className="btn-ghost"><Award className="w-4 h-4" /> Take a Test</Link>
               </div>
-              {/* Inline stats with gradient rings */}
-              <div className="flex items-center gap-8 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <GradientRing value={stats.videos} max={50} size={64} strokeWidth={6}
-                    colorStart="#E8A020" colorEnd="#8B5E1A" id="vid" />
-                  <div>
-                    <div className="font-display font-bold text-lg" style={{ color: 'hsl(var(--foreground))' }}>
-                      {stats.videos}+ lessons
+              {/* Clean inline stats — no donuts, just clear numbers */}
+              <div className="flex flex-wrap gap-8">
+                {[
+                  { v: stats.videos,    l: 'Video lessons',   s: 'REMA & Cloud',   c: '#E8A020' },
+                  { v: stats.questions, l: 'MCQ questions',   s: 'Across all tests', c: '#4ADE80' },
+                  { v: stats.articles,  l: 'Lab articles',    s: 'Technical writeups', c: '#A78BFA' },
+                ].map(({ v, l, s, c }) => (
+                  <div key={l} className="pl-4" style={{ borderLeft: `2px solid ${c}` }}>
+                    <div className="font-display text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
+                      <StatCounter value={v} suffix="+" />
                     </div>
-                    <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>Video content</div>
+                    <div className="font-sans text-xs font-semibold mt-0.5" style={{ color: c }}>{l}</div>
+                    <div className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>{s}</div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <GradientRing value={stats.questions} max={500} size={64} strokeWidth={6}
-                    colorStart="#1B7C3E" colorEnd="#1B5FA8" id="q" />
-                  <div>
-                    <div className="font-display font-bold text-lg" style={{ color: 'hsl(var(--foreground))' }}>
-                      {stats.questions}+ questions
-                    </div>
-                    <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>MCQ bank</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <GradientRing value={stats.articles} max={100} size={64} strokeWidth={6}
-                    colorStart="#6B3AD4" colorEnd="#1B5FA8" id="art" />
-                  <div>
-                    <div className="font-display font-bold text-lg" style={{ color: 'hsl(var(--foreground))' }}>
-                      {stats.articles}+ articles
-                    </div>
-                    <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>Lab writeups</div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -230,7 +212,7 @@ export default async function HomePage() {
           </div>
         </FadeIn>
 
-        <div className="grid lg:grid-cols-3 gap-4">
+        <div className="grid lg:grid-cols-4 gap-4">
           {/* Large gradient featured card */}
           <FadeIn delay={0.05} className="lg:col-span-2 lg:row-span-2">
             <Link href="/learn" className="gradient-card-gold group block h-full p-8 lg:p-10 relative">
@@ -630,12 +612,18 @@ export default async function HomePage() {
           <div className="gradient-card-purple p-10 lg:p-14 relative">
             <div className="relative z-10 grid lg:grid-cols-2 gap-10 items-center">
               <div>
-                <div className="flex items-center gap-4 mb-6">
-                  <GradientRing value={stats.tests} max={20} size={72} strokeWidth={6}
-                    colorStart="#A78BFA" colorEnd="#6B3AD4" id="tests" />
-                  <div>
-                    <div className="font-display text-2xl font-bold text-white">{stats.tests} Tests</div>
-                    <div className="text-sm" style={{ color: 'rgba(207,215,226,0.7)' }}>{stats.questions} questions total</div>
+                <div className="flex gap-8 mb-6">
+                  <div className="pl-4" style={{ borderLeft: '2px solid rgba(167,139,250,0.7)' }}>
+                    <div className="font-display text-3xl font-bold text-white">{stats.tests}</div>
+                    <div className="text-xs" style={{ color: 'rgba(207,215,226,0.7)' }}>Tests available</div>
+                  </div>
+                  <div className="pl-4" style={{ borderLeft: '2px solid rgba(74,222,128,0.6)' }}>
+                    <div className="font-display text-3xl font-bold text-white">{stats.questions}</div>
+                    <div className="text-xs" style={{ color: 'rgba(207,215,226,0.7)' }}>MCQ questions</div>
+                  </div>
+                  <div className="pl-4" style={{ borderLeft: '2px solid rgba(96,165,250,0.6)' }}>
+                    <div className="font-display text-3xl font-bold text-white">{stats.tests * 4}%</div>
+                    <div className="text-xs" style={{ color: 'rgba(207,215,226,0.7)' }}>Pass rate</div>
                   </div>
                 </div>
                 <h2 className="font-display text-3xl font-bold mb-4 leading-tight text-white">
