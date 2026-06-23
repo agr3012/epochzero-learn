@@ -21,20 +21,16 @@ export function useTheme() {
 
 function applyTheme(t: Theme) {
   const html = document.documentElement;
-  if (t === 'light') {
-    html.classList.remove('dark');
-    html.classList.add('light');
-  } else {
-    html.classList.remove('light');
-    html.classList.add('dark');
-  }
+  // Class-based (for Tailwind dark: variants)
+  html.classList.remove('dark', 'light');
+  html.classList.add(t);
+  // data-theme attribute (for CSS var selectors like [data-theme="dark"])
+  html.setAttribute('data-theme', t);
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
 
-  // Read from localStorage on mount (inline script already set the class,
-  // this just syncs React state to match)
   useEffect(() => {
     const stored = (localStorage.getItem('ez-theme') as Theme) ?? 'dark';
     setTheme(stored);
