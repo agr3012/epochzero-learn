@@ -102,22 +102,7 @@ export default async function HomePage() {
                 <Link href="/learn" className="btn-primary"><GraduationCap className="w-4 h-4" /> Start Learning</Link>
                 <Link href="/tests" className="btn-ghost"><Award className="w-4 h-4" /> Take a Test</Link>
               </div>
-              {/* Clean inline stats — no donuts, just clear numbers */}
-              <div className="flex flex-wrap gap-8">
-                {[
-                  { v: stats.videos,    l: 'Video lessons',   s: 'REMA & Cloud',   c: '#E8A020' },
-                  { v: stats.questions, l: 'MCQ questions',   s: 'Across all tests', c: '#4ADE80' },
-                  { v: stats.articles,  l: 'Lab articles',    s: 'Technical writeups', c: '#A78BFA' },
-                ].map(({ v, l, s, c }) => (
-                  <div key={l} className="pl-4" style={{ borderLeft: `2px solid ${c}` }}>
-                    <div className="font-display text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
-                      <StatCounter value={v} suffix="+" />
-                    </div>
-                    <div className="font-sans text-xs font-semibold mt-0.5" style={{ color: c }}>{l}</div>
-                    <div className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>{s}</div>
-                  </div>
-                ))}
-              </div>
+
             </div>
 
             {/* Terminal widget */}
@@ -253,25 +238,41 @@ export default async function HomePage() {
             </Link>
           </FadeIn>
 
-          {/* Right column — 4 compact cards */}
+          {/* Right column — 4 cards in 2×2, each with Explore footer so height fills evenly */}
           {[
-            { icon: BookOpen,  color: '#1B5FA8', title: 'Articles & Writeups',     desc: 'In-depth technical writeups — malware analysis, cloud threats, cryptography.',   href: '/articles'  },
-            { icon: Video,     color: '#1B7C3E', title: 'Video Lessons',           desc: 'Paired with lab notes and exercises. YouTube-embedded one-click viewing.',        href: '/videos'    },
-            { icon: Award,     color: '#6B3AD4', title: 'MCQ Tests + Certificates',desc: 'Pass the test, receive a verifiable PDF certificate instantly by email.',          href: '/tests'     },
-            { icon: FileText,  color: '#8B5E1A', title: 'eBooks & Cheatsheets',    desc: 'Course textbooks, cheatsheets, and question banks — all free.',                   href: '/resources' },
+            { icon: BookOpen,  color: '#1B5FA8', title: 'Articles & Writeups',      desc: 'In-depth technical writeups — malware analysis, cloud threats, cryptography.',  href: '/articles'  },
+            { icon: Video,     color: '#1B7C3E', title: 'Video Lessons',            desc: 'Paired with lab notes and exercises. YouTube-embedded one-click viewing.',       href: '/videos'    },
+            { icon: Award,     color: '#6B3AD4', title: 'MCQ Tests + Certificates', desc: 'Pass the test, receive a verifiable PDF certificate instantly by email.',         href: '/tests'     },
+            { icon: FileText,  color: '#8B5E1A', title: 'eBooks & Cheatsheets',     desc: 'Course textbooks, cheatsheets, and question banks — all free.',                  href: '/resources' },
           ].map(({ icon: Icon, color, title, desc, href }, i) => (
             <FadeIn key={title} delay={0.05 + i * 0.07}>
-              <Link href={href} className="card card-interactive p-5 group flex items-start gap-4 h-full">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ background: color }}>
-                  <Icon className="w-4 h-4 text-white" />
+              <Link href={href} className="card card-interactive p-5 group flex flex-col justify-between h-full">
+                {/* Top: icon + content */}
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: color }}>
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-sm font-semibold mb-1.5
+                      group-hover:text-[hsl(var(--primary))] transition-colors"
+                      style={{ color: 'hsl(var(--foreground))' }}>
+                      {title}
+                    </h3>
+                    <p className="text-xs leading-relaxed"
+                      style={{ color: 'hsl(var(--foreground-muted))' }}>
+                      {desc}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-display text-sm font-semibold mb-1 group-hover:text-[hsl(var(--primary))] transition-colors"
-                    style={{ color: 'hsl(var(--foreground))' }}>
-                    {title}
-                  </h3>
-                  <p className="text-xs leading-relaxed" style={{ color: 'hsl(var(--foreground-muted))' }}>{desc}</p>
+                {/* Bottom: explore link always at bottom */}
+                <div className="mt-4 pt-3 flex items-center justify-end"
+                  style={{ borderTop: '1px solid hsl(var(--border))' }}>
+                  <span className="font-sans text-xs font-semibold inline-flex items-center gap-1
+                    group-hover:gap-2 transition-all"
+                    style={{ color }}>
+                    Explore <ArrowRight className="w-3 h-3" />
+                  </span>
                 </div>
               </Link>
             </FadeIn>
@@ -621,9 +622,9 @@ export default async function HomePage() {
                     <div className="font-display text-3xl font-bold text-white">{stats.questions}</div>
                     <div className="text-xs" style={{ color: 'rgba(207,215,226,0.7)' }}>MCQ questions</div>
                   </div>
-                  <div className="pl-4" style={{ borderLeft: '2px solid rgba(96,165,250,0.6)' }}>
-                    <div className="font-display text-3xl font-bold text-white">{stats.tests * 4}%</div>
-                    <div className="text-xs" style={{ color: 'rgba(207,215,226,0.7)' }}>Pass rate</div>
+                  <div className="pl-4" style={{ borderLeft: '2px solid rgba(232,160,32,0.6)' }}>
+                    <div className="font-display text-3xl font-bold text-white">Free</div>
+                    <div className="text-xs" style={{ color: 'rgba(207,215,226,0.7)' }}>No paywall</div>
                   </div>
                 </div>
                 <h2 className="font-display text-3xl font-bold mb-4 leading-tight text-white">
