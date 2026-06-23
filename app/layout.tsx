@@ -1,100 +1,131 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono, Fraunces, Inter } from 'next/font/google';
+import { JetBrains_Mono, Fraunces, Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { Navbar } from '@/components/navbar';
 import { Suspense } from 'react';
 import { Footer } from '@/components/footer';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { ThemeProvider } from '@/components/theme-provider';
 import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 
-const jetbrainsMono = JetBrains_Mono({
+/* ── Fonts ────────────────────────────────────────────────────── */
+
+// Display: headings only
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-mono',
+  variable: '--font-display',
   display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 });
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-serif',
-  display: 'swap',
-});
+
+// Sans: all body + UI text (default font)
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
 });
 
+// Serif: article long-form prose only
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+});
+
+// Mono: code blocks, terminal widget, episode labels ONLY
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+/* ── Metadata ─────────────────────────────────────────────────── */
+
 export const metadata: Metadata = {
   title: {
-    default: 'EpochZero Learn — Multi-Domain Tech Learning Hub',
+    default:  'EpochZero Learn — Multi-Domain Tech Learning Hub',
     template: '%s — EpochZero Learn',
   },
   description:
-    'A learning and event platform for Reverse Engineering, Malware Analysis, Cloud, Cryptography, Web Development, and more. Articles, videos, tests with certificates, and event registrations.',
+    'A learning and event platform for Reverse Engineering, Malware Analysis, Cloud Security, Cryptography, Web Development, and more. Articles, videos, tests with certificates, and event registrations.',
   keywords: [
-    'malware analysis',
-    'reverse engineering',
-    'cloud security',
-    'cryptography',
-    'web development',
-    'cybersecurity education',
-    'CTF',
-    'student events',
+    'malware analysis', 'reverse engineering', 'cloud security',
+    'cryptography', 'web development', 'cybersecurity education', 'CTF',
   ],
   authors: [{ name: 'Ashish Revar' }],
   openGraph: {
-    title: 'EpochZero Learn — Multi-Domain Tech Learning Hub',
+    title:       'EpochZero Learn — Multi-Domain Tech Learning Hub',
     description: 'Learning and event platform for tech students.',
-    type: 'website',
-    locale: 'en_IN',
+    type:        'website',
+    locale:      'en_IN',
   },
   robots: { index: true, follow: true },
   icons: {
     icon: [
-      { url: '/favicon.ico',        sizes: 'any'     },
-      { url: '/favicon.svg',        type: 'image/svg+xml' },
-      { url: '/favicon-96x96.png',  type: 'image/png', sizes: '96x96' },
+      { url: '/favicon.ico',       sizes: 'any'          },
+      { url: '/favicon.svg',       type: 'image/svg+xml' },
+      { url: '/favicon-96x96.png', type: 'image/png', sizes: '96x96' },
     ],
     apple: '/apple-touch-icon.png',
-    other: [
-      { rel: 'manifest', url: '/site.webmanifest' },
-    ],
+    other: [{ rel: 'manifest', url: '/site.webmanifest' }],
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/* ── Root Layout ──────────────────────────────────────────────── */
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`dark ${jetbrainsMono.variable} ${fraunces.variable} ${inter.variable}`}
+      className={`
+        ${plusJakartaSans.variable}
+        ${inter.variable}
+        ${fraunces.variable}
+        ${jetbrainsMono.variable}
+      `}
       suppressHydrationWarning
     >
-      <body className="min-h-screen flex flex-col antialiased">
-        <Suspense fallback={<div className="h-16 border-b border-navy-700 bg-navy-900" />}>
-          <NextTopLoader
-            color="#D4A017"
-            height={2}
-            showSpinner={false}
-            shadow={false}
-            speed={200}
-            crawlSpeed={200}
-          />
-          <Navbar />
-        </Suspense>
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <Toaster
-          position="bottom-right"
-          theme="dark"
-          toastOptions={{
-            className: 'font-mono text-sm border border-navy-700 bg-navy-800 text-bone-100',
+      {/* Inline script runs before React hydration — prevents flash of wrong theme */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var t = localStorage.getItem('ez-theme') || 'dark';
+                document.documentElement.classList.add(t === 'light' ? 'light' : 'dark');
+              } catch(e) {
+                document.documentElement.classList.add('dark');
+              }
+            `,
           }}
         />
-        <ScrollToTop />
+      </head>
+      <body className="min-h-screen flex flex-col antialiased">
+        <ThemeProvider>
+          <Suspense fallback={<div className="h-16 bg-[hsl(var(--surface))]" />}>
+            <NextTopLoader
+              color="#E8A020"
+              height={2}
+              showSpinner={false}
+              shadow={false}
+              speed={200}
+              crawlSpeed={200}
+            />
+            <Navbar />
+          </Suspense>
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Toaster
+            position="bottom-right"
+            theme="system"
+            toastOptions={{
+              className:
+                'font-sans text-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))]',
+            }}
+          />
+          <ScrollToTop />
+        </ThemeProvider>
       </body>
     </html>
   );
