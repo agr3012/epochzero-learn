@@ -394,35 +394,42 @@ export default async function TopicPage({ params }: Props) {
         {tests.length === 0 ? (
           <EmptyQ text="No assessments published for this topic yet." />
         ) : (
-          <div className="space-y-3">
+          {/* Compact single-line test rows with exam glyph */}
+          <div className="space-y-2">
             {tests.map((t: any) => (
               <Link key={t.id} href={`/tests/${t.slug}`}
-                className="card card-interactive p-6 group flex flex-col md:flex-row
-                  md:items-center md:justify-between gap-5">
-                <div className="flex-1">
-                  {t.malware_family && (
-                    <span className="badge-malware mb-3 inline-flex">
-                      <ShieldAlert className="w-3 h-3" />{t.malware_family}
-                    </span>
-                  )}
-                  <h3 className="font-display text-lg font-semibold mb-2
+                className="card card-interactive flex items-center gap-4 px-5 py-3.5 group">
+                {/* Exam icon tile */}
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: Q_COLORS[3] }}>
+                  <ListChecks className="w-4 h-4 text-white" />
+                </div>
+                {/* Title */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-sans text-sm font-semibold truncate
                     group-hover:text-[hsl(var(--primary))] transition-colors"
                     style={{ color: 'hsl(var(--foreground))' }}>
                     {t.title}
-                  </h3>
-                  {t.description && (
-                    <p className="font-serif text-sm leading-relaxed line-clamp-2"
-                      style={{ color: 'hsl(var(--foreground-muted))' }}>
-                      {t.description}
-                    </p>
+                  </div>
+                  {t.malware_family && (
+                    <span className="badge-malware mt-1 inline-flex text-[10px]">
+                      <ShieldAlert className="w-2.5 h-2.5" />{t.malware_family}
+                    </span>
                   )}
                 </div>
-                <div className="flex md:flex-col gap-4 md:items-end text-xs shrink-0"
+                {/* Meta: Q · min · Pass% */}
+                <div className="hidden sm:flex items-center gap-1.5 text-xs shrink-0"
                   style={{ color: 'hsl(var(--foreground-muted))' }}>
-                  <span>{t.total_questions} questions</span>
+                  <span className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                    {t.total_questions}Q
+                  </span>
+                  <span>·</span>
                   <span>{t.duration_minutes} min</span>
-                  <span>Pass: {t.passing_score}%</span>
+                  <span>·</span>
+                  <span>Pass {t.passing_score}%</span>
                 </div>
+                <ArrowRight className="w-4 h-4 shrink-0"
+                  style={{ color: 'hsl(var(--foreground-subtle))' }} />
               </Link>
             ))}
           </div>
