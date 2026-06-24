@@ -101,16 +101,16 @@ export function ProctorGate({ onReady }: Props) {
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{
-      backgroundColor: '#080614',
-      backgroundImage: 'linear-gradient(135deg, rgba(107,58,212,0.25) 0%, rgba(27,95,168,0.15) 50%, rgba(8,6,20,0.9) 100%)',
-      border: '1px solid rgba(107,58,212,0.30)',
+      backgroundColor: '#101825',
+      backgroundImage: 'linear-gradient(135deg, rgba(139,94,26,0.45) 0%, rgba(27,95,168,0.25) 55%, rgba(10,16,34,0.92) 100%)',
+      border: '1px solid rgba(232,160,32,0.28)',
     }}>
       <div className="p-8 lg:p-12">
 
         {/* Header */}
         <div className="mb-8">
           <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.15em] mb-2"
-            style={{ color: 'rgba(167,139,250,0.85)' }}>
+            style={{ color: 'rgba(232,160,32,0.90)' }}>
             Proctored Exam
           </p>
           <h2 className="font-display text-2xl font-bold mb-2 text-white">
@@ -128,16 +128,16 @@ export function ProctorGate({ onReady }: Props) {
           {/* Step 1 */}
           <div className="rounded-xl p-6 transition-all" style={{
             background: step === 'camera'
-              ? 'rgba(107,58,212,0.15)' : camStatus === 'ok'
+              ? 'rgba(232,160,32,0.08)' : camStatus === 'ok'
               ? 'rgba(27,124,62,0.12)' : 'rgba(0,0,0,0.2)',
             border: step === 'camera'
-              ? '1px solid rgba(167,139,250,0.35)' : camStatus === 'ok'
+              ? '1px solid rgba(232,160,32,0.40)' : camStatus === 'ok'
               ? '1px solid rgba(74,222,128,0.30)' : '1px solid rgba(255,255,255,0.07)',
             opacity: step === 'fullscreen' || step === 'ready' ? (camStatus === 'ok' ? 1 : 0.6) : 1,
           }}>
             <div className="flex items-start gap-4 mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{
-                background: camStatus === 'ok' ? '#1B7C3E' : camStatus === 'error' ? '#991b1b' : 'rgba(107,58,212,0.4)',
+                background: camStatus === 'ok' ? '#1B7C3E' : camStatus === 'error' ? '#991b1b' : 'rgba(139,94,26,0.55)',
               }}>
                 {camStatus === 'starting' ? <Loader2 className="w-5 h-5 text-white animate-spin" />
                  : camStatus === 'ok'     ? <CheckCircle className="w-5 h-5 text-white" />
@@ -193,16 +193,16 @@ export function ProctorGate({ onReady }: Props) {
           {/* Step 2 */}
           <div className="rounded-xl p-6 transition-all" style={{
             background: step === 'fullscreen'
-              ? 'rgba(107,58,212,0.15)' : fsStatus === 'ok'
+              ? 'rgba(232,160,32,0.08)' : fsStatus === 'ok'
               ? 'rgba(27,124,62,0.12)' : 'rgba(0,0,0,0.2)',
             border: step === 'fullscreen'
-              ? '1px solid rgba(167,139,250,0.35)' : fsStatus === 'ok'
+              ? '1px solid rgba(232,160,32,0.40)' : fsStatus === 'ok'
               ? '1px solid rgba(74,222,128,0.30)' : '1px solid rgba(255,255,255,0.07)',
             opacity: step === 'camera' ? 0.45 : 1,
           }}>
             <div className="flex items-start gap-4 mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{
-                background: fsStatus === 'ok' ? '#1B7C3E' : 'rgba(107,58,212,0.4)',
+                background: fsStatus === 'ok' ? '#1B7C3E' : 'rgba(139,94,26,0.55)',
               }}>
                 {fsStatus === 'ok'
                   ? <CheckCircle className="w-5 h-5 text-white" />
@@ -239,7 +239,7 @@ export function ProctorGate({ onReady }: Props) {
           border: '1px solid rgba(255,255,255,0.06)',
         }}>
           <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.15em] mb-3"
-            style={{ color: 'rgba(167,139,250,0.7)' }}>
+            style={{ color: 'rgba(232,160,32,0.75)' }}>
             Exam Rules
           </p>
           <ul className="space-y-2">
@@ -252,7 +252,7 @@ export function ProctorGate({ onReady }: Props) {
             ].map(rule => (
               <li key={rule} className="flex items-center gap-2.5 font-sans text-xs"
                 style={{ color: 'rgba(207,215,226,0.6)' }}>
-                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'rgba(167,139,250,0.6)' }} />
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'rgba(232,160,32,0.60)' }} />
                 {rule}
               </li>
             ))}
