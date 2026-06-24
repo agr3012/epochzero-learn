@@ -45,13 +45,13 @@ export default async function ArticleDetailPage({ params }: Props) {
     .eq('slug', params.slug).maybeSingle();
 
   let webLinks: { id: string; title: string; url: string; description: string | null; source_type: string | null }[] = [];
-  let resources: { id: string; title: string; file_url: string; type: string | null; page_count: number | null; version: string | null }[] = [];
+  let resources: { id: string; slug: string | null; title: string; file_url: string; type: string | null; page_count: number | null; version: string | null }[] = [];
 
   if (topicRow?.id) {
     const [linksRes, resourcesRes] = await Promise.all([
       supabase.from('topic_web_links').select('id, title, url, description, source_type')
         .eq('topic_id', topicRow.id).order('order_index', { ascending: true }),
-      supabase.from('topic_resources').select('order_index, resources(id, title, file_url, type, page_count, version)')
+      supabase.from('topic_resources').select('order_index, resources(id, slug, title, file_url, type, page_count, version)')
         .eq('topic_id', topicRow.id).order('order_index', { ascending: true }),
     ]);
     webLinks  = linksRes.data ?? [];
@@ -208,7 +208,7 @@ export default async function ArticleDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* Downloadable resources */}
+          {/* Downloadable resources — 2×2 grid with correct portal links */}
           {resources.length > 0 && (
             <div>
               <h3 className="font-sans text-xs font-semibold uppercase tracking-wide mb-3
@@ -217,29 +217,39 @@ export default async function ArticleDetailPage({ params }: Props) {
                 <BookOpen className="w-3.5 h-3.5" style={{ color: SEC.resource }} />
                 Reference material
               </h3>
-              <div className="space-y-2">
-                {resources.map(r => (
-                  <a key={r.id} href={r.file_url} target="_blank" rel="noopener noreferrer"
-                    className="card card-interactive flex items-center gap-4 p-4 group">
-                    <div className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center"
-                      style={{ background: SEC.resource }}>
-                      <Download className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-sans text-sm font-semibold
-                        group-hover:text-[hsl(var(--primary))] transition-colors"
-                        style={{ color: 'hsl(var(--foreground))' }}>
-                        {r.title}
+              <div className="grid sm:grid-cols-2 gap-3">
+                {resources.map(r => {
+                  const href = r.slug ? `/resources/${r.slug}` : `/api/pdf/${r.file_url}`;
+                  return (
+                    <Link key={r.id} href={href}
+                      className="card card-interactive p-5 group flex flex-col gap-3">
+                      <div className="flex items-start justify-between">
+                        <div className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center"
+                          style={{ background: SEC.resource }}>
+                          <Download className="w-5 h-5 text-white" />
+                        </div>
+                        {r.type && (
+                          <span className="badge badge-tag text-[10px]">{r.type}</span>
+                        )}
                       </div>
-                      <div className="text-xs mt-0.5"
-                        style={{ color: 'hsl(var(--foreground-subtle))' }}>
-                        {r.type}{r.page_count ? ` · ${r.page_count} pages` : ''}{r.version ? ` · v${r.version}` : ''}
+                      <div className="flex-1">
+                        <div className="font-display text-sm font-semibold mb-1 leading-snug
+                          group-hover:text-[hsl(var(--primary))] transition-colors"
+                          style={{ color: 'hsl(var(--foreground))' }}>
+                          {r.title}
+                        </div>
+                        <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                          {[r.page_count ? `${r.page_count} pages` : null, r.version ? `v${r.version}` : null]
+                            .filter(Boolean).join(' · ')}
+                        </div>
                       </div>
-                    </div>
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0"
-                      style={{ color: 'hsl(var(--foreground-subtle))' }} />
-                  </a>
-                ))}
+                      <div className="flex items-center gap-1 text-xs font-semibold"
+                        style={{ color: SEC.resource }}>
+                        Open resource <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
