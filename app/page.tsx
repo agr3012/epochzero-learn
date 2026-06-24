@@ -368,7 +368,7 @@ export default async function HomePage() {
       {forumThreads.length > 0 && (
         <section className="container py-14" style={{ borderTop: '1px solid hsl(var(--border))' }}>
           <FadeIn>
-            <div className="grid lg:grid-cols-[1fr_360px] gap-6">
+            <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
               {/* Thread feed */}
               <div>
                 <div className="flex items-end justify-between mb-6">
@@ -389,26 +389,26 @@ export default async function HomePage() {
                     return (
                       <FadeIn key={t.id} delay={i * 0.06}>
                         <Link href={`/forum/${t.domain}/${t.id}`}
-                          className="card card-interactive flex items-center gap-4 px-5 py-4 group">
-                          {/* Domain color dot */}
-                          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: c }} />
-                          {/* Domain pill */}
-                          <span className="font-sans text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0"
-                            style={{ background: `${c}18`, color: c, border: `1px solid ${c}40` }}>
-                            {t.domain}
-                          </span>
-                          {/* Title */}
-                          <h3 className="font-sans text-sm font-medium leading-snug flex-1 truncate
-                            group-hover:text-[hsl(var(--primary))] transition-colors"
+                          className="card card-interactive block px-4 py-3.5 group">
+                          {/* Top row: domain pill + reply count */}
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: c }} />
+                            <span className="font-sans text-xs font-semibold px-2 py-0.5 rounded-full shrink-0"
+                              style={{ background: `${c}18`, color: c, border: `1px solid ${c}40` }}>
+                              {t.domain}
+                            </span>
+                            <div className="flex items-center gap-1 text-xs ml-auto shrink-0"
+                              style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                              <MessageSquare className="w-3 h-3" />
+                              {t.reply_count ?? 0}
+                            </div>
+                          </div>
+                          {/* Title on its own line — safe on narrow screens */}
+                          <h3 className="font-sans text-sm font-medium leading-snug line-clamp-2
+                            group-hover:text-[hsl(var(--primary))] transition-colors pl-3.5"
                             style={{ color: 'hsl(var(--foreground))' }}>
                             {t.title}
                           </h3>
-                          {/* Meta */}
-                          <div className="flex items-center gap-1.5 text-xs shrink-0"
-                            style={{ color: 'hsl(var(--foreground-subtle))' }}>
-                            <MessageSquare className="w-3 h-3" />
-                            {t.reply_count ?? 0}
-                          </div>
                         </Link>
                       </FadeIn>
                     );
