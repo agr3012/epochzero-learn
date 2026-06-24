@@ -127,10 +127,10 @@ export function ProctorGate({ onReady }: Props) {
           <div className="rounded-xl p-6 transition-all" style={{
             background: step === 'camera'
               ? 'hsl(var(--card-hover))' : camStatus === 'ok'
-              ? 'rgba(27,124,62,0.12)' : 'rgba(0,0,0,0.2)',
+              ? 'rgba(27,124,62,0.12)' : 'hsl(var(--muted))',
             border: step === 'camera'
               ? '1px solid hsl(var(--primary)/0.5)' : camStatus === 'ok'
-              ? '1px solid rgba(74,222,128,0.30)' : '1px solid rgba(255,255,255,0.07)',
+              ? '1px solid rgba(74,222,128,0.30)' : '1px solid hsl(var(--border))',
             opacity: step === 'fullscreen' || step === 'ready' ? (camStatus === 'ok' ? 1 : 0.6) : 1,
           }}>
             <div className="flex items-start gap-4 mb-4">
@@ -159,7 +159,7 @@ export function ProctorGate({ onReady }: Props) {
 
             {/* Camera preview */}
             <div className={`overflow-hidden rounded-lg ${(camStatus === 'no_face' || camStatus === 'ok') ? '' : 'hidden'}`}
-              style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ border: '1px solid hsl(var(--border))' }}>
               <video ref={videoRef} autoPlay playsInline muted
                 className="w-full h-36 object-cover bg-black scale-x-[-1]" />
               <p className="font-sans text-[10px] text-center py-2" style={{
@@ -191,12 +191,12 @@ export function ProctorGate({ onReady }: Props) {
           {/* Step 2 */}
           <div className="rounded-xl p-6 transition-all" style={{
             background: step === 'fullscreen'
-              ? 'hsl(var(--card-hover))' : fsStatus === 'ok'
-              ? 'rgba(27,124,62,0.12)' : 'rgba(0,0,0,0.2)',
+              ? 'hsl(var(--primary)/0.08)' : fsStatus === 'ok'
+              ? 'rgba(27,124,62,0.12)' : 'hsl(var(--muted))',
             border: step === 'fullscreen'
-              ? '1px solid hsl(var(--primary)/0.5)' : fsStatus === 'ok'
-              ? '1px solid rgba(74,222,128,0.30)' : '1px solid rgba(255,255,255,0.07)',
-            opacity: step === 'camera' ? 0.45 : 1,
+              ? '1px solid hsl(var(--primary)/0.45)' : fsStatus === 'ok'
+              ? '1px solid rgba(74,222,128,0.40)' : '1px solid hsl(var(--border))',
+            opacity: step === 'camera' ? 0.55 : 1,
           }}>
             <div className="flex items-start gap-4 mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{
