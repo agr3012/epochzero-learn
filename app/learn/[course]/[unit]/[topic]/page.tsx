@@ -1,4 +1,5 @@
 // app/learn/[courseSlug]/[unitSlug]/[topicSlug]/page.tsx
+import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -70,7 +71,7 @@ export default async function TopicPage({ params }: Props) {
   return (
     <div className="container py-12 lg:py-16">
 
-      {/* ── Breadcrumb — sans, clean ── */}
+      {/* -- Breadcrumb  -  sans, clean -- */}
       <nav className="mb-8 flex items-center gap-1.5 flex-wrap text-sm"
         style={{ color: 'hsl(var(--foreground-muted))' }}>
         <Link href="/learn" className="hover:text-[hsl(var(--foreground))] transition-colors">
@@ -90,7 +91,7 @@ export default async function TopicPage({ params }: Props) {
         </span>
       </nav>
 
-      {/* ── Header ── */}
+      {/* -- Header -- */}
       <header className="mb-12 max-w-4xl">
         <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em] mb-3"
           style={{ color: domainColor }}>
@@ -143,7 +144,7 @@ export default async function TopicPage({ params }: Props) {
         )}
       </header>
 
-      {/* ── Quadrant nav — CyberDefenders secondary nav style ── */}
+      {/* -- Quadrant nav -- */}
       <nav className="sticky top-16 z-30 -mx-6 px-6 py-3 mb-12"
         style={{
           background: 'hsl(var(--surface)/0.96)',
@@ -179,7 +180,7 @@ export default async function TopicPage({ params }: Props) {
         </div>
       </nav>
 
-      {/* ── Q1 e-Tutorial ── */}
+      {/* -- Q1 e-Tutorial -- */}
       <QuadrantSection id="q1" number={1} title="e-Tutorial" subtitle="Video lectures and walkthroughs" icon={Play}>
         {videos.length === 0 ? (
           <EmptyQ text="No videos linked to this topic yet." />
@@ -223,7 +224,7 @@ export default async function TopicPage({ params }: Props) {
         )}
       </QuadrantSection>
 
-      {/* ── Q2 e-Content ── */}
+      {/* -- Q2 e-Content -- */}
       <QuadrantSection id="q2" number={2} title="e-Content" subtitle="Articles and case studies" icon={BookOpen}>
         {articles.length === 0 ? (
           <EmptyQ text="No reading material linked to this topic yet." />
@@ -258,7 +259,7 @@ export default async function TopicPage({ params }: Props) {
         )}
       </QuadrantSection>
 
-      {/* ── Q3 Web Resources ── */}
+      {/* -- Q3 Web Resources -- */}
       <QuadrantSection id="q3" number={3} title="Web Resources" subtitle="Downloadable material, podcasts, and curated external links" icon={Globe}>
         {q3Count === 0 ? (
           <EmptyQ text="No web resources linked to this topic yet." />
@@ -270,7 +271,7 @@ export default async function TopicPage({ params }: Props) {
                   style={{ color: 'hsl(var(--foreground-muted))' }}>
                   Downloadable material
                 </h4>
-                {/* 2×2 card grid — each resource as a proper card */}
+                {/* 2x2 card grid  -  each resource as a proper card */}
                 <div className="grid sm:grid-cols-2 gap-3">
                   {resources.map((r: any) => {
                     // Use portal slug route; fall back to file_url proxy only if no slug
@@ -389,8 +390,8 @@ export default async function TopicPage({ params }: Props) {
         )}
       </QuadrantSection>
 
-      {/* ── Q4 Self-Assessment ── */}
-      <QuadrantSection id="q4" number={4} title="Self-Assessment" subtitle="Test your knowledge — earn a certificate on first pass" icon={ListChecks}>
+      {/* -- Q4 Self-Assessment -- */}
+      <QuadrantSection id="q4" number={4} title="Self-Assessment" subtitle="Test your knowledge  -  earn a certificate on first pass" icon={ListChecks}>
         {tests.length === 0 ? (
           <EmptyQ text="No assessments published for this topic yet." />
         ) : (
@@ -436,7 +437,7 @@ export default async function TopicPage({ params }: Props) {
         )}
       </QuadrantSection>
 
-      {/* ── Topic navigation ── */}
+      {/* -- Topic navigation -- */}
       <div className="mt-16 pt-8 grid md:grid-cols-2 gap-4"
         style={{ borderTop: '1px solid hsl(var(--border))' }}>
         {prev ? (
@@ -472,7 +473,7 @@ export default async function TopicPage({ params }: Props) {
   );
 }
 
-// ── Quadrant section component — CyberDefenders colored tile style ──
+// -- Quadrant section component --
 
 function QuadrantSection({ id, number, title, subtitle, icon: Icon, children }: {
   id: string; number: number; title: string; subtitle: string;
@@ -483,7 +484,7 @@ function QuadrantSection({ id, number, title, subtitle, icon: Icon, children }: 
     <section id={id} className="mb-16 scroll-mt-24">
       <header className="mb-8 flex items-start gap-5 pb-6"
         style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-        {/* Solid colored tile — CyberDefenders pattern */}
+        {/* Solid colored tile */}
         <div className="shrink-0 w-14 h-14 rounded-xl flex items-center justify-center"
           style={{ background: color }}>
           <Icon className="w-6 h-6 text-white" />
