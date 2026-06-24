@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props) {
 
 const DOMAIN_COLOR: Record<string, string> = {
   'REMA': '#8B5E1A', 'Cloud Security': '#1B5FA8',
-  'Cryptography': '#6B3AD4', 'Web Dev': '#1B7C3E', 'Knowledge Check': '#6B3AD4',
+  'Cryptography': '#6B3AD4', 'Web Dev': '#1B7C3E', 'Knowledge Check': '#8B5E1A',
 };
 
 export default async function TestDetailPage({ params }: Props) {
@@ -27,7 +27,7 @@ export default async function TestDetailPage({ params }: Props) {
     .eq('slug', params.slug).eq('is_published', true).single();
   if (!test) notFound();
 
-  const accentColor = DOMAIN_COLOR[test.category ?? ''] || '#6B3AD4';
+  const accentColor = DOMAIN_COLOR[test.category ?? ''] || '#8B5E1A';
 
   return (
     <div className="container py-10 lg:py-14">
@@ -42,9 +42,9 @@ export default async function TestDetailPage({ params }: Props) {
 
       {/* Hero card -- always dark, gradient over dark base */}
       <div className="rounded-2xl overflow-hidden mb-8" style={{
-        backgroundColor: '#0a0618',
-        backgroundImage: `linear-gradient(135deg, ${accentColor}88 0%, ${accentColor}33 45%, rgba(8,6,24,0.95) 100%)`,
-        border: `1px solid ${accentColor}44`,
+        backgroundColor: '#101825',
+        backgroundImage: `linear-gradient(135deg, ${accentColor}99 0%, rgba(27,95,168,0.35) 55%, rgba(10,16,34,0.92) 100%)`,
+        border: `1px solid ${accentColor}50`,
       }}>
         <div className="p-8 lg:p-12">
 
