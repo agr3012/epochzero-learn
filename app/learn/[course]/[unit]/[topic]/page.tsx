@@ -1,5 +1,4 @@
 // app/learn/[courseSlug]/[unitSlug]/[topicSlug]/page.tsx
-import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -52,21 +51,21 @@ export default async function TopicPage({ params }: Props) {
     supabase.from('topic_tests').select('order_index, tests(id, slug, title, description, total_questions, duration_minutes, passing_score, malware_family)').eq('topic_id', topic.id).order('order_index', { ascending: true }),
   ]);
 
-  const videos    = (videosRes.data   ?? []).map((r: any) => r.videos).filter(Boolean);
-  const articles  = (articlesRes.data ?? []).map((r: any) => r.articles).filter(Boolean);
-  const resources = (resourcesRes.data ?? []).map((r: any) => r.resources).filter(Boolean);
-  const webLinks  = linksRes.data ?? [];
-  const tests     = (testsRes.data   ?? []).map((r: any) => r.tests).filter(Boolean);
+  const videos    = (videosRes.data   || []).map((r: any) => r.videos).filter(Boolean);
+  const articles  = (articlesRes.data || []).map((r: any) => r.articles).filter(Boolean);
+  const resources = (resourcesRes.data || []).map((r: any) => r.resources).filter(Boolean);
+  const webLinks  = linksRes.data || [];
+  const tests     = (testsRes.data   || []).map((r: any) => r.tests).filter(Boolean);
   const podcastLinks  = webLinks.filter((l: any) => l.source_type === 'podcast');
   const externalLinks = webLinks.filter((l: any) => l.source_type !== 'podcast');
   const q3Count = resources.length + webLinks.length;
 
   const { data: siblingTopics } = await supabase.from('topics').select('slug, title, topic_number').eq('unit_id', unit.id).eq('is_published', true).order('topic_number', { ascending: true });
-  const idx = siblingTopics?.findIndex((t) => t.slug === topic.slug) ?? -1;
+  const idx = siblingTopics?.findIndex((t) => t.slug === topic.slug) || -1;
   const prev = idx > 0 ? siblingTopics![idx - 1] : null;
-  const next = idx >= 0 && idx < (siblingTopics?.length ?? 0) - 1 ? siblingTopics![idx + 1] : null;
+  const next = idx >= 0 && idx < (siblingTopics?.length || 0) - 1 ? siblingTopics![idx + 1] : null;
 
-  const domainColor = DOMAIN_COLOR[course.slug] ?? '#1B5FA8';
+  const domainColor = DOMAIN_COLOR[course.slug] || '#1B5FA8';
 
   return (
     <div className="container py-12 lg:py-16">
@@ -77,15 +76,15 @@ export default async function TopicPage({ params }: Props) {
         <Link href="/learn" className="hover:text-[hsl(var(--foreground))] transition-colors">
           Learn
         </Link>
-        <span>›</span>
+        <span>/</span>
         <Link href={`/learn/${course.slug}`} className="hover:text-[hsl(var(--foreground))] transition-colors">
           {course.short_title ?? course.title}
         </Link>
-        <span>›</span>
+        <span>/</span>
         <Link href={`/learn/${course.slug}/${unit.slug}`} className="hover:text-[hsl(var(--foreground))] transition-colors">
           Unit {unit.unit_number}
         </Link>
-        <span>›</span>
+        <span>/</span>
         <span style={{ color: 'hsl(var(--foreground))' }}>
           {unit.unit_number}.{topic.topic_number}
         </span>
@@ -115,7 +114,7 @@ export default async function TopicPage({ params }: Props) {
               ~{topic.estimated_minutes} min total
             </span>
           )}
-          <span>·</span>
+          <span>-</span>
           <span>4 quadrants of structured content</span>
         </div>
 
@@ -170,7 +169,7 @@ export default async function TopicPage({ params }: Props) {
                 opacity: q.count === 0 ? 0.4 : 1,
                 pointerEvents: q.count === 0 ? 'none' : 'auto',
               }}>
-              Q{i + 1} · {q.label}
+              Q{i + 1} / {q.label}
               <span className="font-sans text-xs font-semibold px-1.5 py-0.5 rounded-full"
                 style={{ background: `${q.color}30`, color: q.color }}>
                 {q.count}
@@ -300,7 +299,7 @@ export default async function TopicPage({ params }: Props) {
                           </div>
                           <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
                             {[r.page_count ? `${r.page_count} pages` : null, r.version ? `v${r.version}` : null]
-                              .filter(Boolean).join(' · ')}
+                              .filter(Boolean).join(' / ')}
                           </div>
                         </div>
                         {/* Footer link */}
@@ -418,15 +417,15 @@ export default async function TopicPage({ params }: Props) {
                     </span>
                   )}
                 </div>
-                {/* Meta: Q · min · Pass% */}
+                {/* Meta: Q / min / Pass% */}
                 <div className="hidden sm:flex items-center gap-1.5 text-xs shrink-0"
                   style={{ color: 'hsl(var(--foreground-muted))' }}>
                   <span className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                     {t.total_questions}Q
                   </span>
-                  <span>·</span>
+                  <span>-</span>
                   <span>{t.duration_minutes} min</span>
-                  <span>·</span>
+                  <span>-</span>
                   <span>Pass {t.passing_score}%</span>
                 </div>
                 <ArrowRight className="w-4 h-4 shrink-0"
@@ -450,10 +449,10 @@ export default async function TopicPage({ params }: Props) {
             <div className="font-sans text-sm font-medium
               group-hover:text-[hsl(var(--primary))] transition-colors"
               style={{ color: 'hsl(var(--foreground))' }}>
-              {unit.unit_number}.{prev.topic_number} · {prev.title}
+              {unit.unit_number}.{prev.topic_number} / {prev.title}
             </div>
           </Link>
-        ) : <div />}
+        ) : null}
         {next ? (
           <Link href={`/learn/${course.slug}/${unit.slug}/${next.slug}`}
             className="card card-interactive p-5 group md:text-right">
@@ -464,10 +463,10 @@ export default async function TopicPage({ params }: Props) {
             <div className="font-sans text-sm font-medium
               group-hover:text-[hsl(var(--primary))] transition-colors"
               style={{ color: 'hsl(var(--foreground))' }}>
-              {unit.unit_number}.{next.topic_number} · {next.title}
+              {unit.unit_number}.{next.topic_number} / {next.title}
             </div>
           </Link>
-        ) : <div />}
+        ) : null}
       </div>
     </div>
   );
@@ -477,7 +476,7 @@ export default async function TopicPage({ params }: Props) {
 
 function QuadrantSection({ id, number, title, subtitle, icon: Icon, children }: {
   id: string; number: number; title: string; subtitle: string;
-  icon: any; children: React.ReactNode;
+  icon: any; children: any;
 }) {
   const color = Q_COLORS[number - 1] ?? Q_COLORS[0];
   return (
