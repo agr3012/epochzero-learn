@@ -272,44 +272,36 @@ export default async function TopicPage({ params }: Props) {
                 </h4>
                 {/* 2x2 card grid  -  each resource as a proper card */}
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {resources.map((r: any) => {
-                    // Use portal slug route; fall back to file_url proxy only if no slug
-                    const href = r.slug
-                      ? `/resources/${r.slug}`
-                      : `/api/pdf/${r.file_url}`;
-                    return (
-                      <Link key={r.id} href={href}
-                        className="card card-interactive p-5 group flex flex-col gap-4">
-                        {/* Top: coloured icon + type badge */}
-                        <div className="flex items-start justify-between">
-                          <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                            style={{ background: Q_COLORS[2] }}>
-                            <Download className="w-5 h-5 text-white" />
-                          </div>
-                          {r.type && (
-                            <span className="badge badge-tag text-[10px]">{r.type}</span>
-                          )}
+                  {resources.map((r: any) => (
+                    <Link key={r.id}
+                      href={r.slug ? `/resources/${r.slug}` : `/api/pdf/${r.file_url}`}
+                      className="card card-interactive p-5 group flex flex-col gap-4">
+                      <div className="flex items-start justify-between">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                          style={{ background: Q_COLORS[2] }}>
+                          <Download className="w-5 h-5 text-white" />
                         </div>
-                        {/* Title + version */}
-                        <div className="flex-1">
-                          <div className="font-display text-sm font-semibold mb-1 leading-snug
-                            group-hover:text-[hsl(var(--primary))] transition-colors"
-                            style={{ color: 'hsl(var(--foreground))' }}>
-                            {r.title}
-                          </div>
-                          <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                            {[r.page_count ? `${r.page_count} pages` : null, r.version ? `v${r.version}` : null]
-                              .filter(Boolean).join(' / ')}
-                          </div>
+                        {r.type && (
+                          <span className="badge badge-tag text-[10px]">{r.type}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-display text-sm font-semibold mb-1 leading-snug
+                          group-hover:text-[hsl(var(--primary))] transition-colors"
+                          style={{ color: 'hsl(var(--foreground))' }}>
+                          {r.title}
                         </div>
-                        {/* Footer link */}
-                        <div className="flex items-center gap-1 text-xs font-semibold mt-auto"
-                          style={{ color: Q_COLORS[2] }}>
-                          Open resource <ArrowRight className="w-3 h-3" />
+                        <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                          {r.version ? `v${r.version}` : ''}
+                          {r.page_count ? ` - ${r.page_count} pages` : ''}
                         </div>
-                      </Link>
-                    );
-                  })}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs font-semibold mt-auto"
+                        style={{ color: Q_COLORS[2] }}>
+                        Open resource <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               </div>
             )}
