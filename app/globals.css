@@ -127,20 +127,20 @@ html.dark body,
 [data-theme="dark"] body {
   background-image:
     /* Fine 64px gold grid */
-    linear-gradient(rgba(232,160,32,0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(232,160,32,0.028) 1px, transparent 1px),
+    linear-gradient(rgba(232,160,32,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,160,32,0.06) 1px, transparent 1px),
     /* 1. Gold — top right (primary glow) */
     radial-gradient(ellipse 65% 52% at 108% -6%,
-      rgba(232,160,32,0.13) 0%, rgba(139,94,26,0.06) 40%, transparent 65%),
+      rgba(232,160,32,0.22) 0%, rgba(139,94,26,0.10) 40%, transparent 65%),
     /* 2. Green — bottom left */
     radial-gradient(ellipse 55% 45% at -6% 108%,
-      rgba(27,124,62,0.10) 0%, rgba(27,124,62,0.04) 45%, transparent 65%),
+      rgba(27,124,62,0.18) 0%, rgba(27,124,62,0.08) 45%, transparent 65%),
     /* 3. Blue-steel — top left */
     radial-gradient(ellipse 42% 36% at -4% 12%,
-      rgba(27,95,168,0.08) 0%, rgba(27,95,168,0.03) 45%, transparent 65%),
+      rgba(27,95,168,0.15) 0%, rgba(27,95,168,0.07) 45%, transparent 65%),
     /* 4. Purple — mid right */
     radial-gradient(ellipse 36% 32% at 108% 52%,
-      rgba(107,58,212,0.07) 0%, rgba(107,58,212,0.03) 45%, transparent 65%),
+      rgba(107,58,212,0.13) 0%, rgba(107,58,212,0.06) 45%, transparent 65%),
     /* 5. Warm amber — bottom center */
     radial-gradient(ellipse 65% 20% at 50% 108%,
       rgba(139,94,26,0.05) 0%, transparent 60%),
@@ -157,20 +157,20 @@ html.dark body,
 html.light body,
 [data-theme="light"] body {
   background-image:
-    linear-gradient(rgba(184,116,15,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184,116,15,0.035) 1px, transparent 1px),
+    linear-gradient(rgba(184,116,15,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,116,15,0.07) 1px, transparent 1px),
     /* Gold — top right */
     radial-gradient(ellipse 65% 52% at 108% -6%,
-      rgba(184,116,15,0.09) 0%, transparent 65%),
+      rgba(184,116,15,0.16) 0%, transparent 65%),
     /* Green — bottom left */
     radial-gradient(ellipse 55% 45% at -6% 108%,
-      rgba(22,101,52,0.07) 0%, transparent 65%),
+      rgba(22,101,52,0.12) 0%, transparent 65%),
     /* Blue — top left */
     radial-gradient(ellipse 42% 36% at -4% 12%,
-      rgba(21,78,136,0.05) 0%, transparent 65%),
+      rgba(21,78,136,0.10) 0%, transparent 65%),
     /* Purple — mid right */
     radial-gradient(ellipse 36% 32% at 108% 52%,
-      rgba(88,46,174,0.04) 0%, transparent 65%);
+      rgba(88,46,174,0.08) 0%, transparent 65%);
   background-size:
     64px 64px, 64px 64px,
     100% 100%, 100% 100%, 100% 100%, 100% 100%;
@@ -183,10 +183,16 @@ html.light body,
 
   /* ── Navbar ── */
   .navbar-glass {
-    background: hsl(var(--surface) / 0.95);
-    border-bottom: 1px solid hsl(var(--border));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: hsl(var(--surface) / 0.96);
+    border-bottom: 1px solid rgba(232,160,32,0.20);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    /* Very faint gold gradient at the top edge — separates from page bg */
+    background-image: linear-gradient(
+      to bottom,
+      rgba(232,160,32,0.04) 0%,
+      transparent 100%
+    );
   }
 
   .nav-link-underline {
@@ -434,6 +440,23 @@ html.light body,
   .text-subtle  { color: hsl(var(--foreground-subtle)); }
   .bg-surface   { background: hsl(var(--surface)); }
   .bg-card      { background: hsl(var(--card));    }
+}
+
+
+/* ── Footer colour splash — warms the footer base ────────────── */
+footer {
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% 120%,
+      rgba(232,160,32,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at -5% 50%,
+      rgba(27,124,62,0.05) 0%, transparent 60%);
+}
+html.light footer {
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% 120%,
+      rgba(184,116,15,0.05) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at -5% 50%,
+      rgba(22,101,52,0.04) 0%, transparent 60%);
 }
 
 /* ── Global scrollbar ────────────────────────────────────────── */
