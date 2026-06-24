@@ -30,7 +30,7 @@ const DOMAIN_COLOR: Record<string, string> = {
   'crypto': '#6B3AD4', 'webdev': '#1B7C3E',
 };
 
-// Quadrant colors — CyberDefenders solid tile pattern
+// Quadrant section colors
 const Q_COLORS = ['#1B5FA8', '#1B7C3E', '#8B5E1A', '#6B3AD4'];
 
 export default async function TopicPage({ params }: Props) {
@@ -46,7 +46,7 @@ export default async function TopicPage({ params }: Props) {
   const [videosRes, articlesRes, resourcesRes, linksRes, testsRes] = await Promise.all([
     supabase.from('topic_videos').select('order_index, videos(id, slug, youtube_id, title, description, malware_family, duration_seconds)').eq('topic_id', topic.id).order('order_index', { ascending: true }),
     supabase.from('topic_articles').select('order_index, articles(id, slug, title, excerpt, category, reading_time, published_at)').eq('topic_id', topic.id).order('order_index', { ascending: true }),
-    supabase.from('topic_resources').select('order_index, resources(id, type, title, description, file_url, page_count, version)').eq('topic_id', topic.id).order('order_index', { ascending: true }),
+    supabase.from('topic_resources').select('order_index, resources(id, slug, type, title, description, file_url, page_count, version)').eq('topic_id', topic.id).order('order_index', { ascending: true }),
     supabase.from('topic_web_links').select('*').eq('topic_id', topic.id).order('order_index', { ascending: true }),
     supabase.from('topic_tests').select('order_index, tests(id, slug, title, description, total_questions, duration_minutes, passing_score, malware_family)').eq('topic_id', topic.id).order('order_index', { ascending: true }),
   ]);
@@ -270,26 +270,46 @@ export default async function TopicPage({ params }: Props) {
                   style={{ color: 'hsl(var(--foreground-muted))' }}>
                   Downloadable material
                 </h4>
-                <div className="space-y-2">
-                  {resources.map((r: any) => (
-                    <a key={r.id} href={r.file_url} target="_blank" rel="noopener noreferrer"
-                      className="card card-interactive flex items-center gap-4 p-4 group">
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: 'hsl(var(--muted))' }}>
-                        <Download className="w-4 h-4" style={{ color: Q_COLORS[2] }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-sans text-sm font-semibold mb-0.5
-                          group-hover:text-[hsl(var(--primary))] transition-colors"
-                          style={{ color: 'hsl(var(--foreground))' }}>
-                          {r.title}
+                {/* 2×2 card grid — each resource as a proper card */}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {resources.map((r: any) => {
+                    // Use portal slug route; fall back to file_url proxy only if no slug
+                    const href = r.slug
+                      ? `/resources/${r.slug}`
+                      : `/api/pdf/${r.file_url}`;
+                    return (
+                      <Link key={r.id} href={href}
+                        className="card card-interactive p-5 group flex flex-col gap-4">
+                        {/* Top: coloured icon + type badge */}
+                        <div className="flex items-start justify-between">
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                            style={{ background: Q_COLORS[2] }}>
+                            <Download className="w-5 h-5 text-white" />
+                          </div>
+                          {r.type && (
+                            <span className="badge badge-tag text-[10px]">{r.type}</span>
+                          )}
                         </div>
-                        <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                          {r.type}{r.page_count ? ` · ${r.page_count} pages` : ''}{r.version ? ` · v${r.version}` : ''}
+                        {/* Title + version */}
+                        <div className="flex-1">
+                          <div className="font-display text-sm font-semibold mb-1 leading-snug
+                            group-hover:text-[hsl(var(--primary))] transition-colors"
+                            style={{ color: 'hsl(var(--foreground))' }}>
+                            {r.title}
+                          </div>
+                          <div className="text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                            {[r.page_count ? `${r.page_count} pages` : null, r.version ? `v${r.version}` : null]
+                              .filter(Boolean).join(' · ')}
+                          </div>
                         </div>
-                      </div>
-                    </a>
-                  ))}
+                        {/* Footer link */}
+                        <div className="flex items-center gap-1 text-xs font-semibold mt-auto"
+                          style={{ color: Q_COLORS[2] }}>
+                          Open resource <ArrowRight className="w-3 h-3" />
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
