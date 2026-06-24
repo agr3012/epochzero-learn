@@ -100,20 +100,18 @@ export function ProctorGate({ onReady }: Props) {
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{
-      backgroundColor: '#101825',
-      backgroundImage: 'linear-gradient(135deg, rgba(139,94,26,0.45) 0%, rgba(27,95,168,0.25) 55%, rgba(10,16,34,0.92) 100%)',
-      border: '1px solid rgba(232,160,32,0.28)',
+    <div className="card rounded-2xl overflow-hidden" style={{
+      borderTop: '3px solid hsl(var(--primary))',
     }}>
       <div className="p-8 lg:p-12">
 
         {/* Header */}
         <div className="mb-8">
           <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.15em] mb-2"
-            style={{ color: 'rgba(232,160,32,0.90)' }}>
+            style={{ color: 'hsl(var(--primary))' }}>
             Proctored Exam
           </p>
-          <h2 className="font-display text-2xl font-bold mb-2 text-white">
+          <h2 className="font-display text-2xl font-bold mb-2" style={{ color: "hsl(var(--foreground))" }}>
             Pre-Exam Setup
           </h2>
           <p className="font-sans text-sm leading-relaxed"
@@ -128,10 +126,10 @@ export function ProctorGate({ onReady }: Props) {
           {/* Step 1 */}
           <div className="rounded-xl p-6 transition-all" style={{
             background: step === 'camera'
-              ? 'rgba(232,160,32,0.08)' : camStatus === 'ok'
+              ? 'hsl(var(--card-hover))' : camStatus === 'ok'
               ? 'rgba(27,124,62,0.12)' : 'rgba(0,0,0,0.2)',
             border: step === 'camera'
-              ? '1px solid rgba(232,160,32,0.40)' : camStatus === 'ok'
+              ? '1px solid hsl(var(--primary)/0.5)' : camStatus === 'ok'
               ? '1px solid rgba(74,222,128,0.30)' : '1px solid rgba(255,255,255,0.07)',
             opacity: step === 'fullscreen' || step === 'ready' ? (camStatus === 'ok' ? 1 : 0.6) : 1,
           }}>
@@ -146,7 +144,7 @@ export function ProctorGate({ onReady }: Props) {
                  : <Camera className="w-5 h-5 text-white" />}
               </div>
               <div className="flex-1">
-                <div className="font-display font-semibold text-base mb-1 text-white">
+                <div className="font-display font-semibold text-base mb-1" style={{ color: "hsl(var(--foreground))" }}>
                   Step 1 — Enable Webcam
                 </div>
                 <p className="font-sans text-xs leading-relaxed" style={{ color: 'rgba(207,215,226,0.65)' }}>
@@ -154,7 +152,7 @@ export function ProctorGate({ onReady }: Props) {
                   Snapshots are only captured on violations.
                 </p>
                 {camError && (
-                  <p className="font-sans text-xs mt-2" style={{ color: '#f87171' }}>{camError}</p>
+                  <p className="font-sans text-xs mt-2" style={{ color: '#ef4444' }}>{camError}</p>
                 )}
               </div>
             </div>
@@ -193,10 +191,10 @@ export function ProctorGate({ onReady }: Props) {
           {/* Step 2 */}
           <div className="rounded-xl p-6 transition-all" style={{
             background: step === 'fullscreen'
-              ? 'rgba(232,160,32,0.08)' : fsStatus === 'ok'
+              ? 'hsl(var(--card-hover))' : fsStatus === 'ok'
               ? 'rgba(27,124,62,0.12)' : 'rgba(0,0,0,0.2)',
             border: step === 'fullscreen'
-              ? '1px solid rgba(232,160,32,0.40)' : fsStatus === 'ok'
+              ? '1px solid hsl(var(--primary)/0.5)' : fsStatus === 'ok'
               ? '1px solid rgba(74,222,128,0.30)' : '1px solid rgba(255,255,255,0.07)',
             opacity: step === 'camera' ? 0.45 : 1,
           }}>
@@ -209,7 +207,7 @@ export function ProctorGate({ onReady }: Props) {
                   : <Maximize className="w-5 h-5 text-white" />}
               </div>
               <div className="flex-1">
-                <div className="font-display font-semibold text-base mb-1 text-white">
+                <div className="font-display font-semibold text-base mb-1" style={{ color: "hsl(var(--foreground))" }}>
                   Step 2 — Enter Fullscreen
                 </div>
                 <p className="font-sans text-xs leading-relaxed" style={{ color: 'rgba(207,215,226,0.65)' }}>
@@ -235,11 +233,11 @@ export function ProctorGate({ onReady }: Props) {
 
         {/* Exam rules */}
         <div className="rounded-xl p-5" style={{
-          background: 'rgba(0,0,0,0.2)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'hsl(var(--muted))',
+          border: '1px solid hsl(var(--border))',
         }}>
           <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.15em] mb-3"
-            style={{ color: 'rgba(232,160,32,0.75)' }}>
+            style={{ color: 'hsl(var(--primary))' }}>
             Exam Rules
           </p>
           <ul className="space-y-2">
@@ -251,8 +249,8 @@ export function ProctorGate({ onReady }: Props) {
               '3 violations triggers automatic cancellation',
             ].map(rule => (
               <li key={rule} className="flex items-center gap-2.5 font-sans text-xs"
-                style={{ color: 'rgba(207,215,226,0.6)' }}>
-                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'rgba(232,160,32,0.60)' }} />
+                style={{ color: 'hsl(var(--foreground-muted))' }}>
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'hsl(var(--primary))' }} />
                 {rule}
               </li>
             ))}
