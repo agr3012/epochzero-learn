@@ -4,6 +4,7 @@
 
 /* ============================================================
    EPOCHZERO LEARN — Design System v2.2
+   Inspired by CyberDefenders · Gold replaces Blue as primary
    ============================================================ */
 
 @layer base {
@@ -127,8 +128,8 @@ html.dark body,
 [data-theme="dark"] body {
   background-image:
     /* Fine 64px gold grid */
-    linear-gradient(rgba(232,160,32,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(232,160,32,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(232,160,32,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,160,32,0.04) 1px, transparent 1px),
     /* 1. Gold — top right (primary glow) */
     radial-gradient(ellipse 65% 52% at 108% -6%,
       rgba(232,160,32,0.22) 0%, rgba(139,94,26,0.10) 40%, transparent 65%),
@@ -157,8 +158,8 @@ html.dark body,
 html.light body,
 [data-theme="light"] body {
   background-image:
-    linear-gradient(rgba(184,116,15,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184,116,15,0.07) 1px, transparent 1px),
+    linear-gradient(rgba(184,116,15,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,116,15,0.05) 1px, transparent 1px),
     /* Gold — top right */
     radial-gradient(ellipse 65% 52% at 108% -6%,
       rgba(184,116,15,0.16) 0%, transparent 65%),
