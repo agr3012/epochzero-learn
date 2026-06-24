@@ -115,7 +115,7 @@ export function ProctorGate({ onReady }: Props) {
             Pre-Exam Setup
           </h2>
           <p className="font-sans text-sm leading-relaxed"
-            style={{ color: 'rgba(207,215,226,0.65)' }}>
+            style={{ color: 'hsl(var(--foreground-muted))' }}>
             This exam requires a webcam and fullscreen mode. Complete both steps to begin.
           </p>
         </div>
@@ -131,11 +131,11 @@ export function ProctorGate({ onReady }: Props) {
             border: step === 'camera'
               ? '1px solid hsl(var(--primary)/0.5)' : camStatus === 'ok'
               ? '1px solid rgba(74,222,128,0.30)' : '1px solid hsl(var(--border))',
-            opacity: step === 'fullscreen' || step === 'ready' ? (camStatus === 'ok' ? 1 : 0.6) : 1,
+
           }}>
             <div className="flex items-start gap-4 mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{
-                background: camStatus === 'ok' ? '#1B7C3E' : camStatus === 'error' ? '#991b1b' : 'rgba(139,94,26,0.55)',
+                background: camStatus === 'ok' ? '#1B7C3E' : camStatus === 'error' ? '#991b1b' : '#8B5E1A',
               }}>
                 {camStatus === 'starting' ? <Loader2 className="w-5 h-5 text-white animate-spin" />
                  : camStatus === 'ok'     ? <CheckCircle className="w-5 h-5 text-white" />
@@ -147,7 +147,7 @@ export function ProctorGate({ onReady }: Props) {
                 <div className="font-display font-semibold text-base mb-1" style={{ color: "hsl(var(--foreground))" }}>
                   Step 1 — Enable Webcam
                 </div>
-                <p className="font-sans text-xs leading-relaxed" style={{ color: 'rgba(207,215,226,0.65)' }}>
+                <p className="font-sans text-xs leading-relaxed" style={{ color: 'hsl(var(--foreground-muted))' }}>
                   Your webcam will monitor for face presence throughout the exam.
                   Snapshots are only captured on violations.
                 </p>
@@ -196,21 +196,23 @@ export function ProctorGate({ onReady }: Props) {
             border: step === 'fullscreen'
               ? '1px solid hsl(var(--primary)/0.45)' : fsStatus === 'ok'
               ? '1px solid rgba(74,222,128,0.40)' : '1px solid hsl(var(--border))',
-            opacity: step === 'camera' ? 0.55 : 1,
+            pointerEvents: step === 'camera' ? 'none' : 'auto',
           }}>
             <div className="flex items-start gap-4 mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{
-                background: fsStatus === 'ok' ? '#1B7C3E' : 'rgba(139,94,26,0.55)',
+                background: fsStatus === 'ok' ? '#1B7C3E' : '#8B5E1A',
               }}>
                 {fsStatus === 'ok'
                   ? <CheckCircle className="w-5 h-5 text-white" />
                   : <Maximize className="w-5 h-5 text-white" />}
               </div>
               <div className="flex-1">
-                <div className="font-display font-semibold text-base mb-1" style={{ color: "hsl(var(--foreground))" }}>
+                <div className="font-display font-semibold text-base mb-1"
+                  style={{ color: step === 'camera' ? 'hsl(var(--foreground-subtle))' : 'hsl(var(--foreground))' }}>
                   Step 2 — Enter Fullscreen
                 </div>
-                <p className="font-sans text-xs leading-relaxed" style={{ color: 'rgba(207,215,226,0.65)' }}>
+                <p className="font-sans text-xs leading-relaxed"
+                  style={{ color: step === 'camera' ? 'hsl(var(--foreground-subtle))' : 'hsl(var(--foreground-muted))' }}>
                   The exam runs in fullscreen only. Exiting counts as a violation.
                   You have 3 warnings before auto-cancellation.
                 </p>
