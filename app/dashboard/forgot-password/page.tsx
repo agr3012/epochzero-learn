@@ -9,68 +9,52 @@ export default function ForgotPasswordPage() {
   const [status, setStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
+    e.preventDefault(); setStatus('loading');
     try {
-      await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      setStatus('done'); // always show success — don't reveal if email exists
-    } catch {
-      setStatus('error');
-    }
+      await fetch('/api/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      setStatus('done');
+    } catch { setStatus('error'); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-navy-950">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-2">// Student Portal</div>
-          <h1 className="font-mono text-3xl font-bold text-bone-50 mb-2">Reset password</h1>
-        </div>
-        <div className="card-forensic p-8 border-navy-700">
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'hsl(var(--background))' }}>
+      <div className="w-full max-w-sm">
+        <Link href="/dashboard/login" className="inline-flex items-center gap-1.5 text-sm font-medium mb-8 transition-colors hover:text-[hsl(var(--foreground))]"
+          style={{ color: 'hsl(var(--foreground-muted))' }}>
+          &larr; Back to sign in
+        </Link>
+        <h1 className="font-display text-2xl font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Reset password</h1>
+        <p className="text-sm mb-8" style={{ color: 'hsl(var(--foreground-muted))' }}>
+          Enter your RRU email and we will send a reset link.
+        </p>
+        <div className="card p-8 rounded-2xl">
           {status === 'done' ? (
             <div className="text-center">
-              <CheckCircle className="w-10 h-10 text-gold-500 mx-auto mb-4" />
-              <p className="font-serif text-bone-200 mb-4">
-                If an account exists for this email, a reset link has been sent. Check your inbox.
+              <CheckCircle className="w-10 h-10 mx-auto mb-4" style={{ color: 'hsl(var(--primary))' }} />
+              <p className="font-serif text-base mb-4" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                If an account exists for this email, a reset link has been sent.
               </p>
-              <Link href="/dashboard/login" className="font-mono text-xs text-gold-500 hover:text-gold-400 transition-colors">
+              <Link href="/dashboard/login" className="text-sm font-medium hover:underline" style={{ color: 'hsl(var(--primary))' }}>
                 Back to sign in
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <p className="font-serif text-sm text-bone-300 leading-relaxed">
-                Enter your RRU email address and we will send a password reset link.
-              </p>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="font-mono text-xs uppercase tracking-wider text-bone-300 block mb-2">Email address</label>
+                <label className="font-sans text-xs font-semibold uppercase tracking-wide block mb-1.5"
+                  style={{ color: 'hsl(var(--foreground-muted))' }}>Email address</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="22bcs*****@student.rru.ac.in"
-                  className="w-full bg-navy-950 border border-navy-700 focus:border-gold-500 px-4 py-3 font-mono text-sm text-bone-100 placeholder-bone-500 outline-none transition-colors"
-                  required />
+                  placeholder="you@student.rru.ac.in" className="input-base" required />
               </div>
               {status === 'error' && (
-                <div className="flex items-center gap-2 p-3 border border-red-500/40 bg-red-500/5">
-                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                  <p className="font-mono text-xs text-red-400">Network error. Please try again.</p>
+                <div className="flex items-start gap-2.5 p-3 rounded-lg text-sm"
+                  style={{ background: 'rgba(199,62,58,0.08)', border: '1px solid rgba(199,62,58,0.30)', color: '#ef4444' }}>
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> Network error. Please try again.
                 </div>
               )}
-              <button type="submit" disabled={status === 'loading'}
-                className="btn-primary w-full justify-center disabled:opacity-60">
-                {status === 'loading'
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</>
-                  : <><Mail className="w-4 h-4" /> Send reset link</>
-                }
+              <button type="submit" disabled={status === 'loading'} className="btn-primary w-full justify-center disabled:opacity-60">
+                {status === 'loading' ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : <><Mail className="w-4 h-4" /> Send reset link</>}
               </button>
-              <p className="font-mono text-xs text-bone-400 text-center">
-                <Link href="/dashboard/login" className="text-gold-500 hover:text-gold-400 transition-colors">
-                  Back to sign in
-                </Link>
-              </p>
             </form>
           )}
         </div>
