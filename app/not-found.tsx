@@ -1,29 +1,41 @@
-import Link from 'next/link';
-import { Home, ArrowLeft } from 'lucide-react';
+import Link from 'next/link'
+import { Home, BookOpen } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="container py-24 lg:py-32 text-center">
-      <div className="font-mono text-xs uppercase tracking-[0.3em] text-crimson-400 mb-4">
-        // 0x404
-      </div>
-      <h1 className="font-mono text-6xl lg:text-8xl font-bold text-bone-50 mb-6">
-        Sample not found.
-      </h1>
-      <p className="font-serif text-xl text-bone-200 max-w-xl mx-auto leading-relaxed mb-12">
-        The page you tried to analyse doesn't exist. Either the URL is wrong, or
-        the resource was unpublished.
-      </p>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link href="/" className="btn-primary">
-          <Home className="w-4 h-4" />
-          Back to home
-        </Link>
-        <Link href="/articles" className="btn-ghost">
-          <ArrowLeft className="w-4 h-4" />
-          Browse articles
-        </Link>
+    <div className="min-h-screen bg-[hsl(var(--background))] flex items-center justify-center px-4">
+      <div className="max-w-lg w-full text-center space-y-8">
+
+        <div className="space-y-4">
+          <p className="font-mono text-xs tracking-widest text-[hsl(var(--primary))] uppercase">
+            404
+          </p>
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-[hsl(var(--foreground))]">
+            Page not found.
+          </h1>
+          <p className="text-[hsl(var(--foreground-muted))] leading-relaxed">
+            The page you are looking for does not exist. The URL may be incorrect, or the content may have been unpublished.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Home className="w-4 h-4" />
+            Back to home
+          </Link>
+          <Link
+            href="/learn"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))] text-sm font-medium hover:border-[hsl(var(--primary)/0.4)] transition-colors"
+          >
+            <BookOpen className="w-4 h-4" />
+            Browse learning paths
+          </Link>
+        </div>
+
       </div>
     </div>
-  );
+  )
 }
