@@ -526,19 +526,21 @@ export default async function TopicPage({ params }: Props) {
 function Quadrant({
   id, number, title, subtitle, icon: Icon, children,
 }: {
-  id: string; number: string; title: string; subtitle: string; icon: any; children: React.ReactNode;
+  id: string; number: string; title: string; subtitle: string; icon: any; children: any;
 }) {
   return (
     <section id={id} className="mb-16 scroll-mt-32">
       <header className="mb-8 flex items-start gap-5 pb-5 border-b border-[hsl(var(--border))]">
-        <div className="shrink-0 w-14 h-14 border-2 border-[hsl(var(--primary))] flex items-center justify-center bg-[hsl(var(--surface))]">
-          <Icon className="w-6 h-6 text-[hsl(var(--primary))]" />
+        <div className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
+          style={{ background: Q_COLORS[parseInt(number, 10) - 1] || Q_COLORS[0] }}>
+          <Icon className="w-7 h-7 text-white" />
         </div>
         <div>
-          <div className="font-sans eyebrow">
+          <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: Q_COLORS[parseInt(number, 10) - 1] || Q_COLORS[0] }}>
             Quadrant {number}
           </div>
-          <h2 className="font-sans text-2xl lg:text-3xl text-[hsl(var(--foreground))] mt-1 leading-tight">
+          <h2 className="font-display text-2xl lg:text-3xl mt-1 leading-tight" style={{ color: "hsl(var(--foreground))" }}>
             {title}
           </h2>
           <p className="font-serif text-[hsl(var(--foreground-muted))] mt-1">{subtitle}</p>
