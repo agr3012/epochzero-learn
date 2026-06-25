@@ -116,11 +116,11 @@ export default async function TopicPage({ params }: Props) {
       .order('order_index', { ascending: true }),
   ]);
 
-  const videos    = (videosRes.data   ?? []).map((r: any) => r.videos).filter(Boolean);
-  const articles  = (articlesRes.data ?? []).map((r: any) => r.articles).filter(Boolean);
-  const resources = (resourcesRes.data ?? []).map((r: any) => r.resources).filter(Boolean);
-  const webLinks  = linksRes.data ?? [];
-  const tests     = (testsRes.data   ?? []).map((r: any) => r.tests).filter(Boolean);
+  const videos    = (videosRes.data   || []).map((r: any) => r.videos).filter(Boolean);
+  const articles  = (articlesRes.data || []).map((r: any) => r.articles).filter(Boolean);
+  const resources = (resourcesRes.data || []).map((r: any) => r.resources).filter(Boolean);
+  const webLinks  = linksRes.data || [];
+  const tests     = (testsRes.data   || []).map((r: any) => r.tests).filter(Boolean);
 
   // Split web links: our podcast vs third-party external
   const podcastLinks  = webLinks.filter((l: any) => l.source_type === 'podcast');
@@ -136,10 +136,10 @@ export default async function TopicPage({ params }: Props) {
     .eq('unit_id', unit.id)
     .eq('is_published', true)
     .order('topic_number', { ascending: true });
-  const idx = siblingTopics?.findIndex((t) => t.slug === topic.slug) ?? -1;
+  const idx = siblingTopics?.findIndex((t) => t.slug === topic.slug) || -1;
   const prev = idx > 0 ? siblingTopics![idx - 1] : null;
   const next =
-    idx >= 0 && idx < (siblingTopics?.length ?? 0) - 1 ? siblingTopics![idx + 1] : null;
+    idx >= 0 && idx < (siblingTopics?.length || 0) - 1 ? siblingTopics![idx + 1] : null;
 
   return (
     <div className="container py-12 lg:py-16">
@@ -150,7 +150,7 @@ export default async function TopicPage({ params }: Props) {
         </Link>
         <span>/</span>
         <Link href={`/learn/${course.slug}`} className="hover:text-[hsl(var(--primary))] transition-colors">
-          {course.short_title ?? course.title}
+          {course.short_title || course.title}
         </Link>
         <span>/</span>
         <Link
