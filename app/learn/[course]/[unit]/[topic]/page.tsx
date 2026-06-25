@@ -78,7 +78,7 @@ function resourceTypeLabel(type: string): string {
     'mcq-bank': 'MCQ Bank',
     'question-bank': 'Question Bank',
   }
-  return map[type] ?? type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  return map[type] ?? type.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
 /* ─── Page ──────────────────────────────────────────────── */
@@ -90,68 +90,78 @@ export default async function TopicPage({
 }) {
   const supabase = createClient()
 
-  // Fetch topic with objectives
-  const { data: topic } = await supabase
+  // ── Core: topic (no embedded joins — keeps query safe) ──
+  const { data: topic, error: topicError } = await supabase
     .from('topics')
-    .select(
-      'id, title, slug, description, estimated_minutes, topic_number, objectives:topic_objectives(id, text, sort_order)'
-    )
+    .select('id, title, slug, description, estimated_minutes, topic_number')
     .eq('slug', params.topic)
     .single()
 
-  if (!topic) return notFound()
+  if (topicError || !topic) return notFound()
 
-  // Fetch unit and course for breadcrumb
-  const { data: unit } = await supabase
+  // ── Core: unit ──────────────────────────────────────────
+  const { data: unit, error: unitError } = await supabase
     .from('units')
     .select('id, title, slug, unit_number')
     .eq('slug', params.unit)
     .single()
 
-  const { data: course } = await supabase
+  if (unitError || !unit) return notFound()
+
+  // ── Core: course ─────────────────────────────────────────
+  const { data: course, error: courseError } = await supabase
     .from('courses')
     .select('id, title, slug')
     .eq('slug', params.course)
     .single()
 
-  if (!unit || !course) return notFound()
+  if (courseError || !course) return notFound()
 
-  // Q1 — Videos
+  // ── Learning objectives (separate query — fails gracefully) ──
+  const { data: rawObjectives } = await supabase
+    .from('topic_objectives')
+    .select('id, text, sort_order')
+    .eq('topic_id', topic.id)
+    .order('sort_order')
+
+  const objectives: TopicObjective[] = (rawObjectives ?? []) as TopicObjective[]
+
+  // ── Q1: Videos ───────────────────────────────────────────
   const { data: rawVideos } = await supabase
     .from('topic_videos')
     .select('sort_order, videos(id, title, slug)')
     .eq('topic_id', topic.id)
     .order('sort_order')
 
-  // Q2 — Articles
+  // ── Q2: Articles ─────────────────────────────────────────
   const { data: rawArticles } = await supabase
     .from('topic_articles')
     .select('sort_order, articles(id, title, slug, excerpt, category, read_time)')
     .eq('topic_id', topic.id)
     .order('sort_order')
 
-  // Q3 — Resources
+  // ── Q3: Resources ─────────────────────────────────────────
   const { data: rawResources } = await supabase
     .from('topic_resources')
     .select('sort_order, resources(id, title, slug, resource_type, version)')
     .eq('topic_id', topic.id)
     .order('sort_order')
 
-  // Q3 — Podcasts
+  // ── Q3: Podcasts ──────────────────────────────────────────
   const { data: rawPodcasts } = await supabase
     .from('topic_podcasts')
     .select('sort_order, podcasts(id, title, slug, excerpt)')
     .eq('topic_id', topic.id)
     .order('sort_order')
 
-  // Q3 — External links (direct table, not junction)
+  // ── Q3: External links ────────────────────────────────────
   const { data: rawLinks } = await supabase
     .from('topic_external_links')
     .select('id, label, url, description, link_type')
     .eq('topic_id', topic.id)
     .order('sort_order')
 
-  // Q4 — Tests
+  // ── Q4: Tests ─────────────────────────────────────────────
   const { data: rawTests } = await supabase
     .from('topic_tests')
     .select(
@@ -160,7 +170,7 @@ export default async function TopicPage({
     .eq('topic_id', topic.id)
     .order('sort_order')
 
-  // Flatten junction table results
+  // ── Flatten junction results (graceful empty on failure) ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const videos: VideoItem[] = (rawVideos ?? []).flatMap((r: any) => (r.videos ? [r.videos] : []))
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -173,10 +183,6 @@ export default async function TopicPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tests: TestItem[] = (rawTests ?? []).flatMap((r: any) => (r.tests ? [r.tests] : []))
 
-  const objectives: TopicObjective[] = [...((topic.objectives as TopicObjective[]) ?? [])].sort(
-    (a, b) => a.sort_order - b.sort_order
-  )
-
   const q3Total = resources.length + podcasts.length + links.length
 
   return (
@@ -184,7 +190,10 @@ export default async function TopicPage({
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-16">
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center flex-wrap gap-1.5 text-sm text-[hsl(var(--foreground-muted))]">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center flex-wrap gap-1.5 text-sm text-[hsl(var(--foreground-muted))]"
+        >
           <Link href="/learn" className="hover:text-[hsl(var(--foreground))] transition-colors">
             Learn
           </Link>
@@ -238,8 +247,11 @@ export default async function TopicPage({
               By the end of this topic, you will
             </p>
             <ul className="space-y-2">
-              {objectives.map(obj => (
-                <li key={obj.id} className="flex items-start gap-2.5 text-sm text-[hsl(var(--foreground-muted))]">
+              {objectives.map((obj) => (
+                <li
+                  key={obj.id}
+                  className="flex items-start gap-2.5 text-sm text-[hsl(var(--foreground-muted))]"
+                >
                   <span className="text-[hsl(var(--primary))] shrink-0 mt-0.5">-</span>
                   <span>{obj.text}</span>
                 </li>
@@ -250,30 +262,20 @@ export default async function TopicPage({
 
         {/* Quadrant tab navigation */}
         <nav aria-label="Quadrant navigation" className="flex flex-wrap gap-2">
-          <a
-            href="#q1"
-            className="px-4 py-2 text-xs font-mono tracking-wide border border-[hsl(var(--border))] rounded-lg text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--primary)/0.5)] hover:text-[hsl(var(--foreground))] transition-all"
-          >
-            Q1 - E-TUTORIAL ({videos.length})
-          </a>
-          <a
-            href="#q2"
-            className="px-4 py-2 text-xs font-mono tracking-wide border border-[hsl(var(--border))] rounded-lg text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--primary)/0.5)] hover:text-[hsl(var(--foreground))] transition-all"
-          >
-            Q2 - E-CONTENT ({articles.length})
-          </a>
-          <a
-            href="#q3"
-            className="px-4 py-2 text-xs font-mono tracking-wide border border-[hsl(var(--border))] rounded-lg text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--primary)/0.5)] hover:text-[hsl(var(--foreground))] transition-all"
-          >
-            Q3 - WEB RESOURCES ({q3Total})
-          </a>
-          <a
-            href="#q4"
-            className="px-4 py-2 text-xs font-mono tracking-wide border border-[hsl(var(--border))] rounded-lg text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--primary)/0.5)] hover:text-[hsl(var(--foreground))] transition-all"
-          >
-            Q4 - SELF-ASSESSMENT ({tests.length})
-          </a>
+          {[
+            { href: '#q1', label: `Q1 - E-TUTORIAL (${videos.length})` },
+            { href: '#q2', label: `Q2 - E-CONTENT (${articles.length})` },
+            { href: '#q3', label: `Q3 - WEB RESOURCES (${q3Total})` },
+            { href: '#q4', label: `Q4 - SELF-ASSESSMENT (${tests.length})` },
+          ].map((tab) => (
+            <a
+              key={tab.href}
+              href={tab.href}
+              className="px-4 py-2 text-xs font-mono tracking-wide border border-[hsl(var(--border))] rounded-lg text-[hsl(var(--foreground-muted))] hover:border-[hsl(var(--primary)/0.5)] hover:text-[hsl(var(--foreground))] transition-all"
+            >
+              {tab.label}
+            </a>
+          ))}
         </nav>
 
         {/* ─── Q1: e-Tutorial ─────────────────────────────── */}
@@ -297,7 +299,7 @@ export default async function TopicPage({
 
           {videos.length > 0 ? (
             <div className="space-y-3">
-              {videos.map(v => (
+              {videos.map((v) => (
                 <Link
                   key={v.id}
                   href={`/videos/${v.slug}`}
@@ -340,7 +342,7 @@ export default async function TopicPage({
 
           {articles.length > 0 ? (
             <div className="space-y-3">
-              {articles.map(a => (
+              {articles.map((a) => (
                 <Link
                   key={a.id}
                   href={`/articles/${a.slug}`}
@@ -376,7 +378,7 @@ export default async function TopicPage({
           )}
         </section>
 
-        {/* ─── Q3: Web Resources — NEW 2x2 CARD LAYOUT ───── */}
+        {/* ─── Q3: Web Resources — 2x2 card grid ─────────── */}
         <section id="q3" className="scroll-mt-20 space-y-8">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.08)] shrink-0">
@@ -395,14 +397,14 @@ export default async function TopicPage({
             </div>
           </div>
 
-          {/* Downloadable reference material — 2 column grid */}
+          {/* Downloadable resources — 2-column grid */}
           {resources.length > 0 && (
             <div className="space-y-4">
               <p className="font-mono text-xs tracking-widest text-[hsl(var(--foreground-muted))] uppercase">
                 Downloadable reference material
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {resources.map(r => (
+                {resources.map((r) => (
                   <Link
                     key={r.id}
                     href={`/resources/${r.slug}`}
@@ -438,7 +440,7 @@ export default async function TopicPage({
                 Podcast episodes
               </p>
               <div className="space-y-3">
-                {podcasts.map(ep => (
+                {podcasts.map((ep) => (
                   <Link
                     key={ep.id}
                     href={`/podcast/${ep.slug}`}
@@ -471,7 +473,7 @@ export default async function TopicPage({
                 External links
               </p>
               <div className="space-y-3">
-                {links.map(link => (
+                {links.map((link) => (
                   <a
                     key={link.id}
                     href={link.url}
@@ -526,7 +528,7 @@ export default async function TopicPage({
 
           {tests.length > 0 ? (
             <div className="space-y-3">
-              {tests.map(t => (
+              {tests.map((t) => (
                 <Link
                   key={t.id}
                   href={`/tests/${t.slug}`}
