@@ -33,7 +33,10 @@ export default async function LearnIndexPage({ searchParams }: Props) {
 
   const domain  = searchParams.domain ?? null;
   const courses = domain
-    ? (allCourses ?? []).filter((c: any) => c.domain === domain)
+    ? (allCourses ?? []).filter((c: any) =>
+        // Match by domain field OR by course slug starting with domain key
+        c.domain === domain || c.slug?.startsWith(domain) || c.slug === domain
+      )
     : (allCourses ?? []);
 
   return (
