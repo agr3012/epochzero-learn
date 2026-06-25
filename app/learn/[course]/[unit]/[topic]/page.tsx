@@ -144,45 +144,45 @@ export default async function TopicPage({ params }: Props) {
   return (
     <div className="container py-12 lg:py-16">
       {/* Breadcrumb */}
-      <nav className="mb-8 font-sans text-xs uppercase tracking-wider text-[hsl(var(--foreground-muted))] flex items-center gap-2 flex-wrap">
-        <Link href="/learn" className="hover:text-[hsl(var(--primary))] transition-colors">
+      <nav className="mb-8 font-mono text-xs uppercase tracking-wider text-bone-300 flex items-center gap-2 flex-wrap">
+        <Link href="/learn" className="hover:text-gold-500 transition-colors">
           Learn
         </Link>
         <span>/</span>
-        <Link href={`/learn/${course.slug}`} className="hover:text-[hsl(var(--primary))] transition-colors">
+        <Link href={`/learn/${course.slug}`} className="hover:text-gold-500 transition-colors">
           {course.short_title || course.title}
         </Link>
         <span>/</span>
         <Link
           href={`/learn/${course.slug}/${unit.slug}`}
-          className="hover:text-[hsl(var(--primary))] transition-colors"
+          className="hover:text-gold-500 transition-colors"
         >
           Unit {unit.unit_number}
         </Link>
         <span>/</span>
-        <span className="text-[hsl(var(--primary))]">
+        <span className="text-gold-500">
           {unit.unit_number}.{topic.topic_number}
         </span>
       </nav>
 
       {/* Header */}
       <header className="mb-12 max-w-4xl">
-        <div className="font-sans eyebrow mb-4">
+        <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500 mb-4">
           // Topic {unit.unit_number}.{topic.topic_number}
         </div>
-        <h1 className="font-sans text-3xl lg:text-5xl font-bold text-[hsl(var(--foreground))] mb-4 leading-tight">
+        <h1 className="font-mono text-3xl lg:text-5xl font-bold text-bone-50 mb-4 leading-tight">
           {topic.title}
         </h1>
         {topic.description && (
-          <p className="font-serif text-lg lg:text-xl text-[hsl(var(--foreground-muted))] leading-relaxed mb-6">
+          <p className="font-serif text-lg lg:text-xl text-bone-200 leading-relaxed mb-6">
             {topic.description}
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-4 font-sans text-xs text-[hsl(var(--foreground-muted))] mb-6">
+        <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-bone-300 mb-6">
           {topic.estimated_minutes && (
             <span className="inline-flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-[hsl(var(--primary))]" />
+              <Clock className="w-3 h-3 text-gold-500" />
               ~{topic.estimated_minutes} min total
             </span>
           )}
@@ -191,15 +191,15 @@ export default async function TopicPage({ params }: Props) {
         </div>
 
         {Array.isArray(topic.learning_objectives) && topic.learning_objectives.length > 0 && (
-          <div className="border-l-2 border-[hsl(var(--primary))] pl-6 py-2 bg-[hsl(var(--muted))]/50 mt-6">
-            <div className="font-sans text-xs uppercase tracking-[0.2em] text-[hsl(var(--primary))] mb-3 inline-flex items-center gap-2">
+          <div className="border-l-2 border-gold-500 pl-6 py-2 bg-navy-800/50 mt-6">
+            <div className="font-mono text-xs uppercase tracking-[0.2em] text-gold-500 mb-3 inline-flex items-center gap-2">
               <Target className="w-3 h-3" />
               By the end of this topic, you will
             </div>
-            <ul className="font-serif text-[hsl(var(--foreground))] space-y-2">
+            <ul className="font-serif text-bone-100 space-y-2">
               {topic.learning_objectives.map((o: string, i: number) => (
                 <li key={i} className="flex gap-2">
-                  <span className="text-[hsl(var(--primary))]">-</span>
+                  <span className="text-gold-500">-</span>
                   <span>{o}</span>
                 </li>
               ))}
@@ -209,14 +209,14 @@ export default async function TopicPage({ params }: Props) {
       </header>
 
       {/* Quadrant nav */}
-      <nav className="sticky top-16 z-30 -mx-6 px-6 py-3 mb-12 bg-[hsl(var(--surface))]/90 backdrop-blur-md border-y border-[hsl(var(--border))]">
-        <div className="flex flex-wrap gap-2 font-sans text-xs uppercase tracking-wider">
+      <nav className="sticky top-16 z-30 -mx-6 px-6 py-3 mb-12 bg-navy-900/90 backdrop-blur-md border-y border-navy-700">
+        <div className="flex flex-wrap gap-2 font-mono text-xs uppercase tracking-wider">
           <a
             href="#q1"
             className={`px-3 py-1.5 border transition-colors ${
               videos.length > 0
-                ? 'border-[hsl(var(--primary))]/40 text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]'
-                : 'border-[hsl(var(--border))] text-[hsl(var(--foreground-muted))] opacity-50'
+                ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
+                : 'border-navy-700 text-bone-300 opacity-50'
             }`}
           >
             Q1 - e-Tutorial ({videos.length})
@@ -225,8 +225,8 @@ export default async function TopicPage({ params }: Props) {
             href="#q2"
             className={`px-3 py-1.5 border transition-colors ${
               articles.length > 0
-                ? 'border-[hsl(var(--primary))]/40 text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]'
-                : 'border-[hsl(var(--border))] text-[hsl(var(--foreground-muted))] opacity-50'
+                ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
+                : 'border-navy-700 text-bone-300 opacity-50'
             }`}
           >
             Q2 - e-Content ({articles.length})
@@ -235,8 +235,8 @@ export default async function TopicPage({ params }: Props) {
             href="#q3"
             className={`px-3 py-1.5 border transition-colors ${
               q3Count > 0
-                ? 'border-[hsl(var(--primary))]/40 text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]'
-                : 'border-[hsl(var(--border))] text-[hsl(var(--foreground-muted))] opacity-50'
+                ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
+                : 'border-navy-700 text-bone-300 opacity-50'
             }`}
           >
             Q3 - Web Resources ({q3Count})
@@ -245,8 +245,8 @@ export default async function TopicPage({ params }: Props) {
             href="#q4"
             className={`px-3 py-1.5 border transition-colors ${
               tests.length > 0
-                ? 'border-[hsl(var(--primary))]/40 text-[hsl(var(--foreground))] hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]'
-                : 'border-[hsl(var(--border))] text-[hsl(var(--foreground-muted))] opacity-50'
+                ? 'border-gold-500/40 text-bone-100 hover:border-gold-500 hover:text-gold-500'
+                : 'border-navy-700 text-bone-300 opacity-50'
             }`}
           >
             Q4 - Self-Assessment ({tests.length})
@@ -262,7 +262,7 @@ export default async function TopicPage({ params }: Props) {
           <div className="grid md:grid-cols-2 gap-6">
             {videos.map((v: any) => (
               <Link key={v.id} href={`/videos/${v.slug}`} className="group">
-                <div className="relative aspect-video overflow-hidden border border-[hsl(var(--border))] group-hover:border-[hsl(var(--primary))] transition-colors">
+                <div className="relative aspect-video overflow-hidden border border-navy-700 group-hover:border-gold-500 transition-colors">
                   <Image
                     src={getYouTubeThumbnail(v.youtube_id, 'maxres')}
                     alt={v.title}
@@ -282,12 +282,12 @@ export default async function TopicPage({ params }: Props) {
                     </span>
                   )}
                   {v.duration_seconds && (
-                    <span className="absolute bottom-3 right-3 px-2 py-1 bg-[hsl(var(--surface))]/90 border border-[hsl(var(--border))] font-sans text-xs text-[hsl(var(--foreground))]">
+                    <span className="absolute bottom-3 right-3 px-2 py-1 bg-navy-950/90 border border-navy-700 font-mono text-xs text-bone-100">
                       {formatDuration(v.duration_seconds)}
                     </span>
                   )}
                 </div>
-                <h3 className="font-sans text-base text-[hsl(var(--foreground))] mt-3 group-hover:text-[hsl(var(--primary))] transition-colors">
+                <h3 className="font-mono text-base text-bone-50 mt-3 group-hover:text-gold-500 transition-colors">
                   {v.title}
                 </h3>
               </Link>
@@ -304,18 +304,18 @@ export default async function TopicPage({ params }: Props) {
           <div>
             <div className="grid md:grid-cols-2 gap-4">
               {articles.map((a: any) => (
-                <Link key={a.id} href={`/articles/${a.slug}`} className="card p-5 group">
+                <Link key={a.id} href={`/articles/${a.slug}`} className="card-forensic p-5 group">
                   {a.category && <span className="badge-tag mb-3 inline-block">{a.category}</span>}
-                  <h5 className="font-sans text-base text-[hsl(var(--foreground))] mb-2 group-hover:text-[hsl(var(--primary))] transition-colors leading-tight">
+                  <h5 className="font-mono text-base text-bone-50 mb-2 group-hover:text-gold-500 transition-colors leading-tight">
                     {a.title}
                   </h5>
                   {a.excerpt && (
-                    <p className="font-serif text-sm text-[hsl(var(--foreground-muted))] leading-relaxed line-clamp-2 mb-3">
+                    <p className="font-serif text-sm text-bone-200 leading-relaxed line-clamp-2 mb-3">
                       {a.excerpt}
                     </p>
                   )}
                   {a.reading_time && (
-                    <span className="font-sans text-xs text-[hsl(var(--foreground-muted))] inline-flex items-center gap-1">
+                    <span className="font-mono text-xs text-bone-300 inline-flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {a.reading_time} min read
                     </span>
@@ -337,7 +337,7 @@ export default async function TopicPage({ params }: Props) {
             {/* Downloadable reference material */}
             {resources.length > 0 && (
               <div>
-                <h4 className="font-sans text-sm uppercase tracking-wider text-[hsl(var(--primary))] mb-4">
+                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
                   Downloadable reference material
                 </h4>
                 <div className="space-y-3">
@@ -347,18 +347,18 @@ export default async function TopicPage({ params }: Props) {
                       href={r.slug ? `/resources/${r.slug}` : `/api/pdf/${r.file_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-4 p-4 border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))] transition-colors group"
+                      className="flex items-center gap-4 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
                     >
-                      <div className="w-10 h-10 border border-[hsl(var(--primary))]/40 flex items-center justify-center shrink-0">
-                        <Download className="w-4 h-4 text-[hsl(var(--primary))]" />
+                      <div className="w-10 h-10 border border-gold-500/40 flex items-center justify-center shrink-0">
+                        <Download className="w-4 h-4 text-gold-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-sans text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors">
+                        <div className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors">
                           {r.title}
                         </div>
-                        <div className="font-sans text-xs text-[hsl(var(--foreground-muted))] mt-0.5">
-                          {r.type}{r.page_count ? ` - ${r.page_count} ? `${r.page_count} pages` : ''}{' '}
-                          {r.version ? ` - v${r.version}` : ''}
+                        <div className="font-mono text-xs text-bone-300 mt-0.5">
+                          {r.type} - {r.page_count ? `${r.page_count} pages` : ''}{' '}
+                          {r.version ? `- v${r.version}` : ''}
                         </div>
                       </div>
                     </a>
@@ -370,7 +370,7 @@ export default async function TopicPage({ params }: Props) {
             {/* Podcast episodes  -  internal EpochZero content, uses Link not <a> */}
             {podcastLinks.length > 0 && (
               <div>
-                <h4 className="font-sans text-sm uppercase tracking-wider text-[hsl(var(--primary))] mb-4 inline-flex items-center gap-2">
+                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4 inline-flex items-center gap-2">
                   <Headphones className="w-3.5 h-3.5" />
                   Podcast episodes
                 </h4>
@@ -379,17 +379,17 @@ export default async function TopicPage({ params }: Props) {
                     <Link
                       key={link.id}
                       href={link.url}
-                      className="flex items-start gap-4 p-4 border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))] transition-colors group"
+                      className="flex items-start gap-4 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
                     >
-                      <div className="w-10 h-10 border border-[hsl(var(--primary))]/40 bg-[hsl(var(--muted))] flex items-center justify-center shrink-0">
-                        <Headphones className="w-4 h-4 text-[hsl(var(--primary))]" />
+                      <div className="w-10 h-10 border border-gold-500/40 bg-navy-800 flex items-center justify-center shrink-0">
+                        <Headphones className="w-4 h-4 text-gold-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-sans text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors mb-1">
+                        <div className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors mb-1">
                           {link.title}
                         </div>
                         {link.description && (
-                          <p className="font-serif text-sm text-[hsl(var(--foreground-muted))] leading-relaxed">
+                          <p className="font-serif text-sm text-bone-200 leading-relaxed">
                             {link.description}
                           </p>
                         )}
@@ -403,7 +403,7 @@ export default async function TopicPage({ params }: Props) {
             {/* External links  -  third-party references and tools */}
             {externalLinks.length > 0 && (
               <div>
-                <h4 className="font-sans text-sm uppercase tracking-wider text-[hsl(var(--primary))] mb-4">
+                <h4 className="font-mono text-sm uppercase tracking-wider text-gold-500 mb-4">
                   External links
                 </h4>
                 <div className="grid md:grid-cols-2 gap-3">
@@ -413,18 +413,18 @@ export default async function TopicPage({ params }: Props) {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-start gap-3 p-4 border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))] transition-colors group"
+                      className="flex items-start gap-3 p-4 border border-navy-700 hover:border-gold-500 transition-colors group"
                     >
-                      <Globe className="w-4 h-4 text-[hsl(var(--primary))] mt-1 shrink-0" />
+                      <Globe className="w-4 h-4 text-gold-500 mt-1 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <span className="font-sans text-sm text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors leading-tight">
+                          <span className="font-mono text-sm text-bone-50 group-hover:text-gold-500 transition-colors leading-tight">
                             {link.title}
                           </span>
-                          <ExternalLink className="w-3 h-3 text-[hsl(var(--foreground-muted))] shrink-0 mt-0.5" />
+                          <ExternalLink className="w-3 h-3 text-bone-300 shrink-0 mt-0.5" />
                         </div>
                         {link.description && (
-                          <p className="font-serif text-sm text-[hsl(var(--foreground-muted))] leading-relaxed mb-2">
+                          <p className="font-serif text-sm text-bone-200 leading-relaxed mb-2">
                             {link.description}
                           </p>
                         )}
@@ -452,7 +452,7 @@ export default async function TopicPage({ params }: Props) {
               <Link
                 key={t.id}
                 href={`/tests/${t.slug}`}
-                className="card p-6 lg:p-8 group flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+                className="card-forensic p-6 lg:p-8 group flex flex-col md:flex-row md:items-center md:justify-between gap-6"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -463,16 +463,16 @@ export default async function TopicPage({ params }: Props) {
                       </span>
                     )}
                   </div>
-                  <h3 className="font-sans text-xl text-[hsl(var(--foreground))] mb-2 group-hover:text-[hsl(var(--primary))] transition-colors">
+                  <h3 className="font-mono text-xl text-bone-50 mb-2 group-hover:text-gold-500 transition-colors">
                     {t.title}
                   </h3>
                   {t.description && (
-                    <p className="font-serif text-[hsl(var(--foreground-muted))] leading-relaxed line-clamp-2">
+                    <p className="font-serif text-bone-200 leading-relaxed line-clamp-2">
                       {t.description}
                     </p>
                   )}
                 </div>
-                <div className="flex md:flex-col gap-4 md:items-end font-sans text-xs text-[hsl(var(--foreground-muted))] shrink-0">
+                <div className="flex md:flex-col gap-4 md:items-end font-mono text-xs text-bone-300 shrink-0">
                   <span>{t.total_questions} questions</span>
                   <span>{t.duration_minutes} min</span>
                   <span>Pass: {t.passing_score}%</span>
@@ -484,17 +484,17 @@ export default async function TopicPage({ params }: Props) {
       </Quadrant>
 
       {/* Topic navigation */}
-      <div className="mt-16 pt-8 border-t border-[hsl(var(--border))] grid md:grid-cols-2 gap-4">
+      <div className="mt-16 pt-8 border-t border-navy-700 grid md:grid-cols-2 gap-4">
         {prev ? (
           <Link
             href={`/learn/${course.slug}/${unit.slug}/${prev.slug}`}
-            className="card p-5 group"
+            className="card-forensic p-5 group"
           >
-            <div className="font-sans text-xs uppercase tracking-wider text-[hsl(var(--foreground-muted))] mb-1 inline-flex items-center gap-1">
+            <div className="font-mono text-xs uppercase tracking-wider text-bone-300 mb-1 inline-flex items-center gap-1">
               <ChevronLeft className="w-3 h-3" /> Previous topic
             </div>
-            <div className="font-sans text-base text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors">
-              {unit.unit_number}.{prev.topic_number} {prev.title}
+            <div className="font-mono text-base text-bone-50 group-hover:text-gold-500 transition-colors">
+              {unit.unit_number}.{prev.topic_number} - {prev.title}
             </div>
           </Link>
         ) : (
@@ -503,13 +503,13 @@ export default async function TopicPage({ params }: Props) {
         {next ? (
           <Link
             href={`/learn/${course.slug}/${unit.slug}/${next.slug}`}
-            className="card p-5 group md:text-right"
+            className="card-forensic p-5 group md:text-right"
           >
-            <div className="font-sans text-xs uppercase tracking-wider text-[hsl(var(--foreground-muted))] mb-1 inline-flex items-center gap-1 md:justify-end md:w-full">
+            <div className="font-mono text-xs uppercase tracking-wider text-bone-300 mb-1 inline-flex items-center gap-1 md:justify-end md:w-full">
               Next topic <ArrowRight className="w-3 h-3" />
             </div>
-            <div className="font-sans text-base text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))] transition-colors">
-              {unit.unit_number}.{next.topic_number} {next.title}
+            <div className="font-mono text-base text-bone-50 group-hover:text-gold-500 transition-colors">
+              {unit.unit_number}.{next.topic_number} - {next.title}
             </div>
           </Link>
         ) : (
@@ -530,20 +530,18 @@ function Quadrant({
 }) {
   return (
     <section id={id} className="mb-16 scroll-mt-32">
-      <header className="mb-8 flex items-start gap-5 pb-5 border-b border-[hsl(var(--border))]">
-        <div className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
-          style={{ background: Q_COLORS[parseInt(number, 10) - 1] || Q_COLORS[0] }}>
-          <Icon className="w-7 h-7 text-white" />
+      <header className="mb-8 flex items-start gap-5 pb-5 border-b border-navy-700">
+        <div className="shrink-0 w-14 h-14 border-2 border-gold-500 flex items-center justify-center bg-navy-950">
+          <Icon className="w-6 h-6 text-gold-500" />
         </div>
         <div>
-          <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{ color: Q_COLORS[parseInt(number, 10) - 1] || Q_COLORS[0] }}>
+          <div className="font-mono text-xs uppercase tracking-[0.3em] text-gold-500">
             Quadrant {number}
           </div>
-          <h2 className="font-display text-2xl lg:text-3xl mt-1 leading-tight" style={{ color: "hsl(var(--foreground))" }}>
+          <h2 className="font-mono text-2xl lg:text-3xl text-bone-50 mt-1 leading-tight">
             {title}
           </h2>
-          <p className="font-serif text-[hsl(var(--foreground-muted))] mt-1">{subtitle}</p>
+          <p className="font-serif text-bone-200 mt-1">{subtitle}</p>
         </div>
       </header>
       {children}
@@ -553,8 +551,8 @@ function Quadrant({
 
 function EmptyQuadrant({ text }: { text: string }) {
   return (
-    <div className="border border-dashed border-[hsl(var(--border))] p-8 text-center">
-      <p className="font-sans text-sm text-[hsl(var(--foreground-muted))]">{text}</p>
+    <div className="border border-dashed border-navy-700 p-8 text-center">
+      <p className="font-mono text-sm text-bone-300">{text}</p>
     </div>
   );
 }
