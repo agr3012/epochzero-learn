@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, ArrowRight, BookOpen, GraduationCap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { DOMAIN_COLOR } from '@/lib/colors';
 
 export const revalidate = 60;
 
@@ -15,11 +16,6 @@ export async function generateMetadata({ params }: Props) {
   if (!data) return { title: 'Course not found' };
   return { title: data.title, description: data.description };
 }
-
-const DOMAIN_COLOR: Record<string, string> = {
-  'rema': '#8B5E1A', 'cloud-security': '#1B5FA8', 'cloud': '#1B5FA8',
-  'crypto': '#6B3AD4', 'webdev': '#1B7C3E',
-};
 
 export default async function CoursePage({ params }: Props) {
   const supabase = createClient();
