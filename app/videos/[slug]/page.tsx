@@ -13,6 +13,7 @@ import rehypeSlug from 'rehype-slug';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { formatDate, formatDuration, getYouTubeThumbnail } from '@/lib/utils';
+import { DOMAIN_COLOR, SECTION_COLORS } from '@/lib/colors';
 import { VideoPlayer } from '@/components/video-player';
 import { VideoLessonTabs } from '@/components/video-lesson-tabs';
 
@@ -22,22 +23,6 @@ interface Props {
   params: { slug: string };
   searchParams: { tab?: string };
 }
-
-// Domain → color for episode label pill
-const DOMAIN_COLOR: Record<string, string> = {
-  rema:   '#8B5E1A',
-  cloud:  '#1B5FA8',
-  crypto: '#6B3AD4',
-  webdev: '#1B7C3E',
-};
-
-// Section icon tile colors — one per content type
-const SECTION_COLORS = {
-  lab:       '#8B5E1A',   // amber  — lab notes
-  refs:      '#1B5FA8',   // blue   — references
-  exercises: '#1B7C3E',   // green  — exercises
-  test:      '#6B3AD4',   // purple — self-assessment
-};
 
 export async function generateMetadata({ params }: Props) {
   const supabase = createClient();
