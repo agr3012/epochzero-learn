@@ -1,8 +1,9 @@
 // app/tests/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Clock, ListChecks, ShieldAlert, Award, ChevronLeft, RotateCcw, BadgeCheck } from 'lucide-react';
+import { Clock, ListChecks, ShieldAlert, Award, ChevronLeft, RotateCcw, BadgeCheck, LogIn } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { getCurrentAccount } from '@/lib/auth';
 import { TestPageClient } from '@/components/exam/TestPageClient';
 
 export const revalidate = 60;
@@ -27,6 +28,7 @@ export default async function TestDetailPage({ params }: Props) {
     .eq('slug', params.slug).eq('is_published', true).single();
   if (!test) notFound();
 
+  const account = await getCurrentAccount();
   const accentColor = DOMAIN_COLOR[test.category ?? ''] || '#8B5E1A';
 
   return (
@@ -111,7 +113,27 @@ export default async function TestDetailPage({ params }: Props) {
       </div>
 
       {/* Proctored exam flow -- full width */}
-      <TestPageClient testId={test.id} testTitle={test.title} />
+      {account ? (
+        <TestPageClient testId={test.id} testTitle={test.title} studentEmail={account.email} />
+      ) : (
+        <div className="card-forensic p-8 lg:p-10 max-w-2xl">
+          <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
+            Sign in to begin
+          </h2>
+          <p className="font-serif text-bone-200 mb-8">
+            An account is required to attempt this test — your certificate and attempt
+            history are tied to it.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href={`/dashboard/login?next=${encodeURIComponent(`/tests/${params.slug}`)}`} className="btn-primary">
+              <LogIn className="w-4 h-4" /> Sign in
+            </Link>
+            <Link href={`/dashboard/register?next=${encodeURIComponent(`/tests/${params.slug}`)}`} className="btn-ghost">
+              Create an account
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
