@@ -9,15 +9,13 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
+import { DOMAIN_COLOR } from '@/lib/colors';
 import { StatCounter } from '@/components/StatCounter';
 import { FadeIn } from '@/components/FadeIn';
 
 export const revalidate = 3600;
 
 const COMING_SOON = ['Crypto', 'Web Dev'];
-const DOMAIN_COLOR: Record<string, string> = {
-  rema: '#8B5E1A', cloud: '#1B5FA8', crypto: '#6B3AD4', webdev: '#1B7C3E',
-};
 const CLUB_COLOR: Record<string, string> = {
   rema: '#8B5E1A', fullstack: '#1B5FA8', extension: '#1B7C3E',
 };
