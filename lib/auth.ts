@@ -94,15 +94,6 @@ export function resetTokenExpiresAt(): Date {
   return new Date(Date.now() + RESET_TOKEN_EXPIRY_HOURS * 3600 * 1000);
 }
 
-// ── RRU email validation ──────────────────────────────────────────────────
-const VALID_DOMAINS = ['student.rru.ac.in', 'rru.ac.in'];
-
-export function isValidRRUEmail(email: string): boolean {
-  const t = email.trim().toLowerCase();
-  if (!t.includes('@')) return false;
-  return VALID_DOMAINS.includes(t.split('@')[1]);
-}
-
 // ── Get current account from DB via session ───────────────────────────────
 // Returns the full account row including role.
 // Returns null if no valid session or account is inactive.
@@ -111,17 +102,18 @@ export async function getCurrentAccount(): Promise<{
   email: string;
   role: UserRole;
   is_active: boolean;
+  display_name: string | null;
 } | null> {
   const session = getSessionFromCookie();
   if (!session) return null;
   const admin = createAdminClient();
   const { data } = await admin
     .from('student_accounts')
-    .select('id, email, role, is_active')
+    .select('id, email, role, is_active, display_name')
     .eq('id', session.sub)
     .single();
   if (!data || !data.is_active) return null;
-  return data as { id: string; email: string; role: UserRole; is_active: boolean };
+  return data as { id: string; email: string; role: UserRole; is_active: boolean; display_name: string | null };
 }
 
 // ── Role helpers ──────────────────────────────────────────────────────────
