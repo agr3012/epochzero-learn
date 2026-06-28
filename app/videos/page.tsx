@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Play, ShieldAlert, Video } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils';
+import { DOMAIN_COLOR } from '@/lib/colors';
 
 export const revalidate = 60;
 export const metadata = { title: 'Video Lessons' };
@@ -13,13 +14,6 @@ const DOMAIN_LABELS: Record<string, string> = {
   cloud:  'Cloud',
   crypto: 'Cryptography',
   webdev: 'Web Dev',
-};
-
-const DOMAIN_COLOR: Record<string, string> = {
-  rema:   '#8B5E1A',
-  cloud:  '#1B5FA8',
-  crypto: '#6B3AD4',
-  webdev: '#1B7C3E',
 };
 
 interface Props { searchParams: { domain?: string } }
