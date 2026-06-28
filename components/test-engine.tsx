@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
-  Mail,
-  KeyRound,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
@@ -18,7 +16,7 @@ import {
 } from 'lucide-react';
 import { cn, formatDuration } from '@/lib/utils';
 
-type Step = 'enroll' | 'otp' | 'taking' | 'submitting' | 'result';
+type Step = 'starting' | 'taking' | 'submitting' | 'result' | 'error';
 
 interface Question {
   id: string;
@@ -39,15 +37,13 @@ interface ReviewItem {
 interface Props {
   testId:             string;
   testTitle:          string;
+  studentEmail:       string;
   onAttemptCreated?:  (attemptId: string) => void; // proctor hook
 }
 
-export function TestEngine({ testId, testTitle, onAttemptCreated }: Props) {
-  const [step, setStep] = useState<Step>('enroll');
-  const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [otp, setOtp] = useState('');
-  const [busy, setBusy] = useState(false);
+export function TestEngine({ testId, testTitle, studentEmail, onAttemptCreated }: Props) {
+  const [step, setStep] = useState<Step>('starting');
+  const [startError, setStartError] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
@@ -66,70 +62,45 @@ export function TestEngine({ testId, testTitle, onAttemptCreated }: Props) {
   } | null>(null);
 
   const submittedRef = useRef(false);
+  const startedRef = useRef(false);
 
-  // ---- ENROLL STEP ----
-  const sendOtp = async () => {
-    if (!email || !fullName) {
-      toast.error('Enter your name and email');
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, test_id: testId, full_name: fullName }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? 'Failed to send code');
-        return;
-      }
-      toast.success('Verification code sent. Check your inbox.');
-      setStep('otp');
-    } catch {
-      toast.error('Network error');
-    } finally {
-      setBusy(false);
-    }
-  };
+  // ---- START ATTEMPT (account is already verified by the page) ----
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
 
-  // ---- OTP STEP ----
-  const verifyOtp = async () => {
-    if (otp.length !== 6) {
-      toast.error('Enter the 6-digit code');
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, test_id: testId, full_name: fullName, otp }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? 'Verification failed');
-        return;
+    (async () => {
+      try {
+        const res = await fetch('/api/tests/start', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ test_id: testId }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setStartError(data.error ?? 'Could not start the test');
+          setStep('error');
+          return;
+        }
+        setQuestions(data.questions);
+        setAttemptId(data.attempt_id);
+        onAttemptCreated?.(data.attempt_id); // notify ProctorShell
+        setDurationMin(data.test.duration_minutes);
+        setPassingScore(data.test.passing_score);
+        setSecondsLeft(data.test.duration_minutes * 60);
+        setAnswers(
+          Object.fromEntries(
+            (data.questions as Question[]).map((q) => [q.id, null])
+          )
+        );
+        setStep('taking');
+      } catch {
+        setStartError('Network error');
+        setStep('error');
       }
-      setQuestions(data.questions);
-      setAttemptId(data.attempt_id);
-      onAttemptCreated?.(data.attempt_id); // notify ProctorShell
-      setDurationMin(data.test.duration_minutes);
-      setPassingScore(data.test.passing_score);
-      setSecondsLeft(data.test.duration_minutes * 60);
-      setAnswers(
-        Object.fromEntries(
-          (data.questions as Question[]).map((q) => [q.id, null])
-        )
-      );
-      setStep('taking');
-    } catch {
-      toast.error('Network error');
-    } finally {
-      setBusy(false);
-    }
-  };
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testId]);
 
   // ---- TIMER ----
   useEffect(() => {
@@ -193,115 +164,31 @@ export function TestEngine({ testId, testTitle, onAttemptCreated }: Props) {
   //  RENDER
   // ===================================================================
 
-  if (step === 'enroll') {
+  if (step === 'starting') {
     return (
-      <div className="card-forensic p-8 lg:p-10 max-w-2xl">
-        <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-          Begin Test
+      <div className="card-forensic p-12 max-w-2xl text-center">
+        <Loader2 className="w-12 h-12 text-gold-500 animate-spin mx-auto mb-6" />
+        <h2 className="font-mono text-xl uppercase tracking-wider text-bone-50 mb-2">
+          Preparing your test
         </h2>
-        <p className="font-serif text-bone-200 mb-8">
-          We'll send a 6-digit code to your email to verify ownership before
-          starting. Your name will be printed on the certificate exactly as
-          entered below.
+        <p className="font-serif text-bone-200">
+          Setting up {testTitle} for {studentEmail}.
         </p>
-
-        <label className="block mb-6">
-          <span className="font-mono text-xs uppercase tracking-wider text-bone-300 mb-2 block">
-            Full name (as printed on certificate)
-          </span>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="e.g. Aditi Sharma"
-            maxLength={100}
-            className="w-full bg-navy-950 border border-navy-700 focus:border-gold-500 px-4 py-3 font-serif text-bone-100 outline-none transition-colors"
-          />
-        </label>
-
-        <label className="block mb-8">
-          <span className="font-mono text-xs uppercase tracking-wider text-bone-300 mb-2 block">
-            Email address
-          </span>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-bone-300" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full bg-navy-950 border border-navy-700 focus:border-gold-500 pl-10 pr-4 py-3 font-mono text-sm text-bone-100 outline-none transition-colors"
-            />
-          </div>
-        </label>
-
-        <button onClick={sendOtp} disabled={busy} className="btn-primary w-full justify-center disabled:opacity-50">
-          {busy ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Sending code…
-            </>
-          ) : (
-            <>
-              <KeyRound className="w-4 h-4" />
-              Send verification code
-            </>
-          )}
-        </button>
       </div>
     );
   }
 
-  if (step === 'otp') {
+  if (step === 'error') {
     return (
       <div className="card-forensic p-8 lg:p-10 max-w-2xl">
-        <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-          Enter the code
-        </h2>
-        <p className="font-serif text-bone-200 mb-8">
-          Sent a 6-digit code to <span className="font-mono text-gold-500">{email}</span>.
-          The code expires in 10 minutes.
-        </p>
-
-        <label className="block mb-8">
-          <span className="font-mono text-xs uppercase tracking-wider text-bone-300 mb-2 block">
-            Verification code
-          </span>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            placeholder="000000"
-            maxLength={6}
-            className="w-full bg-navy-950 border border-navy-700 focus:border-gold-500 px-4 py-4 font-mono text-2xl text-center tracking-[0.5em] text-gold-500 outline-none transition-colors"
-            autoFocus
-          />
-        </label>
-
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              setStep('enroll');
-              setOtp('');
-            }}
-            className="btn-ghost"
-          >
-            <ChevronLeft className="w-4 h-4" /> Back
-          </button>
-          <button onClick={verifyOtp} disabled={busy} className="btn-primary flex-1 justify-center disabled:opacity-50">
-            {busy ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Verifying…
-              </>
-            ) : (
-              <>
-                Verify and start <ChevronRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+        <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 border-2 border-crimson-500 bg-crimson-500/10 text-crimson-400">
+          <XCircle className="w-5 h-5" />
+          <span className="font-mono text-sm uppercase tracking-wider">Could not start test</span>
         </div>
+        <p className="font-serif text-bone-200 mb-6">{startError}</p>
+        <Link href="/tests" className="btn-ghost">
+          <ChevronLeft className="w-4 h-4" /> Browse other tests
+        </Link>
       </div>
     );
   }
@@ -497,7 +384,7 @@ export function TestEngine({ testId, testTitle, onAttemptCreated }: Props) {
             </h3>
             <p className="font-serif text-bone-200 mb-4">
               Your PDF certificate has been emailed to{' '}
-              <span className="font-mono text-gold-500">{email}</span>. Save the
+              <span className="font-mono text-gold-500">{studentEmail}</span>. Save the
               certificate ID below — anyone can use it to verify authenticity.
             </p>
             <div className="font-mono text-sm bg-navy-950 border border-navy-700 px-4 py-3 mb-4">
@@ -601,22 +488,6 @@ export function TestEngine({ testId, testTitle, onAttemptCreated }: Props) {
         )}
 
         <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => {
-              submittedRef.current = false;
-              setStep('enroll');
-              setEmail('');
-              setFullName('');
-              setOtp('');
-              setAnswers({});
-              setQuestions([]);
-              setCurrentIdx(0);
-              setResult(null);
-            }}
-            className="btn-ghost"
-          >
-            Take this test again
-          </button>
           <Link href="/tests" className="btn-ghost">
             Browse other tests
           </Link>
