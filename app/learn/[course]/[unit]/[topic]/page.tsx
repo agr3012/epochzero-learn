@@ -2,11 +2,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   BookOpen,
-  Video,
+  Play,
   Globe,
-  ClipboardCheck,
+  GraduationCap,
   Download,
   ExternalLink,
   ChevronLeft,
@@ -14,6 +15,8 @@ import {
   Clock,
   Target,
 } from 'lucide-react'
+import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
+import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 
 export const revalidate = 60
 
@@ -23,6 +26,8 @@ interface VideoItem {
   id: string
   title: string
   slug: string
+  youtube_id: string
+  duration_seconds: number | null
 }
 
 interface ArticleItem {
@@ -62,14 +67,6 @@ interface TestItem {
 
 /* ─── Helpers ───────────────────────────────────────────── */
 
-const DOMAIN_COLOR: Record<string, string> = {
-  rema: '#8B5E1A',
-  'cloud-security': '#1B5FA8',
-  cloud: '#1B5FA8',
-  crypto: '#6B3AD4',
-  webdev: '#1B7C3E',
-}
-
 function resourceTypeLabel(type: string): string {
   const map: Record<string, string> = {
     ebook: 'eBook',
@@ -78,6 +75,42 @@ function resourceTypeLabel(type: string): string {
     'question-bank': 'Question Bank',
   }
   return map[type] ?? type.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
+function QuadrantHeader({
+  icon: Icon,
+  n,
+  eyebrow,
+  title,
+  color,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  n: string
+  eyebrow: string
+  title: string
+  color: string
+}) {
+  return (
+    <header className="flex items-center gap-4 pb-4 mb-1" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+      <div
+        className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
+        style={{ background: color }}
+      >
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <div>
+        <p
+          className="font-sans font-semibold text-[10px] uppercase tracking-[0.1em] mb-0.5"
+          style={{ color }}
+        >
+          Quadrant {n} · {eyebrow}
+        </p>
+        <h2 className="font-display text-xl font-semibold leading-tight" style={{ color: 'hsl(var(--foreground))' }}>
+          {title}
+        </h2>
+      </div>
+    </header>
+  )
 }
 
 /* ─── Page ──────────────────────────────────────────────── */
@@ -124,7 +157,7 @@ export default async function TopicPage({
   // ── Q1: Videos ───────────────────────────────────────────
   const { data: rawVideos } = await supabase
     .from('topic_videos')
-    .select('order_index, videos(id, title, slug)')
+    .select('order_index, videos(id, title, slug, youtube_id, duration_seconds)')
     .eq('topic_id', topic.id)
     .order('order_index')
 
@@ -271,18 +304,19 @@ export default async function TopicPage({
       {/* Quadrant tab navigation */}
       <nav aria-label="Quadrant navigation" className="flex flex-wrap gap-2 mb-12">
         {[
-          { href: '#q1', label: `Q1 · E-TUTORIAL (${videos.length})` },
-          { href: '#q2', label: `Q2 · E-CONTENT (${articles.length})` },
-          { href: '#q3', label: `Q3 · WEB RESOURCES (${q3Total})` },
-          { href: '#q4', label: `Q4 · SELF-ASSESSMENT (${tests.length})` },
+          { href: '#q1', label: `Q1 · E-TUTORIAL (${videos.length})`, color: QUADRANT_COLORS.tutorial },
+          { href: '#q2', label: `Q2 · E-CONTENT (${articles.length})`, color: QUADRANT_COLORS.content },
+          { href: '#q3', label: `Q3 · WEB RESOURCES (${q3Total})`, color: QUADRANT_COLORS.resources },
+          { href: '#q4', label: `Q4 · SELF-ASSESSMENT (${tests.length})`, color: QUADRANT_COLORS.assessment },
         ].map((tab) => (
           <a
             key={tab.href}
             href={tab.href}
             className="px-4 py-2 text-xs font-sans font-medium tracking-wide rounded-lg transition-colors"
             style={{
-              border: '1px solid hsl(var(--border))',
-              color: 'hsl(var(--foreground-muted))',
+              border: `1px solid ${tab.color}40`,
+              color: tab.color,
+              background: `${tab.color}0d`,
             }}
           >
             {tab.label}
@@ -293,37 +327,53 @@ export default async function TopicPage({
       <div className="space-y-16">
 
         {/* ─── Q1: e-Tutorial ─────────────────────────────── */}
-        <section id="q1" className="scroll-mt-20 space-y-5">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: tileColor }}>
-              <Video className="w-5 h-5" />
-            </div>
-            <div>
-              <p
-                className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em]"
-                style={{ color: tileColor }}
-              >
-                Quadrant 1 · e-Tutorial
-              </p>
-              <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                Video lectures and walkthroughs
-              </h2>
-            </div>
-          </div>
+        <section id="q1" className="scroll-mt-20 space-y-6">
+          <QuadrantHeader
+            icon={Play}
+            n="1"
+            eyebrow="e-Tutorial"
+            title="Video lectures and walkthroughs"
+            color={QUADRANT_COLORS.tutorial}
+          />
 
           {videos.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {videos.map((v) => (
-                <Link key={v.id} href={`/videos/${v.slug}`} className="card card-interactive p-4 group flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: tileColor }}>
-                    <Video className="w-4 h-4" />
+                <Link key={v.id} href={`/videos/${v.slug}`} className="group">
+                  <div
+                    className="relative aspect-video overflow-hidden rounded-lg"
+                    style={{ border: '1px solid hsl(var(--border))' }}
+                  >
+                    <Image
+                      src={getYouTubeThumbnail(v.youtube_id, 'hq')}
+                      alt={v.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-xl"
+                        style={{ background: QUADRANT_COLORS.tutorial }}
+                      >
+                        <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
+                      </div>
+                    </div>
+                    {v.duration_seconds && (
+                      <span
+                        className="absolute bottom-2 right-2 font-mono text-[10px] px-1.5 py-0.5 rounded text-white"
+                        style={{ background: 'rgba(0,0,0,0.75)' }}
+                      >
+                        {formatDuration(v.duration_seconds)}
+                      </span>
+                    )}
                   </div>
-                  <span
-                    className="text-sm font-medium line-clamp-1 transition-colors group-hover:text-[hsl(var(--primary))]"
+                  <p
+                    className="mt-3 text-sm font-medium leading-snug line-clamp-2 transition-colors group-hover:text-[hsl(var(--primary))]"
                     style={{ color: 'hsl(var(--foreground))' }}
                   >
                     {v.title}
-                  </span>
+                  </p>
                 </Link>
               ))}
             </div>
@@ -335,23 +385,14 @@ export default async function TopicPage({
         </section>
 
         {/* ─── Q2: e-Content ──────────────────────────────── */}
-        <section id="q2" className="scroll-mt-20 space-y-5">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: tileColor }}>
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <p
-                className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em]"
-                style={{ color: tileColor }}
-              >
-                Quadrant 2 · e-Content
-              </p>
-              <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                Articles and case studies
-              </h2>
-            </div>
-          </div>
+        <section id="q2" className="scroll-mt-20 space-y-6">
+          <QuadrantHeader
+            icon={BookOpen}
+            n="2"
+            eyebrow="e-Content"
+            title="Articles and case studies"
+            color={QUADRANT_COLORS.content}
+          />
 
           {articles.length > 0 ? (
             <div className="space-y-3">
@@ -388,22 +429,13 @@ export default async function TopicPage({
 
         {/* ─── Q3: Web Resources ──────────────────────────── */}
         <section id="q3" className="scroll-mt-20 space-y-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: tileColor }}>
-              <Globe className="w-5 h-5" />
-            </div>
-            <div>
-              <p
-                className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em]"
-                style={{ color: tileColor }}
-              >
-                Quadrant 3 · Web Resources
-              </p>
-              <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                Downloadable material and curated external links
-              </h2>
-            </div>
-          </div>
+          <QuadrantHeader
+            icon={Globe}
+            n="3"
+            eyebrow="Web Resources"
+            title="Downloadable material and curated external links"
+            color={QUADRANT_COLORS.resources}
+          />
 
           {resources.length > 0 && (
             <div className="space-y-4">
@@ -413,22 +445,28 @@ export default async function TopicPage({
               >
                 Downloadable reference material
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {resources.map((r) => (
-                  <Link key={r.id} href={`/resources/${r.slug}`} className="card card-interactive p-5 group flex flex-col gap-4">
-                    <div className="flex items-start justify-between">
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: tileColor }}>
-                        <Download className="w-5 h-5" />
+                  <Link key={r.id} href={`/resources/${r.slug}`} className="card card-interactive p-4 group flex flex-col gap-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white"
+                        style={{ background: QUADRANT_COLORS.resources }}
+                      >
+                        <Download className="w-4 h-4" />
                       </div>
-                      <span className="badge badge-tag">{resourceTypeLabel(r.type)}</span>
+                      <span className="badge badge-tag text-[10px]">{resourceTypeLabel(r.type)}</span>
                     </div>
                     <div className="space-y-0.5">
-                      <p className="font-display font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>
+                      <p className="font-display font-semibold text-sm line-clamp-2" style={{ color: 'hsl(var(--foreground))' }}>
                         {r.title}
                       </p>
                       <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>v{r.version}</p>
                     </div>
-                    <p className="text-xs font-sans font-medium mt-auto group-hover:underline" style={{ color: 'hsl(var(--primary))' }}>
+                    <p
+                      className="text-xs font-sans font-medium mt-auto group-hover:underline"
+                      style={{ color: QUADRANT_COLORS.resources }}
+                    >
                       Open resource
                     </p>
                   </Link>
@@ -454,7 +492,10 @@ export default async function TopicPage({
                     rel="noopener noreferrer"
                     className="card card-interactive p-5 group flex items-start gap-4"
                   >
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: tileColor }}>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white"
+                      style={{ background: QUADRANT_COLORS.resources }}
+                    >
                       <Globe className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
@@ -486,43 +527,42 @@ export default async function TopicPage({
         </section>
 
         {/* ─── Q4: Self-Assessment ────────────────────────── */}
-        <section id="q4" className="scroll-mt-20 space-y-5">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ background: tileColor }}>
-              <ClipboardCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <p
-                className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em]"
-                style={{ color: tileColor }}
-              >
-                Quadrant 4 · Self-Assessment
-              </p>
-              <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                Test your knowledge — earn a certificate on first pass
-              </h2>
-            </div>
-          </div>
+        <section id="q4" className="scroll-mt-20 space-y-6">
+          <QuadrantHeader
+            icon={GraduationCap}
+            n="4"
+            eyebrow="Self-Assessment"
+            title="Test your knowledge — earn a certificate on first pass"
+            color={QUADRANT_COLORS.assessment}
+          />
 
           {tests.length > 0 ? (
             <div className="space-y-3">
               {tests.map((t) => (
-                <Link key={t.id} href={`/tests/${t.slug}`} className="card card-interactive p-5 group flex flex-col gap-3">
-                  <p
-                    className="font-display font-semibold transition-colors group-hover:text-[hsl(var(--primary))]"
-                    style={{ color: 'hsl(var(--foreground))' }}
+                <Link key={t.id} href={`/tests/${t.slug}`} className="card card-interactive p-5 group flex items-start gap-4">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white"
+                    style={{ background: QUADRANT_COLORS.assessment }}
                   >
-                    {t.title}
-                  </p>
-                  {t.description && (
-                    <p className="font-serif text-sm line-clamp-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                      {t.description}
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <p
+                      className="font-display font-semibold transition-colors group-hover:text-[hsl(var(--primary))]"
+                      style={{ color: 'hsl(var(--foreground))' }}
+                    >
+                      {t.title}
                     </p>
-                  )}
-                  <div className="flex flex-wrap gap-4 text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                    <span>{t.total_questions} questions</span>
-                    <span>{t.duration_minutes} min</span>
-                    <span>Pass: {t.passing_score}%</span>
+                    {t.description && (
+                      <p className="font-serif text-sm line-clamp-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                        {t.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-4 text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                      <span>{t.total_questions} questions</span>
+                      <span>{t.duration_minutes} min</span>
+                      <span>Pass: {t.passing_score}%</span>
+                    </div>
                   </div>
                 </Link>
               ))}
