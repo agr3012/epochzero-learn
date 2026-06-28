@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (!attempt.otp_verified) {
+    if (!attempt.account_id && !attempt.otp_verified) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
