@@ -5,7 +5,7 @@ import { ChevronLeft, Clock, ArrowRight, Target, CheckCircle2, LogIn } from 'luc
 import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
-import { isTopicComplete } from '@/lib/progress';
+import { getTopicCompletionInfo } from '@/lib/progress';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,7 +41,13 @@ export default async function UnitPage({ params }: Props) {
 
   const completedTopicIds = account && topics
     ? new Set(
-        (await Promise.all(topics.map(async (t) => ((await isTopicComplete(account.id, t.id)) ? t.id : null))))
+        (await Promise.all(topics.map(async (t) => {
+          const info = await getTopicCompletionInfo(account.id, t.id);
+          // Only badge topics that actually had something to watch/read —
+          // a content-less topic (e.g. a knowledge-check wrapper) isn't
+          // "complete" in any meaningful sense, just vacuously unblocked.
+          return info.hasContent && info.complete ? t.id : null;
+        })))
           .filter((id): id is string => id !== null)
       )
     : new Set<string>();

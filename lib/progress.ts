@@ -110,7 +110,15 @@ export async function recordVideoHeartbeat(
   return { watched_seconds, last_position_seconds, completed };
 }
 
-export async function isTopicComplete(accountId: string, topicId: string): Promise<boolean> {
+export type TopicCompletionInfo = {
+  /** false if the topic has no videos and no articles at all — there is
+   *  nothing for a student to actually watch/read, so "complete" here is
+   *  vacuous and must not count toward a percentage or show a checkmark. */
+  hasContent: boolean;
+  complete: boolean;
+};
+
+export async function getTopicCompletionInfo(accountId: string, topicId: string): Promise<TopicCompletionInfo> {
   const admin = createAdminClient();
   const [{ data: topicVideos }, { data: topicArticles }] = await Promise.all([
     admin.from('topic_videos').select('video_id').eq('topic_id', topicId),
@@ -118,7 +126,7 @@ export async function isTopicComplete(accountId: string, topicId: string): Promi
   ]);
   const videoIds = (topicVideos ?? []).map((r) => r.video_id as string);
   const articleIds = (topicArticles ?? []).map((r) => r.article_id as string);
-  if (videoIds.length === 0 && articleIds.length === 0) return true;
+  if (videoIds.length === 0 && articleIds.length === 0) return { hasContent: false, complete: true };
 
   const [videoProgress, readSet] = await Promise.all([
     getVideoProgress(accountId, videoIds),
@@ -127,7 +135,17 @@ export async function isTopicComplete(accountId: string, topicId: string): Promi
 
   const allVideosWatched = videoIds.every((id) => videoProgress[id]?.completed);
   const allArticlesRead = articleIds.every((id) => readSet.has(id));
-  return allVideosWatched && allArticlesRead;
+  return { hasContent: true, complete: allVideosWatched && allArticlesRead };
+}
+
+/**
+ * Used for unlock logic (isUnitComplete / exam gating) where a content-less
+ * topic should never block anything. For display purposes (badges,
+ * percentages) use getTopicCompletionInfo directly so empty topics don't
+ * count as "done".
+ */
+export async function isTopicComplete(accountId: string, topicId: string): Promise<boolean> {
+  return (await getTopicCompletionInfo(accountId, topicId)).complete;
 }
 
 export async function isUnitComplete(accountId: string, unitId: string): Promise<boolean> {
@@ -264,9 +282,13 @@ export async function getCourseProgressSummary(accountId: string, courseId: stri
         .eq('unit_id', u.id)
         .eq('is_published', true);
       const topicIds = (topics ?? []).map((t) => t.id as string);
-      const topicsTotal = topicIds.length;
-      const results = topicsTotal > 0 ? await Promise.all(topicIds.map((id) => isTopicComplete(accountId, id))) : [];
-      const topicsComplete = results.filter(Boolean).length;
+      const results = await Promise.all(topicIds.map((id) => getTopicCompletionInfo(accountId, id)));
+      // Topics with no videos/articles (e.g. a knowledge-check wrapper around
+      // a Q4 test only) have nothing to watch/read — exclude them from the
+      // denominator entirely so they can't inflate or dilute the percentage.
+      const trackable = results.filter((r) => r.hasContent);
+      const topicsTotal = trackable.length;
+      const topicsComplete = trackable.filter((r) => r.complete).length;
       const percent = topicsTotal > 0 ? Math.round((topicsComplete / topicsTotal) * 100) : 0;
       return { unitId: u.id, unitTitle: u.title, unitSlug: u.slug, topicsTotal, topicsComplete, percent };
     })
