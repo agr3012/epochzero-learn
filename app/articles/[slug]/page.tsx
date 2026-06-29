@@ -17,7 +17,7 @@ import { getArticleReadSet } from '@/lib/progress';
 import { formatDate } from '@/lib/utils';
 import { ArticleMarkReadButton } from '@/components/article-mark-read-button';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 interface Props { params: { slug: string } }
 
 export async function generateMetadata({ params }: Props) {

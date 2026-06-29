@@ -19,7 +19,7 @@ import { DOMAIN_COLOR, SECTION_COLORS } from '@/lib/colors';
 import { VideoPlayer } from '@/components/video-player';
 import { VideoLessonTabs } from '@/components/video-lesson-tabs';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { slug: string };
@@ -89,7 +89,9 @@ export default async function VideoDetailPage({ params }: Props) {
             youtubeId={video.youtube_id}
             steps={steps}
             videoId={account ? video.id : undefined}
+            durationSeconds={video.duration_seconds ?? undefined}
             initialPositionSeconds={videoProgress?.last_position_seconds ?? 0}
+            initialWatchedSeconds={videoProgress?.watched_seconds ?? 0}
             initialCompleted={videoProgress?.completed ?? false}
           />
           {!account && (

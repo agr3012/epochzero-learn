@@ -36,15 +36,17 @@ export async function POST(req: NextRequest) {
       expires_at: resetTokenExpiresAt().toISOString(),
     });
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/reset-password?token=${raw}&email=${encodeURIComponent(normalised)}`;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learn.epochzero.net';
+    const resetUrl = `${siteUrl}/dashboard/reset-password?token=${raw}&email=${encodeURIComponent(normalised)}`;
 
     const resend = getResend();
-    await resend.emails.send({
+    const { error: sendErr } = await resend.emails.send({
       from: FROM_EMAIL,
       to: normalised,
       subject: 'Reset your EpochZero Learn password',
       html: resetEmailHtml(resetUrl),
     });
+    if (sendErr) console.error('forgot-password resend error:', sendErr);
 
     return NextResponse.json({ success: true });
   } catch {

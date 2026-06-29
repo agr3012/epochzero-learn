@@ -46,9 +46,9 @@ export async function POST(req: NextRequest) {
 
     // Best-effort — a failed send shouldn't block account creation; the
     // dashboard's "resend" button covers this case.
-    sendVerificationEmail(account.id, account.email).catch((err) =>
-      console.error('verification email send error:', err)
-    );
+    sendVerificationEmail(account.id, account.email)
+      .then((result) => { if (!result.ok) console.error('verification email send failed:', result.error); })
+      .catch((err) => console.error('verification email send error:', err));
 
     return NextResponse.json({ success: true });
   } catch {

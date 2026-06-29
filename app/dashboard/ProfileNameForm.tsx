@@ -1,11 +1,13 @@
 // components/dashboard/ProfileNameForm.tsx (or app/dashboard/ProfileNameForm.tsx)
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Check, Loader2, Pencil } from 'lucide-react';
 
 interface Props { accountId: string; currentName: string | null; email: string }
 
 export function ProfileNameForm({ accountId, currentName, email }: Props) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName]       = useState(currentName ?? '');
   const [saved, setSaved]     = useState(false);
@@ -22,6 +24,7 @@ export function ProfileNameForm({ accountId, currentName, email }: Props) {
       });
       if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Failed to save.'); return; }
       setSaved(true); setEditing(false);
+      router.refresh();
       setTimeout(() => setSaved(false), 3000);
     } catch { setError('Network error.'); }
     finally   { setLoading(false); }

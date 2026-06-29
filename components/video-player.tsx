@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
+import { formatDuration } from '@/lib/utils';
 
 declare global {
   interface Window {
@@ -24,7 +25,9 @@ interface Props {
   steps?: Array<{ title: string; description?: string; timestamp_seconds?: number }>;
   /** Phase 2 progress tracking — omit any of these to render a plain, untracked player. */
   videoId?: string;
+  durationSeconds?: number;
   initialPositionSeconds?: number;
+  initialWatchedSeconds?: number;
   initialCompleted?: boolean;
 }
 
@@ -44,13 +47,17 @@ function loadYouTubeApi(): Promise<void> {
 
 const HEARTBEAT_FLUSH_SECONDS = 5;
 
-export function VideoPlayer({ youtubeId, videoId, initialPositionSeconds = 0, initialCompleted = false }: Props) {
+export function VideoPlayer({
+  youtubeId, videoId, durationSeconds,
+  initialPositionSeconds = 0, initialWatchedSeconds = 0, initialCompleted = false,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const elementId = useRef(`yt-player-${youtubeId}-${Math.random().toString(36).slice(2)}`);
   const playerRef = useRef<YTPlayer | null>(null);
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingSecondsRef = useRef(0);
   const [completed, setCompleted] = useState(initialCompleted);
+  const [watchedSeconds, setWatchedSeconds] = useState(initialWatchedSeconds);
 
   function flush(sync = false) {
     const pending = pendingSecondsRef.current;
@@ -60,11 +67,13 @@ export function VideoPlayer({ youtubeId, videoId, initialPositionSeconds = 0, in
     const body = JSON.stringify({ video_id: videoId, delta_seconds: pending, position_seconds: position });
     if (sync && navigator.sendBeacon) {
       navigator.sendBeacon('/api/progress/video/heartbeat', new Blob([body], { type: 'application/json' }));
+      setWatchedSeconds((w) => durationSeconds ? Math.min(w + pending, durationSeconds) : w + pending);
       return;
     }
     fetch('/api/progress/video/heartbeat', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
     }).then((res) => res.ok ? res.json() : null).then((data) => {
+      if (typeof data?.watched_seconds === 'number') setWatchedSeconds(data.watched_seconds);
       if (data?.completed) setCompleted(true);
     }).catch(() => {});
   }
@@ -118,6 +127,22 @@ export function VideoPlayer({ youtubeId, videoId, initialPositionSeconds = 0, in
         <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
           style={{ background: 'rgba(27,124,62,0.85)', color: 'white' }}>
           <CheckCircle2 className="w-3.5 h-3.5" /> Watched
+        </div>
+      )}
+      {videoId && durationSeconds && durationSeconds > 0 && !completed && (
+        <div className="mt-2">
+          <div className="flex items-center justify-between text-xs mb-1"
+            style={{ color: 'hsl(var(--foreground-subtle))' }}>
+            <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> Watch progress</span>
+            <span>{formatDuration(Math.min(watchedSeconds, durationSeconds))} / {formatDuration(durationSeconds)}</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--muted))' }}>
+            <div className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, Math.round((watchedSeconds / durationSeconds) * 100))}%`,
+                background: 'hsl(var(--primary))',
+              }} />
+          </div>
         </div>
       )}
     </div>

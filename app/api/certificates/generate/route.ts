@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
     // Send email with PDF attached
     try {
       const resend = getResend();
-      await resend.emails.send({
+      const { error: sendErr } = await resend.emails.send({
         from: FROM_EMAIL,
         to:   attempt.email,
         subject: `Your EpochZero Learn certificate — ${(attempt.tests as any).title}`,
@@ -219,6 +219,7 @@ export async function POST(req: NextRequest) {
           },
         ],
       });
+      if (sendErr) throw sendErr;
       await admin
         .from('certificates')
         .update({ email_sent_at: new Date().toISOString() })

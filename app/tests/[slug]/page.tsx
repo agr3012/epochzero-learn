@@ -7,7 +7,7 @@ import { getCurrentAccount } from '@/lib/auth';
 import { getExamLockStatus } from '@/lib/progress';
 import { TestPageClient } from '@/components/exam/TestPageClient';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 interface Props { params: { slug: string } }
 
 export async function generateMetadata({ params }: Props) {

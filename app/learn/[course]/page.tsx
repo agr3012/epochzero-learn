@@ -8,7 +8,7 @@ import { getCurrentAccount } from '@/lib/auth';
 import { getCourseProgressSummary } from '@/lib/progress';
 import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 interface Props { params: { course: string } }
 

@@ -33,15 +33,20 @@ export async function sendVerificationEmail(accountId: string, email: string): P
     return { ok: false, error: 'Server error', status: 500 };
   }
 
-  const verifyUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/verify-email?token=${raw}&email=${encodeURIComponent(email)}`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learn.epochzero.net';
+  const verifyUrl = `${siteUrl}/dashboard/verify-email?token=${raw}&email=${encodeURIComponent(email)}`;
 
   const resend = getResend();
-  await resend.emails.send({
+  const { error: sendErr } = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'EpochZero Learn — Verify your email',
     html: verificationEmailHtml(verifyUrl),
   });
+  if (sendErr) {
+    console.error('resend send error:', sendErr);
+    return { ok: false, error: `Email send failed: ${sendErr.message}`, status: 502 };
+  }
 
   return { ok: true };
 }

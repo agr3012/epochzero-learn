@@ -191,28 +191,44 @@ export type EnrolledCourse = {
   courseId: string;
   courseTitle: string;
   courseSlug: string;
-  batchLabel: string;
+  /** Batch/cohort tag — null if the student never redeemed an enrollment
+   *  code for this course. Course content itself doesn't require this. */
+  batchLabel: string | null;
 };
 
-/** Courses a student is enrolled in via any active batch — a student can be in multiple. */
+/**
+ * Every published course, annotated with the student's batch label if they
+ * redeemed an enrollment code for it. Course content and progress tracking
+ * are open to any account regardless of batch — this drives the dashboard's
+ * "My Courses" section, which must show every course a student has (or can)
+ * make progress in, not just ones tagged to a cohort.
+ */
 export async function getEnrolledCourses(accountId: string): Promise<EnrolledCourse[]> {
   const admin = createAdminClient();
-  const { data } = await admin
-    .from('batch_enrollments')
-    .select('batches!inner(batch_label, is_active, courses(id, title, slug))')
-    .eq('student_account_id', accountId)
-    .eq('batches.is_active', true);
 
-  const seen = new Set<string>();
-  const courses: EnrolledCourse[] = [];
-  for (const row of data ?? []) {
-    const batch = row.batches as unknown as { batch_label: string; courses: { id: string; title: string; slug: string } | null };
-    const course = batch?.courses;
-    if (!course || seen.has(course.id)) continue;
-    seen.add(course.id);
-    courses.push({ courseId: course.id, courseTitle: course.title, courseSlug: course.slug, batchLabel: batch.batch_label });
+  const [{ data: courses }, { data: batchRows }] = await Promise.all([
+    admin.from('courses').select('id, title, slug').eq('is_published', true).order('order_index'),
+    admin
+      .from('batch_enrollments')
+      .select('batches!inner(batch_label, is_active, course_id)')
+      .eq('student_account_id', accountId)
+      .eq('batches.is_active', true),
+  ]);
+
+  const batchLabelByCourse = new Map<string, string>();
+  for (const row of batchRows ?? []) {
+    const batch = row.batches as unknown as { batch_label: string; course_id: string };
+    if (batch?.course_id && !batchLabelByCourse.has(batch.course_id)) {
+      batchLabelByCourse.set(batch.course_id, batch.batch_label);
+    }
   }
-  return courses;
+
+  return (courses ?? []).map((c) => ({
+    courseId: c.id,
+    courseTitle: c.title,
+    courseSlug: c.slug,
+    batchLabel: batchLabelByCourse.get(c.id) ?? null,
+  }));
 }
 
 export type UnitProgressSummary = {

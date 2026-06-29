@@ -7,7 +7,7 @@ import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
 import { isTopicComplete } from '@/lib/progress';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 interface Props { params: { course: string; unit: string } }
 

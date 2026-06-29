@@ -16,6 +16,8 @@ import { VerifyEmailGate } from './VerifyEmailBanner';
 import { SignOutButton }   from './SignOutButton';
 import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const account = await getCurrentAccount();
   if (!account) redirect('/dashboard/login');
@@ -174,9 +176,11 @@ export default async function DashboardPage() {
                             Continue <ChevronRight className="w-3.5 h-3.5" />
                           </Link>
                         </div>
-                        <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-subtle))' }}>
-                          Batch: {c.batchLabel}
-                        </p>
+                        {c.batchLabel && (
+                          <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                            Batch: {c.batchLabel}
+                          </p>
+                        )}
                         {progress.units.length > 0 && (
                           <div className="flex flex-wrap gap-4">
                             {progress.units.map((u) => (

@@ -23,7 +23,7 @@ import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 import { getCurrentAccount } from '@/lib/auth'
 import { getVideoProgress, getArticleReadSet, isUnitComplete, type VideoProgressRow } from '@/lib/progress'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic';
 
 /* ─── Types ─────────────────────────────────────────────── */
 
