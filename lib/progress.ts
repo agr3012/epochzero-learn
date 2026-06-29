@@ -186,3 +186,80 @@ export async function getExamLockStatus(accountId: string, testId: string): Prom
     reason: 'Finish every topic in this unit — all videos watched, all articles read — to unlock its exam.',
   };
 }
+
+export type EnrolledCourse = {
+  courseId: string;
+  courseTitle: string;
+  courseSlug: string;
+  batchLabel: string;
+};
+
+/** Courses a student is enrolled in via any active batch — a student can be in multiple. */
+export async function getEnrolledCourses(accountId: string): Promise<EnrolledCourse[]> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from('batch_enrollments')
+    .select('batches!inner(batch_label, is_active, courses(id, title, slug))')
+    .eq('student_account_id', accountId)
+    .eq('batches.is_active', true);
+
+  const seen = new Set<string>();
+  const courses: EnrolledCourse[] = [];
+  for (const row of data ?? []) {
+    const batch = row.batches as unknown as { batch_label: string; courses: { id: string; title: string; slug: string } | null };
+    const course = batch?.courses;
+    if (!course || seen.has(course.id)) continue;
+    seen.add(course.id);
+    courses.push({ courseId: course.id, courseTitle: course.title, courseSlug: course.slug, batchLabel: batch.batch_label });
+  }
+  return courses;
+}
+
+export type UnitProgressSummary = {
+  unitId: string;
+  unitTitle: string;
+  unitSlug: string;
+  topicsTotal: number;
+  topicsComplete: number;
+  percent: number;
+};
+
+export type CourseProgressSummary = {
+  overallPercent: number;
+  units: UnitProgressSummary[];
+};
+
+/** Overall % = units complete / total units. Per-unit % = topics complete / total topics in that unit. */
+export async function getCourseProgressSummary(accountId: string, courseId: string): Promise<CourseProgressSummary> {
+  const admin = createAdminClient();
+  const { data: units } = await admin
+    .from('units')
+    .select('id, title, slug')
+    .eq('course_id', courseId)
+    .eq('is_published', true)
+    .order('unit_number', { ascending: true });
+
+  const unitRows = units ?? [];
+  const summaries: UnitProgressSummary[] = await Promise.all(
+    unitRows.map(async (u) => {
+      const { data: topics } = await admin
+        .from('topics')
+        .select('id')
+        .eq('unit_id', u.id)
+        .eq('is_published', true);
+      const topicIds = (topics ?? []).map((t) => t.id as string);
+      const topicsTotal = topicIds.length;
+      const results = topicsTotal > 0 ? await Promise.all(topicIds.map((id) => isTopicComplete(accountId, id))) : [];
+      const topicsComplete = results.filter(Boolean).length;
+      const percent = topicsTotal > 0 ? Math.round((topicsComplete / topicsTotal) * 100) : 0;
+      return { unitId: u.id, unitTitle: u.title, unitSlug: u.slug, topicsTotal, topicsComplete, percent };
+    })
+  );
+
+  const unitsWithContent = summaries.filter((s) => s.topicsTotal > 0);
+  const overallPercent = unitsWithContent.length > 0
+    ? Math.round(unitsWithContent.reduce((sum, s) => sum + s.percent, 0) / unitsWithContent.length)
+    : 0;
+
+  return { overallPercent, units: summaries };
+}

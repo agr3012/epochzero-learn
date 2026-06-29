@@ -19,11 +19,14 @@ export async function POST(req: NextRequest) {
       .update({ display_name: display_name.trim() })
       .eq('id', session.sub);
 
-    if (error)
-      return NextResponse.json({ error: 'Failed to update.' }, { status: 500 });
+    if (error) {
+      console.error('update-profile error:', error);
+      return NextResponse.json({ error: `Failed to update: ${error.message}` }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error('update-profile server error:', err);
     return NextResponse.json({ error: 'Server error.' }, { status: 500 });
   }
 }

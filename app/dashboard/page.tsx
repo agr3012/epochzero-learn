@@ -3,13 +3,18 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentAccount, checkIsAdmin } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getEnrolledCourses, getCourseProgressSummary } from '@/lib/progress';
 import {
   Award, BookOpen, Shield, ChevronRight,
   CheckCircle, XCircle, Clock, Download,
   MessageSquare, ExternalLink, Users, GraduationCap, Settings,
 } from 'lucide-react';
 import { ProfileNameForm } from './ProfileNameForm';
+import { ChangePasswordForm } from './ChangePasswordForm';
+import { EnrollCodeForm } from './EnrollCodeForm';
+import { VerifyEmailBanner } from './VerifyEmailBanner';
 import { SignOutButton }   from './SignOutButton';
+import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
 
 export default async function DashboardPage() {
   const account = await getCurrentAccount();
@@ -17,6 +22,11 @@ export default async function DashboardPage() {
 
   const isAdmin = await checkIsAdmin(account.email);
   const admin = createAdminClient();
+
+  const enrolledCourses = await getEnrolledCourses(account.id);
+  const courseProgress = await Promise.all(
+    enrolledCourses.map((c) => getCourseProgressSummary(account.id, c.courseId))
+  );
 
   const [certsRes, attemptsRes, clubsRes, accountRes, forumRes] = await Promise.all([
     admin.from('certificates').select('id, cert_uid, test_title, score, domain, club_name, issued_at, pdf_url')
@@ -58,6 +68,8 @@ export default async function DashboardPage() {
     <div style={{ minHeight: '100vh', background: 'hsl(var(--background))' }}>
       <div className="container py-10 lg:py-14 max-w-5xl">
 
+        {!account.email_verified && <VerifyEmailBanner />}
+
         {/* Profile header card */}
         <div className="rounded-2xl overflow-hidden mb-8" style={{
           backgroundColor: '#101825',
@@ -83,9 +95,6 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Link href="/dashboard/enroll" className="btn-ghost py-1.5 px-3 text-xs">
-                <GraduationCap className="w-3.5 h-3.5" /> Join a batch
-              </Link>
               {isAdmin && (
                 <Link href="/dashboard/admin/batches" className="btn-ghost py-1.5 px-3 text-xs">
                   <Settings className="w-3.5 h-3.5" /> Manage batches
@@ -116,11 +125,79 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {/* Profile name form */}
-        <div className="card p-6 rounded-xl mb-8">
-          <p className="eyebrow mb-4">Profile</p>
+        {/* Profile */}
+        <div className="card p-6 rounded-xl mb-8 space-y-5">
+          <p className="eyebrow">Profile</p>
           <ProfileNameForm accountId={account.id} currentName={displayName} email={account.email} />
+          <div className="pt-1" style={{ borderTop: '1px solid hsl(var(--border))' }} />
+          <ChangePasswordForm />
+          <div className="pt-1" style={{ borderTop: '1px solid hsl(var(--border))' }} />
+          <EnrollCodeForm />
         </div>
+
+        {/* My Courses — progress per enrolled course */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+              My Courses
+            </h2>
+            <span className="text-sm" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+              {enrolledCourses.length} enrolled
+            </span>
+          </div>
+
+          {enrolledCourses.length === 0 ? (
+            <div className="card p-10 text-center rounded-xl">
+              <GraduationCap className="w-8 h-8 mx-auto mb-3" style={{ color: 'hsl(var(--foreground-subtle))' }} />
+              <p className="text-sm mb-1" style={{ color: 'hsl(var(--foreground-muted))' }}>Not enrolled in any course yet.</p>
+              <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                Use the "Add code" button above to join a batch with a code from your instructor.
+              </p>
+              <Link href="/learn" className="btn-primary inline-flex">Browse courses</Link>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {enrolledCourses.map((c, i) => {
+                const progress = courseProgress[i];
+                return (
+                  <div key={c.courseId} className="card p-6 rounded-xl">
+                    <div className="flex items-start gap-6 flex-wrap">
+                      <ProgressDonut percent={progress.overallPercent} label="Overall" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
+                          <h3 className="font-display text-lg font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                            {c.courseTitle}
+                          </h3>
+                          <Link href={`/learn/${c.courseSlug}`}
+                            className="text-sm font-medium inline-flex items-center gap-1 hover:gap-2 transition-all"
+                            style={{ color: 'hsl(var(--primary))' }}>
+                            Continue <ChevronRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                          Batch: {c.batchLabel}
+                        </p>
+                        {progress.units.length > 0 && (
+                          <div className="flex flex-wrap gap-4">
+                            {progress.units.map((u) => (
+                              <div key={u.unitId} className="flex flex-col items-center gap-1.5">
+                                <ProgressDonut percent={u.percent} size={56} strokeWidth={5} color="#1B5FA8" />
+                                <span className="text-[10px] text-center max-w-[80px] leading-tight"
+                                  style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                                  {u.unitTitle}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         {/* Certificates */}
         <section className="mb-8">

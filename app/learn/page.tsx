@@ -1,7 +1,7 @@
 // app/learn/page.tsx
 import Link from 'next/link';
-import { Play, FileText, Globe, ListChecks, ArrowRight, GraduationCap } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
+import { Play, FileText, Globe, ListChecks, ArrowRight, GraduationCap, Lock } from 'lucide-react';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const revalidate = 60;
 export const metadata = {
@@ -26,10 +26,12 @@ const Q_ITEMS = [
 ];
 
 export default async function LearnIndexPage({ searchParams }: Props) {
-  const supabase = createClient();
-  const { data: allCourses } = await supabase
+  // All courses, published or not (admin client — RLS only exposes published
+  // rows otherwise). Unpublished ones render as disabled "coming soon" cards.
+  const admin = createAdminClient();
+  const { data: allCourses } = await admin
     .from('courses').select('*, units(id)')
-    .eq('is_published', true).order('order_index', { ascending: true });
+    .order('order_index', { ascending: true });
 
   const domain  = searchParams.domain ?? null;
   const courses = domain
@@ -135,12 +137,13 @@ export default async function LearnIndexPage({ searchParams }: Props) {
         <div className="grid md:grid-cols-2 gap-5">
           {courses.map((c: any) => {
             const meta = DOMAIN_META[c.domain ?? ''];
-            return (
-              <Link key={c.id} href={`/learn/${c.slug}`}
-                className="card card-interactive p-7 group flex gap-5 items-start">
+            const disabled = !c.is_published;
+            const cardClass = `card p-7 flex gap-5 items-start ${disabled ? 'opacity-50 cursor-not-allowed' : 'card-interactive group'}`;
+            const inner = (
+              <>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: meta?.color ?? '#8B5E1A' }}>
-                  <GraduationCap className="w-6 h-6 text-white" />
+                  {disabled ? <Lock className="w-5 h-5 text-white" /> : <GraduationCap className="w-6 h-6 text-white" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   {c.short_title && (
@@ -163,13 +166,24 @@ export default async function LearnIndexPage({ searchParams }: Props) {
                   <div className="flex items-center gap-4 text-xs"
                     style={{ color: 'hsl(var(--foreground-subtle))' }}>
                     <span>{(c.units as any[])?.length ?? 0} units</span>
-                    <span className="flex items-center gap-1 font-medium group-hover:gap-2 transition-all"
-                      style={{ color: meta?.color ?? 'hsl(var(--primary))' }}>
-                      Start learning <ArrowRight className="w-3 h-3" />
-                    </span>
+                    {disabled ? (
+                      <span className="flex items-center gap-1 font-medium" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                        Coming soon
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 font-medium group-hover:gap-2 transition-all"
+                        style={{ color: meta?.color ?? 'hsl(var(--primary))' }}>
+                        Start learning <ArrowRight className="w-3 h-3" />
+                      </span>
+                    )}
                   </div>
                 </div>
-              </Link>
+              </>
+            );
+            return disabled ? (
+              <div key={c.id} className={cardClass}>{inner}</div>
+            ) : (
+              <Link key={c.id} href={`/learn/${c.slug}`} className={cardClass}>{inner}</Link>
             );
           })}
         </div>

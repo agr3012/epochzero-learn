@@ -103,17 +103,18 @@ export async function getCurrentAccount(): Promise<{
   role: UserRole;
   is_active: boolean;
   display_name: string | null;
+  email_verified: boolean;
 } | null> {
   const session = getSessionFromCookie();
   if (!session) return null;
   const admin = createAdminClient();
   const { data } = await admin
     .from('student_accounts')
-    .select('id, email, role, is_active, display_name')
+    .select('id, email, role, is_active, display_name, email_verified')
     .eq('id', session.sub)
     .single();
   if (!data || !data.is_active) return null;
-  return data as { id: string; email: string; role: UserRole; is_active: boolean; display_name: string | null };
+  return data as { id: string; email: string; role: UserRole; is_active: boolean; display_name: string | null; email_verified: boolean };
 }
 
 // ── Role helpers ──────────────────────────────────────────────────────────

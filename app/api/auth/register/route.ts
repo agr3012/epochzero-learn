@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { hashPassword, generateSessionToken, setSessionCookie } from '@/lib/auth';
+import { sendVerificationEmail } from '@/lib/email-verification';
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,6 +43,12 @@ export async function POST(req: NextRequest) {
 
     const token = generateSessionToken(account.id, account.email);
     setSessionCookie(token);
+
+    // Best-effort — a failed send shouldn't block account creation; the
+    // dashboard's "resend" button covers this case.
+    sendVerificationEmail(account.id, account.email).catch((err) =>
+      console.error('verification email send error:', err)
+    );
 
     return NextResponse.json({ success: true });
   } catch {

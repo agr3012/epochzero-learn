@@ -1,9 +1,14 @@
 // app/learn/[courseSlug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ArrowRight, BookOpen, GraduationCap } from 'lucide-react';
+import { ChevronLeft, ArrowRight, BookOpen, GraduationCap, LogIn, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
+import { getCurrentAccount } from '@/lib/auth';
+import { isEnrolledInCourse } from '@/lib/enrollment';
+import { getCourseProgressSummary } from '@/lib/progress';
+import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
+import { EnrollCodeForm } from '@/app/dashboard/EnrollCodeForm';
 
 export const revalidate = 60;
 
@@ -22,6 +27,10 @@ export default async function CoursePage({ params }: Props) {
   const { data: course } = await supabase.from('courses').select('*')
     .eq('slug', params.course).eq('is_published', true).single();
   if (!course) notFound();
+
+  const account = await getCurrentAccount();
+  const enrolled = account ? await isEnrolledInCourse(account.id, course.id) : false;
+  const progress = account && enrolled ? await getCourseProgressSummary(account.id, course.id) : null;
 
   const { data: units } = await supabase.from('units')
     .select('*, topics(id)').eq('course_id', course.id).eq('is_published', true)
@@ -77,7 +86,54 @@ export default async function CoursePage({ params }: Props) {
         )}
       </div>
 
+      {/* ── Enrollment gate ── */}
+      {!account ? (
+        <div className="card-forensic p-8 lg:p-10 max-w-2xl mb-12">
+          <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
+            Sign in to enroll
+          </h2>
+          <p className="font-serif text-bone-200 mb-8">
+            An account is required to enroll in this course and track your progress.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href={`/dashboard/login?next=${encodeURIComponent(`/learn/${course.slug}`)}`} className="btn-primary">
+              <LogIn className="w-4 h-4" /> Sign in
+            </Link>
+            <Link href={`/dashboard/register?next=${encodeURIComponent(`/learn/${course.slug}`)}`} className="btn-ghost">
+              Create an account
+            </Link>
+          </div>
+        </div>
+      ) : !enrolled ? (
+        <div className="card p-8 lg:p-10 max-w-2xl mb-12" style={{ borderLeft: `3px solid ${tileColor}` }}>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <Lock className="w-5 h-5" style={{ color: tileColor }} />
+            <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+              Enroll to start learning
+            </h2>
+          </div>
+          <p className="font-serif text-sm mb-6" style={{ color: 'hsl(var(--foreground-muted))' }}>
+            Enter the course/batch code your instructor gave you to unlock this course's units and topics.
+          </p>
+          <EnrollCodeForm startExpanded />
+        </div>
+      ) : progress && (
+        <div className="card p-6 rounded-xl mb-12 flex items-center gap-6 flex-wrap">
+          <ProgressDonut percent={progress.overallPercent} label="Overall" color={tileColor} />
+          <div>
+            <p className="font-display text-lg font-semibold mb-1" style={{ color: 'hsl(var(--foreground))' }}>
+              Your progress
+            </p>
+            <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
+              {progress.units.filter((u) => u.percent === 100).length} of {progress.units.length} units complete.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Units section ── */}
+      {enrolled && (
+      <>
       <h2 className="font-display text-xl font-semibold mb-6"
         style={{ color: 'hsl(var(--foreground))' }}>
         Units
@@ -135,6 +191,8 @@ export default async function CoursePage({ params }: Props) {
             </Link>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );
