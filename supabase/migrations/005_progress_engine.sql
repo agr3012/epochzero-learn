@@ -11,6 +11,14 @@
 -- lib/progress.ts.
 -- =====================================================================
 
+-- Defensive: an earlier partial run of this script may have created these
+-- tables in a different shape (e.g. without account_id), which made
+-- `create table if not exists` a no-op and the index/constraint creation
+-- below fail with "column does not exist". Drop and rebuild cleanly —
+-- safe because these tables are new and hold no real progress data yet.
+drop table if exists public.video_progress;
+drop table if exists public.article_progress;
+
 create table if not exists public.video_progress (
   id                     uuid primary key default uuid_generate_v4(),
   account_id             uuid not null references public.student_accounts(id) on delete cascade,
