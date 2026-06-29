@@ -21,7 +21,6 @@ export const dynamic = 'force-dynamic';
 export default async function DashboardPage() {
   const account = await getCurrentAccount();
   if (!account) redirect('/dashboard/login');
-  if (!account.email_verified) return <VerifyEmailGate email={account.email} />;
 
   const isAdmin = await checkIsAdmin(account.email);
   const admin = createAdminClient();
@@ -70,6 +69,8 @@ export default async function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'hsl(var(--background))' }}>
       <div className="container py-10 lg:py-14 max-w-5xl">
+
+        {!account.email_verified && <VerifyEmailGate email={account.email} />}
 
 
         {/* Profile header card */}

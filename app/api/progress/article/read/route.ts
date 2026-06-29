@@ -11,8 +11,6 @@ export async function POST(req: NextRequest) {
     const account = await getCurrentAccount();
     if (!account)
       return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
-    if (!account.email_verified)
-      return NextResponse.json({ error: 'Verify your email to track progress.' }, { status: 403 });
 
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success)

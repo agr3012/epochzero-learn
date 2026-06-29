@@ -88,20 +88,16 @@ export default async function VideoDetailPage({ params }: Props) {
           <VideoPlayer
             youtubeId={video.youtube_id}
             steps={steps}
-            videoId={account?.email_verified ? video.id : undefined}
+            videoId={account ? video.id : undefined}
             durationSeconds={video.duration_seconds ?? undefined}
             initialPositionSeconds={videoProgress?.last_position_seconds ?? 0}
             initialWatchedSeconds={videoProgress?.watched_seconds ?? 0}
             initialCompleted={videoProgress?.completed ?? false}
           />
-          {!account ? (
+          {!account && (
             <p className="text-xs mt-2" style={{ color: 'hsl(var(--foreground-subtle))' }}>
               <Link href="/dashboard/login" className="hover:underline" style={{ color: 'hsl(var(--primary))' }}>Sign in</Link>{' '}
               to track your watch progress.
-            </p>
-          ) : !account.email_verified && (
-            <p className="text-xs mt-2" style={{ color: 'hsl(var(--foreground-subtle))' }}>
-              Verify your email from the dashboard to track your watch progress.
             </p>
           )}
 
