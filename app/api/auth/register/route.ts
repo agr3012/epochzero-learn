@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { hashPassword, generateSessionToken, setSessionCookie } from '@/lib/auth';
 import { sendVerificationEmail } from '@/lib/email-verification';
+import { domainAcceptsMail } from '@/lib/email-domain';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +14,10 @@ export async function POST(req: NextRequest) {
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+
+    const domain = email.trim().toLowerCase().split('@')[1];
+    if (!(await domainAcceptsMail(domain)))
+      return NextResponse.json({ error: 'That email domain doesn\'t exist. Check for typos.' }, { status: 400 });
 
     if (password.length < 8)
       return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
