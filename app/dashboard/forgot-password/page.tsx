@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
                 <label className="font-sans text-xs font-semibold uppercase tracking-wide block mb-1.5"
                   style={{ color: 'hsl(var(--foreground-muted))' }}>Email address</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="you@student.rru.ac.in" className="input-base" required />
+                  placeholder="you@example.com" className="input-base" required />
               </div>
               {status === 'error' && (
                 <div className="flex items-start gap-2.5 p-3 rounded-lg text-sm"

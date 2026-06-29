@@ -19,10 +19,6 @@ export default function RegisterPage() {
     e.preventDefault(); setError('');
     if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
     if (form.password.length < 8)       { setError('Password must be at least 8 characters.'); return; }
-    const domain = form.email.trim().toLowerCase().split('@')[1];
-    if (!['student.rru.ac.in', 'rru.ac.in'].includes(domain)) {
-      setError('Only RRU email addresses are accepted.'); return;
-    }
     setLoading(true);
     try {
       const res  = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.email, password: form.password }) });
@@ -42,16 +38,16 @@ export default function RegisterPage() {
         </div>
         <div className="mb-8">
           <h1 className="font-display text-2xl font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Create account</h1>
-          <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>RRU institutional email only</p>
+          <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>Join with any email — enroll in a batch after sign-up</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label className="font-sans text-xs font-semibold uppercase tracking-wide block mb-1.5"
-              style={{ color: 'hsl(var(--foreground-muted))' }}>RRU Email</label>
+              style={{ color: 'hsl(var(--foreground-muted))' }}>Email</label>
             <input type="email" value={form.email}
               onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-              placeholder="you@student.rru.ac.in" className="input-base" autoComplete="email" required />
+              placeholder="you@example.com" className="input-base" autoComplete="email" required />
           </div>
           <div>
             <label className="font-sans text-xs font-semibold uppercase tracking-wide block mb-1.5"

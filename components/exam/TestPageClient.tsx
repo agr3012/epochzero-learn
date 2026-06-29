@@ -9,11 +9,12 @@ import { TestEngine } from '@/components/test-engine';
 type Phase = 'gate' | 'exam';
 
 interface Props {
-  testId:    string;
-  testTitle: string;
+  testId:       string;
+  testTitle:    string;
+  studentEmail: string;
 }
 
-export function TestPageClient({ testId, testTitle }: Props) {
+export function TestPageClient({ testId, testTitle, studentEmail }: Props) {
   const [phase,     setPhase]     = useState<Phase>('gate');
   const [attemptId, setAttemptId] = useState<string | null>(null);
 
@@ -28,6 +29,7 @@ export function TestPageClient({ testId, testTitle }: Props) {
       <TestEngine
         testId={testId}
         testTitle={testTitle}
+        studentEmail={studentEmail}
         onAttemptCreated={(id: string) => setAttemptId(id)}
       />
     </ProctorShell>

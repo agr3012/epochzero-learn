@@ -1,13 +1,13 @@
 // app/api/auth/forgot-password/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { generateResetToken, resetTokenExpiresAt, isValidRRUEmail } from '@/lib/auth';
+import { generateResetToken, resetTokenExpiresAt } from '@/lib/auth';
 import { getResend, FROM_EMAIL } from '@/lib/resend';
 
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
-    if (!email || !isValidRRUEmail(email))
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return NextResponse.json({ success: true }); // silent — don't reveal if email exists
 
     const admin = createAdminClient();

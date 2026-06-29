@@ -25,8 +25,10 @@ A Next.js 14 + Supabase + Resend learning hub for Reverse Engineering and Malwar
 rema-club/
 ├── app/                          # App Router pages
 │   ├── (api)
-│   │   ├── otp/send/             # POST: send 6-digit code
-│   │   ├── otp/verify/           # POST: verify code, start attempt
+│   │   ├── auth/register, login/ # account auth — no email-domain restriction
+│   │   ├── enrollment/redeem/    # POST: redeem a batch enrollment code
+│   │   ├── admin/batches/        # GET/POST: generate & list enrollment codes
+│   │   ├── tests/start/          # POST: login-gated, enrollment-checked attempt start
 │   │   ├── tests/submit/         # POST: score test, trigger cert
 │   │   └── certificates/generate/# POST: render PDF, upload, email
 │   ├── articles/[slug]/          # Article reader (MDX)
@@ -49,7 +51,7 @@ rema-club/
 │   ├── supabase/                 # client / server / admin clients
 │   ├── resend.ts
 │   ├── env.ts                    # Zod-validated env vars
-│   └── utils.ts                  # OTP gen/hash, formatters
+│   └── utils.ts                  # formatters, slugify
 ├── supabase/migrations/
 │   ├── 001_initial_schema.sql
 │   └── 002_rls_policies.sql

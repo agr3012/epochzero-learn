@@ -1,7 +1,7 @@
 // app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { hashPassword, isValidRRUEmail, generateSessionToken, setSessionCookie } from '@/lib/auth';
+import { hashPassword, generateSessionToken, setSessionCookie } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
     if (!email || !password)
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
 
-    if (!isValidRRUEmail(email))
-      return NextResponse.json({ error: 'Only RRU email addresses are accepted.' }, { status: 400 });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
 
     if (password.length < 8)
       return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });

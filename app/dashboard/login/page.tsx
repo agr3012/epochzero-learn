@@ -81,7 +81,7 @@ export default function LoginPage() {
                 style={{ color: 'hsl(var(--foreground-muted))' }}>Email address</label>
               <input type="email" value={form.email}
                 onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                placeholder="you@student.rru.ac.in"
+                placeholder="you@example.com"
                 className="input-base" autoComplete="email" required />
             </div>
 

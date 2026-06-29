@@ -40,26 +40,6 @@ export function slugify(text: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export function generateOTP(length = 6): string {
-  const digits = '0123456789';
-  let otp = '';
-  const arr = new Uint8Array(length);
-  crypto.getRandomValues(arr);
-  for (let i = 0; i < length; i++) {
-    otp += digits[arr[i] % 10];
-  }
-  return otp;
-}
-
-export async function hashOTP(otp: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(otp);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 export function getYouTubeThumbnail(youtubeId: string, quality: 'default' | 'hq' | 'maxres' = 'hq'): string {
   const map = {
     default: 'default.jpg',

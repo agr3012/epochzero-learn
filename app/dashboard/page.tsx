@@ -1,12 +1,12 @@
 // app/dashboard/page.tsx
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getCurrentAccount } from '@/lib/auth';
+import { getCurrentAccount, checkIsAdmin } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
   Award, BookOpen, Shield, ChevronRight,
   CheckCircle, XCircle, Clock, Download,
-  MessageSquare, ExternalLink, Users,
+  MessageSquare, ExternalLink, Users, GraduationCap, Settings,
 } from 'lucide-react';
 import { ProfileNameForm } from './ProfileNameForm';
 import { SignOutButton }   from './SignOutButton';
@@ -15,6 +15,7 @@ export default async function DashboardPage() {
   const account = await getCurrentAccount();
   if (!account) redirect('/dashboard/login');
 
+  const isAdmin = await checkIsAdmin(account.email);
   const admin = createAdminClient();
 
   const [certsRes, attemptsRes, clubsRes, accountRes, forumRes] = await Promise.all([
@@ -77,11 +78,21 @@ export default async function DashboardPage() {
                 <div className="text-sm mb-2" style={{ color: 'rgba(207,215,226,0.65)' }}>{account.email}</div>
                 <span className="font-sans text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
                   style={{ background: 'rgba(232,160,32,0.18)', color: '#E8A020', border: '1px solid rgba(232,160,32,0.35)' }}>
-                  RRU Student
+                  Student
                 </span>
               </div>
             </div>
-            <SignOutButton />
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/dashboard/enroll" className="btn-ghost py-1.5 px-3 text-xs">
+                <GraduationCap className="w-3.5 h-3.5" /> Join a batch
+              </Link>
+              {isAdmin && (
+                <Link href="/dashboard/admin/batches" className="btn-ghost py-1.5 px-3 text-xs">
+                  <Settings className="w-3.5 h-3.5" /> Manage batches
+                </Link>
+              )}
+              <SignOutButton />
+            </div>
           </div>
         </div>
 
