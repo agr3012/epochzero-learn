@@ -12,13 +12,14 @@ import {
 import { ProfileNameForm } from './ProfileNameForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
 import { EnrollCodeForm } from './EnrollCodeForm';
-import { VerifyEmailBanner } from './VerifyEmailBanner';
+import { VerifyEmailGate } from './VerifyEmailBanner';
 import { SignOutButton }   from './SignOutButton';
 import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
 
 export default async function DashboardPage() {
   const account = await getCurrentAccount();
   if (!account) redirect('/dashboard/login');
+  if (!account.email_verified) return <VerifyEmailGate email={account.email} />;
 
   const isAdmin = await checkIsAdmin(account.email);
   const admin = createAdminClient();
@@ -68,7 +69,6 @@ export default async function DashboardPage() {
     <div style={{ minHeight: '100vh', background: 'hsl(var(--background))' }}>
       <div className="container py-10 lg:py-14 max-w-5xl">
 
-        {!account.email_verified && <VerifyEmailBanner />}
 
         {/* Profile header card */}
         <div className="rounded-2xl overflow-hidden mb-8" style={{

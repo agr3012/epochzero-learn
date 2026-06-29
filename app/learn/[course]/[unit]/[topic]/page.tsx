@@ -22,8 +22,6 @@ import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 import { getCurrentAccount } from '@/lib/auth'
 import { getVideoProgress, getArticleReadSet, isUnitComplete, type VideoProgressRow } from '@/lib/progress'
-import { isEnrolledInCourse } from '@/lib/enrollment'
-import { EnrollCodeForm } from '@/app/dashboard/EnrollCodeForm'
 
 export const revalidate = 60
 
@@ -213,8 +211,7 @@ export default async function TopicPage({
 
   // ── Phase 2: account-aware completion state ────────────────────────────
   const account = await getCurrentAccount()
-  const enrolled = account ? await isEnrolledInCourse(account.id, course.id) : false
-  const [videoProgress, readArticleIds, unitComplete]: [Record<string, VideoProgressRow>, Set<string>, boolean] = account && enrolled
+  const [videoProgress, readArticleIds, unitComplete]: [Record<string, VideoProgressRow>, Set<string>, boolean] = account
     ? await Promise.all([
         getVideoProgress(account.id, videos.map((v) => v.id)),
         getArticleReadSet(account.id, articles.map((a) => a.id)),
@@ -319,14 +316,14 @@ export default async function TopicPage({
         )}
       </div>
 
-      {/* ── Enrollment gate ── */}
-      {!account ? (
+      {/* ── Sign-in prompt (content itself is open — an account just tracks progress) ── */}
+      {!account && (
         <div className="card-forensic p-8 lg:p-10 max-w-2xl mb-12">
           <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-            Sign in to enroll
+            Sign in to track your progress
           </h2>
           <p className="font-serif text-bone-200 mb-8">
-            An account is required to enroll in this course and view its content.
+            This topic is open to everyone — sign in to save your watch/read progress and unlock module exams.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href={`/dashboard/login?next=${encodeURIComponent(`/learn/${course.slug}/${unit.slug}/${topic.slug}`)}`} className="btn-primary">
@@ -337,21 +334,8 @@ export default async function TopicPage({
             </Link>
           </div>
         </div>
-      ) : !enrolled ? (
-        <div className="card p-8 lg:p-10 max-w-2xl mb-12" style={{ borderLeft: `3px solid ${tileColor}` }}>
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Lock className="w-5 h-5" style={{ color: tileColor }} />
-            <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-              Enroll to view this topic
-            </h2>
-          </div>
-          <p className="font-serif text-sm mb-6" style={{ color: 'hsl(var(--foreground-muted))' }}>
-            Enter the course/batch code your instructor gave you to unlock this topic's content.
-          </p>
-          <EnrollCodeForm startExpanded />
-        </div>
-      ) : (
-      <>
+      )}
+
       {/* Quadrant tab navigation */}
       <nav aria-label="Quadrant navigation" className="flex flex-wrap gap-2 mb-12">
         {[
@@ -658,8 +642,6 @@ export default async function TopicPage({
         </section>
 
       </div>
-      </>
-      )}
     </div>
   )
 }

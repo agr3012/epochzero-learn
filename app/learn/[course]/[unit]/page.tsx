@@ -1,13 +1,11 @@
 // app/learn/[courseSlug]/[unitSlug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Clock, ArrowRight, Target, CheckCircle2, LogIn, Lock } from 'lucide-react';
+import { ChevronLeft, Clock, ArrowRight, Target, CheckCircle2, LogIn } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
 import { isTopicComplete } from '@/lib/progress';
-import { isEnrolledInCourse } from '@/lib/enrollment';
-import { EnrollCodeForm } from '@/app/dashboard/EnrollCodeForm';
 
 export const revalidate = 60;
 
@@ -35,14 +33,13 @@ export default async function UnitPage({ params }: Props) {
   if (!unit) notFound();
 
   const account = await getCurrentAccount();
-  const enrolled = account ? await isEnrolledInCourse(account.id, course.id) : false;
 
   const { data: topics } = await supabase.from('topics').select('*')
     .eq('unit_id', unit.id).eq('is_published', true).order('topic_number', { ascending: true });
 
   const tileColor = DOMAIN_COLOR[course.slug] ?? '#1B5FA8';
 
-  const completedTopicIds = account && enrolled && topics
+  const completedTopicIds = account && topics
     ? new Set(
         (await Promise.all(topics.map(async (t) => ((await isTopicComplete(account.id, t.id)) ? t.id : null))))
           .filter((id): id is string => id !== null)
@@ -102,14 +99,14 @@ export default async function UnitPage({ params }: Props) {
         )}
       </div>
 
-      {/* ── Enrollment gate ── */}
-      {!account ? (
+      {/* ── Sign-in prompt (content itself is open — an account just tracks progress) ── */}
+      {!account && (
         <div className="card-forensic p-8 lg:p-10 max-w-2xl mb-12">
           <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-            Sign in to enroll
+            Sign in to track your progress
           </h2>
           <p className="font-serif text-bone-200 mb-8">
-            An account is required to enroll in this course and track your progress.
+            Topics are open to everyone — sign in to save your watch/read progress and unlock module exams.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href={`/dashboard/login?next=${encodeURIComponent(`/learn/${course.slug}/${unit.slug}`)}`} className="btn-primary">
@@ -120,21 +117,8 @@ export default async function UnitPage({ params }: Props) {
             </Link>
           </div>
         </div>
-      ) : !enrolled ? (
-        <div className="card p-8 lg:p-10 max-w-2xl mb-12" style={{ borderLeft: `3px solid ${tileColor}` }}>
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Lock className="w-5 h-5" style={{ color: tileColor }} />
-            <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-              Enroll to start learning
-            </h2>
-          </div>
-          <p className="font-serif text-sm mb-6" style={{ color: 'hsl(var(--foreground-muted))' }}>
-            Enter the course/batch code your instructor gave you to unlock this unit's topics.
-          </p>
-          <EnrollCodeForm startExpanded />
-        </div>
-      ) : (
-      <>
+      )}
+
       {/* ── Topics ── */}
       <h2 className="font-display text-xl font-semibold mb-5"
         style={{ color: 'hsl(var(--foreground))' }}>
@@ -198,8 +182,6 @@ export default async function UnitPage({ params }: Props) {
             </Link>
           ))}
         </div>
-      )}
-      </>
       )}
     </div>
   );

@@ -187,11 +187,17 @@ export function Navbar() {
         {/* ── Desktop nav ── */}
         <nav className="hidden lg:flex items-center h-16 relative">
 
+          {/* Courses */}
+          <Link href="/learn"
+            className={cn('nav-link-underline', isActive(['/learn']) && 'active')}>
+            Courses
+          </Link>
+
           {/* Learn */}
           <div onMouseEnter={() => enter('learn')} onMouseLeave={leave}
             className="h-full flex items-center">
             <button className={cn('nav-link-underline',
-              isActive(['/learn', '/articles', '/videos', '/podcast', '/resources']) && 'active')}>
+              isActive(['/articles', '/videos', '/podcast', '/resources']) && 'active')}>
               Learn
               <ChevronDown className={cn('w-3 h-3 transition-transform duration-150',
                 openKey === 'learn' && 'rotate-180')} />
@@ -281,52 +287,6 @@ export function Navbar() {
                 marginTop: '0px',
               }}>
 
-              {/* Domain strip */}
-              <div className="grid grid-cols-4 border-b"
-                style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--surface))' }}>
-                {[
-                  { label: 'REMA',            sub: 'Reverse Engineering',    href: '/learn?domain=rema',   color: '#8B5E1A', soon: false },
-                  { label: 'Cloud Security',  sub: 'Architecture & Threats', href: '/learn?domain=cloud',  color: '#1B5FA8', soon: false },
-                  { label: 'Cryptography',    sub: 'Applied & PKI',          href: '/learn?domain=crypto', color: '#6B3AD4', soon: true  },
-                  { label: 'Web Development', sub: 'Full Stack & Secure',    href: '/learn?domain=webdev', color: '#1B7C3E', soon: true  },
-                ].map(d => (
-                  <Link key={d.href}
-                    href={d.soon ? '#' : d.href}
-                    className={cn(
-                      'px-4 py-3 transition-colors group',
-                      d.soon ? 'pointer-events-none opacity-40' : '',
-                    )}
-                    style={{}}
-                    onMouseEnter={e => {
-                      if (!d.soon) (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))';
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLElement).style.background = '';
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-0.5">
-                      {/* Tiny domain colour dot */}
-                      <span className="w-2 h-2 rounded-full shrink-0"
-                        style={{ background: d.color }} />
-                      <span className="font-sans font-semibold text-sm"
-                        style={{ color: 'hsl(var(--foreground))' }}>
-                        {d.label}
-                      </span>
-                      {d.soon && (
-                        <span className="text-[9px] font-sans font-medium px-1 py-0.5 rounded"
-                          style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground-subtle))' }}>
-                          soon
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs pl-4"
-                      style={{ color: 'hsl(var(--foreground-muted))' }}>
-                      {d.sub}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
               {/* Content columns */}
               <div className="grid grid-cols-4 divide-x"
                 style={{ '--tw-divide-opacity': '1' } as React.CSSProperties}>
@@ -392,6 +352,13 @@ export function Navbar() {
             background: 'hsl(var(--surface))',
           }}>
           <div className="container py-3 flex flex-col gap-0.5">
+
+            {/* Courses */}
+            <Link href="/learn" onClick={() => setMobileOpen(false)}
+              className="block px-3 py-3 font-sans font-medium text-sm rounded-lg"
+              style={{ color: 'hsl(var(--foreground-muted))' }}>
+              Courses
+            </Link>
 
             {/* Learn accordion */}
             <div>

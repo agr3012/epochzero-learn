@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentAccount } from '@/lib/auth';
-import { isEnrolledInCourse } from '@/lib/enrollment';
 import { isUnitComplete } from '@/lib/progress';
 
 const schema = z.object({ test_id: z.string().uuid() });
@@ -31,8 +30,10 @@ export async function POST(req: NextRequest) {
     if (!test || !test.is_published)
       return NextResponse.json({ error: 'Test not found' }, { status: 404 });
 
-    // Defense in depth: if this test belongs to a gated course, re-check
-    // enrollment server-side (the page-level gate is the primary check).
+    // Module exam: locked until every topic in its unit is complete (all
+    // videos watched, all articles read). No enrollment requirement —
+    // course content and exams are open to everyone with an account; the
+    // enrollment code only tags which cohort/batch a student belongs to.
     const { data: topicTestRow } = await admin
       .from('topic_tests')
       .select('topic_id')
@@ -44,17 +45,8 @@ export async function POST(req: NextRequest) {
         .select('unit_id')
         .eq('id', topicTestRow.topic_id)
         .maybeSingle();
-      const { data: unitRow } = topicRow?.unit_id
-        ? await admin.from('units').select('id, course_id').eq('id', topicRow.unit_id).maybeSingle()
-        : { data: null };
-      if (unitRow?.course_id) {
-        const enrolled = await isEnrolledInCourse(account.id, unitRow.course_id);
-        if (!enrolled)
-          return NextResponse.json({ error: 'Enrollment required for this course' }, { status: 403 });
-
-        // Module exam: locked until every topic in its unit is complete
-        // (all videos watched, all articles read).
-        const unitComplete = await isUnitComplete(account.id, unitRow.id);
+      if (topicRow?.unit_id) {
+        const unitComplete = await isUnitComplete(account.id, topicRow.unit_id);
         if (!unitComplete)
           return NextResponse.json(
             { error: 'Complete every topic in this unit before attempting its exam.' },

@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { MailWarning, Loader2, Check } from 'lucide-react';
+import { SignOutButton } from './SignOutButton';
 
-export function VerifyEmailBanner() {
+export function VerifyEmailGate({ email }: { email: string }) {
   const [loading, setLoading] = useState(false);
   const [sent, setSent]       = useState(false);
   const [error, setError]     = useState('');
@@ -19,21 +20,28 @@ export function VerifyEmailBanner() {
   }
 
   return (
-    <div className="rounded-xl p-4 mb-8 flex items-center justify-between gap-4 flex-wrap"
-      style={{ background: 'rgba(232,160,32,0.08)', border: '1px solid rgba(232,160,32,0.30)' }}>
-      <div className="flex items-center gap-3">
-        <MailWarning className="w-4 h-4 shrink-0" style={{ color: '#E8A020' }} />
-        <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
-          {sent ? 'Verification email sent — check your inbox.' : 'Please verify your email address.'}
-          {error && <span style={{ color: '#ef4444' }}> {error}</span>}
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'hsl(var(--background))' }}>
+      <div className="w-full max-w-sm text-center">
+        <MailWarning className="w-10 h-10 mx-auto mb-4" style={{ color: '#E8A020' }} />
+        <h1 className="font-display text-xl font-bold mb-2" style={{ color: 'hsl(var(--foreground))' }}>
+          Verify your email
+        </h1>
+        <p className="text-sm mb-6" style={{ color: 'hsl(var(--foreground-muted))' }}>
+          We sent a verification link to <strong>{email}</strong>. Click it to unlock your dashboard.
         </p>
+        {error && <p className="text-xs mb-3" style={{ color: '#ef4444' }}>{error}</p>}
+        {sent ? (
+          <p className="text-sm mb-4" style={{ color: '#22c55e' }}>Email sent — check your inbox (and spam folder).</p>
+        ) : (
+          <button onClick={handleResend} disabled={loading} className="btn-primary inline-flex disabled:opacity-60 mb-4">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            Resend verification email
+          </button>
+        )}
+        <div>
+          <SignOutButton />
+        </div>
       </div>
-      {!sent && (
-        <button onClick={handleResend} disabled={loading} className="btn-ghost py-1.5 px-3 text-xs disabled:opacity-60">
-          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-          Resend email
-        </button>
-      )}
     </div>
   );
 }
