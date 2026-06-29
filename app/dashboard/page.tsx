@@ -5,10 +5,11 @@ import { getCurrentAccount, checkIsAdmin } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getEnrolledCourses, getCourseProgressSummary } from '@/lib/progress';
 import { getCertificateChainStatus } from '@/lib/certificates';
+import { getLeaderboard, getMyRank, maskEmail } from '@/lib/points';
 import {
   Award, BookOpen, Shield, ChevronRight,
   CheckCircle, XCircle, Clock, Download,
-  MessageSquare, ExternalLink, Users, GraduationCap, Settings, Lock,
+  MessageSquare, ExternalLink, Users, GraduationCap, Settings, Lock, Trophy,
 } from 'lucide-react';
 import { ProfileNameForm } from './ProfileNameForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
@@ -33,6 +34,11 @@ export default async function DashboardPage() {
   const certificateChains = await Promise.all(
     enrolledCourses.map((c) => getCertificateChainStatus(account.email, c.courseId))
   );
+
+  const [leaderboardTop5, myRank] = await Promise.all([
+    getLeaderboard(5),
+    getMyRank(account.id),
+  ]);
 
   const [certsRes, attemptsRes, clubsRes, accountRes, forumRes] = await Promise.all([
     admin.from('certificates').select('id, cert_uid, test_title, score, domain, club_name, issued_at, pdf_url')
@@ -285,6 +291,58 @@ export default async function DashboardPage() {
             })}
           </section>
         )}
+
+        {/* Leaderboard */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+              Leaderboard
+            </h2>
+            <Link href="/leaderboard"
+              className="inline-flex items-center gap-1 text-sm font-medium hover:gap-2 transition-all"
+              style={{ color: 'hsl(var(--primary))' }}>
+              Full leaderboard <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="card p-6 rounded-xl">
+            <div className="flex items-center gap-5 mb-5 pb-5 flex-wrap" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#E8A020' }}>
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {myRank ? (
+                  <>
+                    <p className="font-display text-lg font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                      Rank #{myRank.rank} · {myRank.total_points} pts
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                      Video {myRank.video_points} · Article {myRank.article_points} · Exam {myRank.exam_points} · Forum {myRank.forum_points}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                    No points yet — watch a video or read an article to get on the board.
+                  </p>
+                )}
+              </div>
+            </div>
+            {leaderboardTop5.length > 0 && (
+              <div className="space-y-2">
+                {leaderboardTop5.map((r) => (
+                  <div key={r.account_id} className="flex items-center gap-3 text-sm">
+                    <span className="w-5 font-display font-bold shrink-0" style={{ color: r.rank <= 3 ? '#E8A020' : 'hsl(var(--foreground-subtle))' }}>
+                      {r.rank}
+                    </span>
+                    <span className="flex-1 min-w-0 truncate" style={{ color: r.account_id === account.id ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>
+                      {r.display_name?.trim() || maskEmail(r.email)}
+                    </span>
+                    <span className="font-semibold shrink-0" style={{ color: 'hsl(var(--foreground-subtle))' }}>{r.total_points} pts</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Certificates */}
         <section className="mb-8">

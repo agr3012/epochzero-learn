@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { maybeIssueModuleCertificate } from '@/lib/certificates';
+import { awardPoints } from '@/lib/points';
 
 const schema = z.object({
   attempt_id: z.string().uuid(),
@@ -159,6 +160,10 @@ export async function POST(req: NextRequest) {
     if (updErr) {
       console.error('attempt update error:', updErr);
       return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    }
+
+    if (isFirstPass && attempt.account_id) {
+      await awardPoints(attempt.account_id, 'exam', attempt.test_id);
     }
 
     // Increment test attempt count (best-effort)

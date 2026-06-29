@@ -3,6 +3,7 @@
 // reads, and the topic/unit completion they derive, used to gate module
 // exams (see app/api/tests/start/route.ts).
 import { createAdminClient } from '@/lib/supabase/admin';
+import { awardPoints } from '@/lib/points';
 
 const HEARTBEAT_MAX_DELTA_SECONDS = 15; // defense: clamp implausible deltas from a single heartbeat
 
@@ -54,6 +55,7 @@ export async function markArticleRead(accountId: string, articleId: string): Pro
       { account_id: accountId, article_id: articleId },
       { onConflict: 'account_id,article_id', ignoreDuplicates: true }
     );
+  await awardPoints(accountId, 'article', articleId);
 }
 
 /**
@@ -106,6 +108,8 @@ export async function recordVideoHeartbeat(
       },
       { onConflict: 'account_id,video_id' }
     );
+
+  if (completed) await awardPoints(accountId, 'video', videoId);
 
   return { watched_seconds, last_position_seconds, completed };
 }

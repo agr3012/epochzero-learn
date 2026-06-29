@@ -1,7 +1,7 @@
 // app/learn/[courseSlug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ArrowRight, BookOpen, GraduationCap, LogIn } from 'lucide-react';
+import { ChevronLeft, ArrowRight, BookOpen, GraduationCap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
@@ -9,6 +9,7 @@ import { getCourseProgressSummary } from '@/lib/progress';
 import { isEnrolledInCourseAny } from '@/lib/enrollment';
 import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
 import { EnrollButton } from '@/components/enroll-button';
+import { SignInBanner } from '@/components/SignInBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,8 @@ export default async function CoursePage({ params }: Props) {
 
   return (
     <div className="container py-12 lg:py-16">
+
+      {!account && <SignInBanner next={`/learn/${course.slug}`} />}
 
       {/* ── Back link ── */}
       <Link href="/learn"
@@ -87,25 +90,7 @@ export default async function CoursePage({ params }: Props) {
         )}
       </div>
 
-      {/* ── Sign-in prompt (content itself is open — an account just tracks progress) ── */}
-      {!account ? (
-        <div className="card-forensic p-8 lg:p-10 max-w-2xl mb-12">
-          <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-            Sign in to track your progress
-          </h2>
-          <p className="font-serif text-bone-200 mb-8">
-            Course content is open to everyone — sign in to save your watch/read progress and unlock module exams.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/dashboard/login?next=${encodeURIComponent(`/learn/${course.slug}`)}`} className="btn-primary">
-              <LogIn className="w-4 h-4" /> Sign in
-            </Link>
-            <Link href={`/dashboard/register?next=${encodeURIComponent(`/learn/${course.slug}`)}`} className="btn-ghost">
-              Create an account
-            </Link>
-          </div>
-        </div>
-      ) : progress && (
+      {progress && (
         <div className="card p-6 rounded-xl mb-12 flex items-center gap-6 flex-wrap">
           <ProgressDonut percent={progress.overallPercent} label="Overall" color={tileColor} />
           <div className="flex-1 min-w-0">

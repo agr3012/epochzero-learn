@@ -1,11 +1,12 @@
 // app/learn/[courseSlug]/[unitSlug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Clock, ArrowRight, Target, CheckCircle2, LogIn } from 'lucide-react';
+import { ChevronLeft, Clock, ArrowRight, Target, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
 import { getTopicCompletionInfo } from '@/lib/progress';
+import { SignInBanner } from '@/components/SignInBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +55,8 @@ export default async function UnitPage({ params }: Props) {
 
   return (
     <div className="container py-12 lg:py-16">
+
+      {!account && <SignInBanner next={`/learn/${course.slug}/${unit.slug}`} />}
 
       {/* ── Back link ── */}
       <Link href={`/learn/${course.slug}`}
@@ -104,26 +107,6 @@ export default async function UnitPage({ params }: Props) {
           </div>
         )}
       </div>
-
-      {/* ── Sign-in prompt (content itself is open — an account just tracks progress) ── */}
-      {!account && (
-        <div className="card-forensic p-8 lg:p-10 max-w-2xl mb-12">
-          <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-            Sign in to track your progress
-          </h2>
-          <p className="font-serif text-bone-200 mb-8">
-            Topics are open to everyone — sign in to save your watch/read progress and unlock module exams.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/dashboard/login?next=${encodeURIComponent(`/learn/${course.slug}/${unit.slug}`)}`} className="btn-primary">
-              <LogIn className="w-4 h-4" /> Sign in
-            </Link>
-            <Link href={`/dashboard/register?next=${encodeURIComponent(`/learn/${course.slug}/${unit.slug}`)}`} className="btn-ghost">
-              Create an account
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* ── Topics ── */}
       <h2 className="font-display text-xl font-semibold mb-5"

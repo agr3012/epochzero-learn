@@ -237,6 +237,12 @@ export function Navbar() {
             {openKey === 'campus' && <Dropdown items={CAMPUS_ITEMS} />}
           </div>
 
+          {/* Leaderboard */}
+          <Link href="/leaderboard"
+            className={cn('nav-link-underline', pathname === '/leaderboard' && 'active')}>
+            Leaderboard
+          </Link>
+
           {/* About */}
           <Link href="/about"
             className={cn('nav-link-underline', pathname === '/about' && 'active')}>
@@ -403,6 +409,12 @@ export function Navbar() {
               open={mobileExp} setOpen={setMobileExp} onClose={() => setMobileOpen(false)} />
             <MobileAccordion label="Campus" id="campus" items={CAMPUS_ITEMS}
               open={mobileExp} setOpen={setMobileExp} onClose={() => setMobileOpen(false)} />
+
+            <Link href="/leaderboard" onClick={() => setMobileOpen(false)}
+              className="block px-3 py-3 font-sans font-medium text-sm rounded-lg"
+              style={{ color: 'hsl(var(--foreground-muted))' }}>
+              Leaderboard
+            </Link>
 
             <Link href="/about" onClick={() => setMobileOpen(false)}
               className="block px-3 py-3 font-sans font-medium text-sm rounded-lg"

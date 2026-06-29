@@ -16,12 +16,12 @@ import {
   Target,
   CheckCircle2,
   Lock,
-  LogIn,
 } from 'lucide-react'
 import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 import { getCurrentAccount } from '@/lib/auth'
 import { getVideoProgress, getArticleReadSet, isUnitComplete, type VideoProgressRow } from '@/lib/progress'
+import { SignInBanner } from '@/components/SignInBanner'
 
 export const dynamic = 'force-dynamic';
 
@@ -222,6 +222,8 @@ export default async function TopicPage({
   return (
     <div className="container py-12 lg:py-16">
 
+      {!account && <SignInBanner next={`/learn/${course.slug}/${unit.slug}/${topic.slug}`} />}
+
       {/* ── Back link ── */}
       <Link
         href={`/learn/${course.slug}/${unit.slug}`}
@@ -315,26 +317,6 @@ export default async function TopicPage({
           </div>
         )}
       </div>
-
-      {/* ── Sign-in prompt (content itself is open — an account just tracks progress) ── */}
-      {!account && (
-        <div className="card-forensic p-8 lg:p-10 max-w-2xl mb-12">
-          <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500 mb-2">
-            Sign in to track your progress
-          </h2>
-          <p className="font-serif text-bone-200 mb-8">
-            This topic is open to everyone — sign in to save your watch/read progress and unlock module exams.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/dashboard/login?next=${encodeURIComponent(`/learn/${course.slug}/${unit.slug}/${topic.slug}`)}`} className="btn-primary">
-              <LogIn className="w-4 h-4" /> Sign in
-            </Link>
-            <Link href={`/dashboard/register?next=${encodeURIComponent(`/learn/${course.slug}/${unit.slug}/${topic.slug}`)}`} className="btn-ghost">
-              Create an account
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* Quadrant tab navigation */}
       <nav aria-label="Quadrant navigation" className="flex flex-wrap gap-2 mb-12">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createAdmin } from '@supabase/supabase-js';
+import { awardPoints } from '@/lib/points';
 
 const admin = createAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,6 +52,19 @@ export async function POST(req: NextRequest) {
   await admin.from('forum_threads')
     .update({ reply_count: (thread.reply_count ?? 0) + 1 })
     .eq('id', threadId);
+
+  // The forum runs on Supabase Auth identity, separate from the
+  // student_accounts system the rest of the platform (and the points
+  // ledger) uses. Bridge via email — if this poster also has a
+  // student_accounts row, credit them; otherwise skip silently.
+  if (user.email) {
+    const { data: account } = await admin
+      .from('student_accounts')
+      .select('id')
+      .eq('email', user.email)
+      .maybeSingle();
+    if (account) await awardPoints(account.id, 'forum', reply.id);
+  }
 
   return NextResponse.json({ id: reply.id, status: 'published', message: 'Reply posted.' });
 }
