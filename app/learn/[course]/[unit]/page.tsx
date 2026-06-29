@@ -1,9 +1,11 @@
 // app/learn/[courseSlug]/[unitSlug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Clock, ArrowRight, Target } from 'lucide-react';
+import { ChevronLeft, Clock, ArrowRight, Target, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
+import { getCurrentAccount } from '@/lib/auth';
+import { isTopicComplete } from '@/lib/progress';
 
 export const revalidate = 60;
 
@@ -34,6 +36,14 @@ export default async function UnitPage({ params }: Props) {
     .eq('unit_id', unit.id).eq('is_published', true).order('topic_number', { ascending: true });
 
   const tileColor = DOMAIN_COLOR[course.slug] ?? '#1B5FA8';
+
+  const account = await getCurrentAccount();
+  const completedTopicIds = account && topics
+    ? new Set(
+        (await Promise.all(topics.map(async (t) => ((await isTopicComplete(account.id, t.id)) ? t.id : null))))
+          .filter((id): id is string => id !== null)
+      )
+    : new Set<string>();
 
   return (
     <div className="container py-12 lg:py-16">
@@ -119,9 +129,15 @@ export default async function UnitPage({ params }: Props) {
                 </span>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-display text-base font-semibold leading-snug
-                    group-hover:text-[hsl(var(--primary))] transition-colors"
+                    group-hover:text-[hsl(var(--primary))] transition-colors flex items-center gap-2"
                     style={{ color: 'hsl(var(--foreground))' }}>
                     {t.title}
+                    {completedTopicIds.has(t.id) && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold shrink-0"
+                        style={{ background: 'rgba(27,124,62,0.10)', color: '#22c55e' }}>
+                        <CheckCircle2 className="w-3 h-3" /> Complete
+                      </span>
+                    )}
                   </h3>
                   {t.description && (
                     <p className="text-sm mt-0.5 line-clamp-1"

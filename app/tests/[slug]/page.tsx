@@ -1,9 +1,10 @@
 // app/tests/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Clock, ListChecks, ShieldAlert, Award, ChevronLeft, RotateCcw, BadgeCheck, LogIn } from 'lucide-react';
+import { Clock, ListChecks, ShieldAlert, Award, ChevronLeft, RotateCcw, BadgeCheck, LogIn, Lock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAccount } from '@/lib/auth';
+import { getExamLockStatus } from '@/lib/progress';
 import { TestPageClient } from '@/components/exam/TestPageClient';
 
 export const revalidate = 60;
@@ -29,6 +30,7 @@ export default async function TestDetailPage({ params }: Props) {
   if (!test) notFound();
 
   const account = await getCurrentAccount();
+  const lockStatus = account ? await getExamLockStatus(account.id, test.id) : { locked: false as const };
   const accentColor = DOMAIN_COLOR[test.category ?? ''] || '#8B5E1A';
 
   return (
@@ -113,7 +115,20 @@ export default async function TestDetailPage({ params }: Props) {
       </div>
 
       {/* Proctored exam flow -- full width */}
-      {account ? (
+      {account && lockStatus.locked ? (
+        <div className="card-forensic p-8 lg:p-10 max-w-2xl">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <Lock className="w-5 h-5" style={{ color: '#E8A020' }} />
+            <h2 className="font-mono text-xl uppercase tracking-wider text-gold-500">
+              Exam locked
+            </h2>
+          </div>
+          <p className="font-serif text-bone-200 mb-2">{lockStatus.reason}</p>
+          <p className="font-serif text-sm" style={{ color: 'rgba(207,215,226,0.65)' }}>
+            Unit: <span style={{ color: '#E8A020' }}>{lockStatus.unitTitle}</span>
+          </p>
+        </div>
+      ) : account ? (
         <TestPageClient testId={test.id} testTitle={test.title} studentEmail={account.email} />
       ) : (
         <div className="card-forensic p-8 lg:p-10 max-w-2xl">

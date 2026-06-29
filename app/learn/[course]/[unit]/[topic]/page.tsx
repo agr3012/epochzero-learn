@@ -14,9 +14,13 @@ import {
   ChevronRight,
   Clock,
   Target,
+  CheckCircle2,
+  Lock,
 } from 'lucide-react'
 import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
+import { getCurrentAccount } from '@/lib/auth'
+import { getVideoProgress, getArticleReadSet, isUnitComplete, type VideoProgressRow } from '@/lib/progress'
 
 export const revalidate = 60
 
@@ -204,6 +208,16 @@ export default async function TopicPage({
 
   const q3Total = resources.length + links.length
 
+  // ── Phase 2: account-aware completion state ────────────────────────────
+  const account = await getCurrentAccount()
+  const [videoProgress, readArticleIds, unitComplete]: [Record<string, VideoProgressRow>, Set<string>, boolean] = account
+    ? await Promise.all([
+        getVideoProgress(account.id, videos.map((v) => v.id)),
+        getArticleReadSet(account.id, articles.map((a) => a.id)),
+        isUnitComplete(account.id, unit.id),
+      ])
+    : [{}, new Set<string>(), false]
+
   return (
     <div className="container py-12 lg:py-16">
 
@@ -367,6 +381,14 @@ export default async function TopicPage({
                         {formatDuration(v.duration_seconds)}
                       </span>
                     )}
+                    {videoProgress[v.id]?.completed && (
+                      <span
+                        className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
+                        style={{ background: 'rgba(27,124,62,0.85)' }}
+                      >
+                        <CheckCircle2 className="w-3 h-3" /> Watched
+                      </span>
+                    )}
                   </div>
                   <p
                     className="mt-3 text-sm font-medium leading-snug line-clamp-2 transition-colors group-hover:text-[hsl(var(--primary))]"
@@ -401,10 +423,16 @@ export default async function TopicPage({
                   {a.category && <span className="badge badge-tag mt-0.5 shrink-0">{a.category}</span>}
                   <div className="flex-1 min-w-0 space-y-1">
                     <p
-                      className="font-display font-semibold transition-colors group-hover:text-[hsl(var(--primary))]"
+                      className="font-display font-semibold transition-colors group-hover:text-[hsl(var(--primary))] flex items-center gap-2"
                       style={{ color: 'hsl(var(--foreground))' }}
                     >
                       {a.title}
+                      {readArticleIds.has(a.id) && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                          style={{ background: 'rgba(27,124,62,0.10)', color: '#22c55e' }}>
+                          <CheckCircle2 className="w-3 h-3" /> Read
+                        </span>
+                      )}
                     </p>
                     {a.excerpt && (
                       <p className="font-serif text-sm line-clamp-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
@@ -536,36 +564,54 @@ export default async function TopicPage({
             color={QUADRANT_COLORS.assessment}
           />
 
+          {account && tests.length > 0 && !unitComplete && (
+            <div className="card p-5 flex items-start gap-3" style={{ borderLeft: `3px solid ${QUADRANT_COLORS.assessment}` }}>
+              <Lock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: QUADRANT_COLORS.assessment }} />
+              <p className="font-serif text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                Locked until every topic in <strong>{unit.title}</strong> is complete — all videos watched, all articles read.
+              </p>
+            </div>
+          )}
+
           {tests.length > 0 ? (
             <div className="space-y-3">
-              {tests.map((t) => (
-                <Link key={t.id} href={`/tests/${t.slug}`} className="card card-interactive p-5 group flex items-start gap-4">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white"
-                    style={{ background: QUADRANT_COLORS.assessment }}
-                  >
-                    <GraduationCap className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <p
-                      className="font-display font-semibold transition-colors group-hover:text-[hsl(var(--primary))]"
-                      style={{ color: 'hsl(var(--foreground))' }}
+              {tests.map((t) => {
+                const locked = !!account && !unitComplete
+                const cardClass = `card p-5 flex items-start gap-4 ${locked ? 'opacity-60 cursor-not-allowed' : 'card-interactive group'}`
+                const inner = (
+                  <>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white"
+                      style={{ background: QUADRANT_COLORS.assessment }}
                     >
-                      {t.title}
-                    </p>
-                    {t.description && (
-                      <p className="font-serif text-sm line-clamp-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                        {t.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-4 text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                      <span>{t.total_questions} questions</span>
-                      <span>{t.duration_minutes} min</span>
-                      <span>Pass: {t.passing_score}%</span>
+                      {locked ? <Lock className="w-5 h-5" /> : <GraduationCap className="w-5 h-5" />}
                     </div>
-                  </div>
-                </Link>
-              ))}
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <p
+                        className="font-display font-semibold transition-colors group-hover:text-[hsl(var(--primary))]"
+                        style={{ color: 'hsl(var(--foreground))' }}
+                      >
+                        {t.title}
+                      </p>
+                      {t.description && (
+                        <p className="font-serif text-sm line-clamp-2" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                          {t.description}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-4 text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                        <span>{t.total_questions} questions</span>
+                        <span>{t.duration_minutes} min</span>
+                        <span>Pass: {t.passing_score}%</span>
+                      </div>
+                    </div>
+                  </>
+                )
+                return locked ? (
+                  <div key={t.id} className={cardClass}>{inner}</div>
+                ) : (
+                  <Link key={t.id} href={`/tests/${t.slug}`} className={cardClass}>{inner}</Link>
+                )
+              })}
             </div>
           ) : (
             <p className="text-sm italic font-serif" style={{ color: 'hsl(var(--foreground-muted))' }}>

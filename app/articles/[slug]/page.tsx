@@ -12,7 +12,10 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getCurrentAccount } from '@/lib/auth';
+import { getArticleReadSet } from '@/lib/progress';
 import { formatDate } from '@/lib/utils';
+import { ArticleMarkReadButton } from '@/components/article-mark-read-button';
 
 export const revalidate = 60;
 interface Props { params: { slug: string } }
@@ -39,6 +42,9 @@ export default async function ArticleDetailPage({ params }: Props) {
   createAdminClient()
     .rpc('increment_article_views', { p_slug: params.slug })
     .then(() => {}, () => {});
+
+  const account = await getCurrentAccount();
+  const alreadyRead = account ? (await getArticleReadSet(account.id, [article.id])).has(article.id) : false;
 
   const { data: topicRow } = await supabase
     .from('topics').select('id')
@@ -155,6 +161,18 @@ export default async function ArticleDetailPage({ params }: Props) {
           source={article.mdx_content}
           options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug, rehypeHighlight] } }}
         />
+      </div>
+
+      {/* ── Mark as read ── */}
+      <div className="mt-10 pt-8" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+        {account ? (
+          <ArticleMarkReadButton articleId={article.id} initialRead={alreadyRead} />
+        ) : (
+          <p className="text-sm" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+            <Link href="/dashboard/login" className="hover:underline" style={{ color: 'hsl(var(--primary))' }}>Sign in</Link>{' '}
+            to mark this article as read and track your progress.
+          </p>
+        )}
       </div>
 
       {/* ── Related Resources ── */}

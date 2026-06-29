@@ -12,6 +12,8 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getCurrentAccount } from '@/lib/auth';
+import { getVideoProgress } from '@/lib/progress';
 import { formatDate, formatDuration, getYouTubeThumbnail } from '@/lib/utils';
 import { DOMAIN_COLOR, SECTION_COLORS } from '@/lib/colors';
 import { VideoPlayer } from '@/components/video-player';
@@ -47,6 +49,9 @@ export default async function VideoDetailPage({ params }: Props) {
 
   if (!video) notFound();
 
+  const account = await getCurrentAccount();
+  const videoProgress = account ? (await getVideoProgress(account.id, [video.id]))[video.id] : undefined;
+
   const { data: sidebarVideos } = await supabase
     .from('videos')
     .select('id, slug, youtube_id, title, duration_seconds, episode_label, category, domain')
@@ -80,7 +85,19 @@ export default async function VideoDetailPage({ params }: Props) {
 
         {/* ── Main column ── */}
         <div className="min-w-0">
-          <VideoPlayer youtubeId={video.youtube_id} steps={steps} />
+          <VideoPlayer
+            youtubeId={video.youtube_id}
+            steps={steps}
+            videoId={account ? video.id : undefined}
+            initialPositionSeconds={videoProgress?.last_position_seconds ?? 0}
+            initialCompleted={videoProgress?.completed ?? false}
+          />
+          {!account && (
+            <p className="text-xs mt-2" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+              <Link href="/dashboard/login" className="hover:underline" style={{ color: 'hsl(var(--primary))' }}>Sign in</Link>{' '}
+              to track your watch progress.
+            </p>
+          )}
 
           {/* ── Video meta ── */}
           <div className="mt-5">
