@@ -44,8 +44,8 @@ export default function LoginPage() {
             Track your progress.<br />Earn real certificates.
           </h2>
           <p className="font-serif text-base leading-relaxed mb-10" style={{ color: 'rgba(207,215,226,0.75)' }}>
-            Sign in with your RRU email to access your certificate history,
-            test attempts, club applications, and forum activity.
+            Sign in to access your certificate history, test attempts,
+            club applications, and forum activity.
           </p>
           <div className="space-y-3">
             {['Certificate download with unique verification URL', 'Full test attempt history', 'Club application status'].map(f => (
@@ -72,7 +72,7 @@ export default function LoginPage() {
 
           <div className="mb-8">
             <h1 className="font-display text-2xl font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Sign in</h1>
-            <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>Use your RRU institutional email</p>
+            <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>Sign in to your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>

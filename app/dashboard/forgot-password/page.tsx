@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
         </Link>
         <h1 className="font-display text-2xl font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Reset password</h1>
         <p className="text-sm mb-8" style={{ color: 'hsl(var(--foreground-muted))' }}>
-          Enter your RRU email and we will send a reset link.
+          Enter your email and we will send a reset link.
         </p>
         <div className="card p-8 rounded-2xl">
           {status === 'done' ? (
