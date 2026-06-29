@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
 import { isTopicComplete } from '@/lib/progress';
+import { VerifyEmailGate } from '@/app/dashboard/VerifyEmailBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,7 @@ export default async function UnitPage({ params }: Props) {
 
   const tileColor = DOMAIN_COLOR[course.slug] ?? '#1B5FA8';
 
-  const completedTopicIds = account && topics
+  const completedTopicIds = account?.email_verified && topics
     ? new Set(
         (await Promise.all(topics.map(async (t) => ((await isTopicComplete(account.id, t.id)) ? t.id : null))))
           .filter((id): id is string => id !== null)
@@ -119,7 +120,11 @@ export default async function UnitPage({ params }: Props) {
         </div>
       )}
 
-      {/* ── Topics ── */}
+      {/* ── Topics (gated behind email verification once signed in) ── */}
+      {account && !account.email_verified ? (
+        <VerifyEmailGate email={account.email} fullScreen={false} />
+      ) : (
+      <>
       <h2 className="font-display text-xl font-semibold mb-5"
         style={{ color: 'hsl(var(--foreground))' }}>
         Topics
@@ -182,6 +187,8 @@ export default async function UnitPage({ params }: Props) {
             </Link>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );

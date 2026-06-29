@@ -22,6 +22,7 @@ import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 import { getCurrentAccount } from '@/lib/auth'
 import { getVideoProgress, getArticleReadSet, isUnitComplete, type VideoProgressRow } from '@/lib/progress'
+import { VerifyEmailGate } from '@/app/dashboard/VerifyEmailBanner'
 
 export const dynamic = 'force-dynamic';
 
@@ -211,7 +212,7 @@ export default async function TopicPage({
 
   // ── Phase 2: account-aware completion state ────────────────────────────
   const account = await getCurrentAccount()
-  const [videoProgress, readArticleIds, unitComplete]: [Record<string, VideoProgressRow>, Set<string>, boolean] = account
+  const [videoProgress, readArticleIds, unitComplete]: [Record<string, VideoProgressRow>, Set<string>, boolean] = account?.email_verified
     ? await Promise.all([
         getVideoProgress(account.id, videos.map((v) => v.id)),
         getArticleReadSet(account.id, articles.map((a) => a.id)),
@@ -336,6 +337,11 @@ export default async function TopicPage({
         </div>
       )}
 
+      {/* ── Quadrant content (gated behind email verification once signed in) ── */}
+      {account && !account.email_verified ? (
+        <VerifyEmailGate email={account.email} fullScreen={false} />
+      ) : (
+      <>
       {/* Quadrant tab navigation */}
       <nav aria-label="Quadrant navigation" className="flex flex-wrap gap-2 mb-12">
         {[
@@ -642,6 +648,8 @@ export default async function TopicPage({
         </section>
 
       </div>
+      </>
+      )}
     </div>
   )
 }

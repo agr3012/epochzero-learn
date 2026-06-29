@@ -16,6 +16,7 @@ import { getCurrentAccount } from '@/lib/auth';
 import { getArticleReadSet } from '@/lib/progress';
 import { formatDate } from '@/lib/utils';
 import { ArticleMarkReadButton } from '@/components/article-mark-read-button';
+import { VerifyEmailGate } from '@/app/dashboard/VerifyEmailBanner';
 
 export const dynamic = 'force-dynamic';
 interface Props { params: { slug: string } }
@@ -165,7 +166,9 @@ export default async function ArticleDetailPage({ params }: Props) {
 
       {/* ── Mark as read ── */}
       <div className="mt-10 pt-8" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-        {account ? (
+        {account && !account.email_verified ? (
+          <VerifyEmailGate email={account.email} fullScreen={false} />
+        ) : account ? (
           <ArticleMarkReadButton articleId={article.id} initialRead={alreadyRead} />
         ) : (
           <p className="text-sm" style={{ color: 'hsl(var(--foreground-subtle))' }}>

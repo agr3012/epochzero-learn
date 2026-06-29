@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentAccount } from '@/lib/auth';
 import { getExamLockStatus } from '@/lib/progress';
 import { TestPageClient } from '@/components/exam/TestPageClient';
+import { VerifyEmailGate } from '@/app/dashboard/VerifyEmailBanner';
 
 export const dynamic = 'force-dynamic';
 interface Props { params: { slug: string } }
@@ -115,7 +116,9 @@ export default async function TestDetailPage({ params }: Props) {
       </div>
 
       {/* Proctored exam flow -- full width */}
-      {account && lockStatus.locked ? (
+      {account && !account.email_verified ? (
+        <VerifyEmailGate email={account.email} fullScreen={false} />
+      ) : account && lockStatus.locked ? (
         <div className="card-forensic p-8 lg:p-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 mb-3">
             <Lock className="w-5 h-5" style={{ color: '#E8A020' }} />

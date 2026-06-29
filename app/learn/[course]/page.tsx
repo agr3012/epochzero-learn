@@ -7,6 +7,7 @@ import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
 import { getCourseProgressSummary } from '@/lib/progress';
 import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
+import { VerifyEmailGate } from '@/app/dashboard/VerifyEmailBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,7 +102,7 @@ export default async function CoursePage({ params }: Props) {
             </Link>
           </div>
         </div>
-      ) : progress && (
+      ) : account.email_verified && progress && (
         <div className="card p-6 rounded-xl mb-12 flex items-center gap-6 flex-wrap">
           <ProgressDonut percent={progress.overallPercent} label="Overall" color={tileColor} />
           <div>
@@ -115,7 +116,11 @@ export default async function CoursePage({ params }: Props) {
         </div>
       )}
 
-      {/* ── Units section ── */}
+      {/* ── Units section (gated behind email verification once signed in) ── */}
+      {account && !account.email_verified ? (
+        <VerifyEmailGate email={account.email} fullScreen={false} />
+      ) : (
+      <>
       <h2 className="font-display text-xl font-semibold mb-6"
         style={{ color: 'hsl(var(--foreground))' }}>
         Units
@@ -173,6 +178,8 @@ export default async function CoursePage({ params }: Props) {
             </Link>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );
