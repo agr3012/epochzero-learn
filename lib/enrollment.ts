@@ -2,6 +2,7 @@
 // Server-side only — gates /learn/[course]/... behind an enrollment code.
 import { createAdminClient } from '@/lib/supabase/admin';
 
+/** RRU batch/cohort enrollment via a redeemed code — optional, cohort tracking only. */
 export async function isEnrolledInCourse(accountId: string, courseId: string): Promise<boolean> {
   const admin = createAdminClient();
   const { data } = await admin
@@ -13,6 +14,38 @@ export async function isEnrolledInCourse(accountId: string, courseId: string): P
     .limit(1)
     .maybeSingle();
   return !!data;
+}
+
+/** Self-service opt-in ("I'm taking this course") — no code needed, decides
+ *  whether the course shows in the dashboard's "My Courses" list. */
+export async function isSelfEnrolledInCourse(accountId: string, courseId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from('course_enrollments')
+    .select('id')
+    .eq('account_id', accountId)
+    .eq('course_id', courseId)
+    .maybeSingle();
+  return !!data;
+}
+
+/** True if enrolled by either path — self opt-in or a redeemed batch code. */
+export async function isEnrolledInCourseAny(accountId: string, courseId: string): Promise<boolean> {
+  const [selfEnrolled, batchEnrolled] = await Promise.all([
+    isSelfEnrolledInCourse(accountId, courseId),
+    isEnrolledInCourse(accountId, courseId),
+  ]);
+  return selfEnrolled || batchEnrolled;
+}
+
+export async function selfEnrollInCourse(accountId: string, courseId: string): Promise<void> {
+  const admin = createAdminClient();
+  await admin
+    .from('course_enrollments')
+    .upsert(
+      { account_id: accountId, course_id: courseId },
+      { onConflict: 'account_id,course_id', ignoreDuplicates: true }
+    );
 }
 
 export type RedeemResult =

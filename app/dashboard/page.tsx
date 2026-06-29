@@ -154,7 +154,7 @@ export default async function DashboardPage() {
               <GraduationCap className="w-8 h-8 mx-auto mb-3" style={{ color: 'hsl(var(--foreground-subtle))' }} />
               <p className="text-sm mb-1" style={{ color: 'hsl(var(--foreground-muted))' }}>Not enrolled in any course yet.</p>
               <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-subtle))' }}>
-                Use the "Add code" button above to join a batch with a code from your instructor.
+                Open a course and click "Enroll" to add it here — or use the "Add code" button above if your instructor gave you a batch code.
               </p>
               <Link href="/learn" className="btn-primary inline-flex">Browse courses</Link>
             </div>

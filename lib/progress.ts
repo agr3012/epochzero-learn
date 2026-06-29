@@ -215,38 +215,51 @@ export type EnrolledCourse = {
 };
 
 /**
- * Every published course, annotated with the student's batch label if they
- * redeemed an enrollment code for it. Course content and progress tracking
- * are open to any account regardless of batch — this drives the dashboard's
- * "My Courses" section, which must show every course a student has (or can)
- * make progress in, not just ones tagged to a cohort.
+ * Courses the student has explicitly opted into — either by clicking
+ * "Enroll" on a course page (course_enrollments) or by redeeming an RRU
+ * batch code (batch_enrollments). This drives the dashboard's "My Courses"
+ * section, which should only list courses the student has actually
+ * committed to, not every course that happens to exist. A course's own
+ * page always shows live progress regardless of this — enrollment here
+ * only controls what's curated into the dashboard summary.
  */
 export async function getEnrolledCourses(accountId: string): Promise<EnrolledCourse[]> {
   const admin = createAdminClient();
 
-  const [{ data: courses }, { data: batchRows }] = await Promise.all([
-    admin.from('courses').select('id, title, slug').eq('is_published', true).order('order_index'),
+  const [{ data: selfRows }, { data: batchRows }] = await Promise.all([
+    admin
+      .from('course_enrollments')
+      .select('courses(id, title, slug)')
+      .eq('account_id', accountId),
     admin
       .from('batch_enrollments')
-      .select('batches!inner(batch_label, is_active, course_id)')
+      .select('batches!inner(batch_label, is_active, courses(id, title, slug))')
       .eq('student_account_id', accountId)
       .eq('batches.is_active', true),
   ]);
 
-  const batchLabelByCourse = new Map<string, string>();
-  for (const row of batchRows ?? []) {
-    const batch = row.batches as unknown as { batch_label: string; course_id: string };
-    if (batch?.course_id && !batchLabelByCourse.has(batch.course_id)) {
-      batchLabelByCourse.set(batch.course_id, batch.batch_label);
-    }
+  const courses = new Map<string, EnrolledCourse>();
+
+  for (const row of selfRows ?? []) {
+    const course = row.courses as unknown as { id: string; title: string; slug: string } | null;
+    if (!course) continue;
+    courses.set(course.id, { courseId: course.id, courseTitle: course.title, courseSlug: course.slug, batchLabel: null });
   }
 
-  return (courses ?? []).map((c) => ({
-    courseId: c.id,
-    courseTitle: c.title,
-    courseSlug: c.slug,
-    batchLabel: batchLabelByCourse.get(c.id) ?? null,
-  }));
+  for (const row of batchRows ?? []) {
+    const batch = row.batches as unknown as { batch_label: string; courses: { id: string; title: string; slug: string } | null };
+    const course = batch?.courses;
+    if (!course) continue;
+    const existing = courses.get(course.id);
+    courses.set(course.id, {
+      courseId: course.id,
+      courseTitle: course.title,
+      courseSlug: course.slug,
+      batchLabel: batch.batch_label ?? existing?.batchLabel ?? null,
+    });
+  }
+
+  return Array.from(courses.values());
 }
 
 export type UnitProgressSummary = {

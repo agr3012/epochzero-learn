@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/server';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { getCurrentAccount } from '@/lib/auth';
 import { getCourseProgressSummary } from '@/lib/progress';
+import { isEnrolledInCourseAny } from '@/lib/enrollment';
 import { ProgressDonut } from '@/components/dashboard/ProgressDonut';
+import { EnrollButton } from '@/components/enroll-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +29,9 @@ export default async function CoursePage({ params }: Props) {
   if (!course) notFound();
 
   const account = await getCurrentAccount();
-  const progress = account ? await getCourseProgressSummary(account.id, course.id) : null;
+  const [progress, enrolled] = account
+    ? await Promise.all([getCourseProgressSummary(account.id, course.id), isEnrolledInCourseAny(account.id, course.id)])
+    : [null, false];
 
   const { data: units } = await supabase.from('units')
     .select('*, topics(id)').eq('course_id', course.id).eq('is_published', true)
@@ -104,14 +108,20 @@ export default async function CoursePage({ params }: Props) {
       ) : progress && (
         <div className="card p-6 rounded-xl mb-12 flex items-center gap-6 flex-wrap">
           <ProgressDonut percent={progress.overallPercent} label="Overall" color={tileColor} />
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="font-display text-lg font-semibold mb-1" style={{ color: 'hsl(var(--foreground))' }}>
               Your progress
             </p>
             <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
               {progress.units.filter((u) => u.percent === 100).length} of {progress.units.length} units complete.
             </p>
+            {!enrolled && (
+              <p className="text-xs mt-1" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                Not in your dashboard's "My Courses" yet — enroll to add it.
+              </p>
+            )}
           </div>
+          {!enrolled && <EnrollButton courseId={course.id} />}
         </div>
       )}
 
