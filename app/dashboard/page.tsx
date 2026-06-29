@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { getCurrentAccount, checkIsAdmin } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getEnrolledCourses, getCourseProgressSummary } from '@/lib/progress';
+import { getCertificateChainStatus } from '@/lib/certificates';
 import {
   Award, BookOpen, Shield, ChevronRight,
   CheckCircle, XCircle, Clock, Download,
-  MessageSquare, ExternalLink, Users, GraduationCap, Settings,
+  MessageSquare, ExternalLink, Users, GraduationCap, Settings, Lock,
 } from 'lucide-react';
 import { ProfileNameForm } from './ProfileNameForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
@@ -28,6 +29,9 @@ export default async function DashboardPage() {
   const enrolledCourses = await getEnrolledCourses(account.id);
   const courseProgress = await Promise.all(
     enrolledCourses.map((c) => getCourseProgressSummary(account.id, c.courseId))
+  );
+  const certificateChains = await Promise.all(
+    enrolledCourses.map((c) => getCertificateChainStatus(account.email, c.courseId))
   );
 
   const [certsRes, attemptsRes, clubsRes, accountRes, forumRes] = await Promise.all([
@@ -99,9 +103,14 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {isAdmin && (
-                <Link href="/dashboard/admin/batches" className="btn-ghost py-1.5 px-3 text-xs">
-                  <Settings className="w-3.5 h-3.5" /> Manage batches
-                </Link>
+                <>
+                  <Link href="/dashboard/admin/batches" className="btn-ghost py-1.5 px-3 text-xs">
+                    <Settings className="w-3.5 h-3.5" /> Manage batches
+                  </Link>
+                  <Link href="/dashboard/admin/certificates" className="btn-ghost py-1.5 px-3 text-xs">
+                    <Award className="w-3.5 h-3.5" /> Issue certificates
+                  </Link>
+                </>
               )}
               <SignOutButton />
             </div>
@@ -203,6 +212,79 @@ export default async function DashboardPage() {
             </div>
           )}
         </section>
+
+        {/* Certificate Chain — 6 modules + practical + oral -> overall */}
+        {enrolledCourses.length > 0 && (
+          <section className="mb-8 space-y-5">
+            <h2 className="font-display text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+              Certificate Chain
+            </h2>
+            {enrolledCourses.map((c, i) => {
+              const chain = certificateChains[i];
+              const totalSlots = chain.modules.length + 2;
+              const earnedSlots = chain.modules.filter((m) => m.earned).length
+                + (chain.practical.earned ? 1 : 0) + (chain.oral.earned ? 1 : 0);
+              const slots = [...chain.modules, chain.practical, chain.oral];
+              return (
+                <div key={c.courseId} className="card p-6 rounded-xl">
+                  <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                    <h3 className="font-display text-base font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                      {chain.courseTitle}
+                    </h3>
+                    <span className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                      {earnedSlots}/{totalSlots} earned
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                    {slots.map((s) => (
+                      <div key={s.key} className="flex flex-col items-center gap-2 p-3 rounded-lg text-center"
+                        style={{ background: s.earned ? 'rgba(232,160,32,0.08)' : 'hsl(var(--muted))', border: `1px solid ${s.earned ? 'rgba(232,160,32,0.30)' : 'hsl(var(--border))'}` }}>
+                        {s.earned
+                          ? <Award className="w-5 h-5" style={{ color: '#E8A020' }} />
+                          : <Lock className="w-5 h-5" style={{ color: 'hsl(var(--foreground-subtle))' }} />}
+                        <span className="text-[11px] leading-tight" style={{ color: s.earned ? 'hsl(var(--foreground))' : 'hsl(var(--foreground-subtle))' }}>
+                          {s.label}
+                        </span>
+                        {s.earned && s.pdfUrl && (
+                          <a href={s.pdfUrl} target="_blank" rel="noopener noreferrer"
+                            className="text-[10px] font-medium hover:underline" style={{ color: 'hsl(var(--primary))' }}>
+                            Download
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="rounded-lg p-4 flex items-center gap-4"
+                    style={{
+                      background: chain.overall.earned ? 'rgba(107,58,212,0.10)' : 'hsl(var(--muted))',
+                      border: `1px solid ${chain.overall.earned ? 'rgba(107,58,212,0.35)' : 'hsl(var(--border))'}`,
+                    }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: chain.overall.earned ? '#6B3AD4' : 'hsl(var(--border))' }}>
+                      <GraduationCap className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-sans text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                        Overall {chain.courseTitle} Certification
+                      </div>
+                      <div className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                        {chain.overall.earned
+                          ? `Issued — ${chain.overall.certUid}`
+                          : `Unlocks once all ${totalSlots} certificates above are earned`}
+                      </div>
+                    </div>
+                    {chain.overall.earned && chain.overall.pdfUrl && (
+                      <a href={chain.overall.pdfUrl} target="_blank" rel="noopener noreferrer"
+                        className="btn-primary py-1.5 px-3 text-xs shrink-0">
+                        <Download className="w-3.5 h-3.5" /> Download
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+        )}
 
         {/* Certificates */}
         <section className="mb-8">

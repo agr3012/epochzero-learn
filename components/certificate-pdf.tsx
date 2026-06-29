@@ -278,14 +278,25 @@ const styles = StyleSheet.create({
   },
 });
 
+export type CertType = 'mcq' | 'module' | 'practical' | 'oral' | 'overall';
+
+const COMPLETION_PHRASE: Record<CertType, string> = {
+  mcq:       'has successfully completed the assessment',
+  module:    'has successfully completed the module',
+  practical: 'has successfully completed the practical examination',
+  oral:      'has successfully completed the oral examination',
+  overall:   'has successfully completed the full certification requirements of',
+};
+
 export interface CertificateData {
   studentName:     string;
   testTitle:       string;
-  score:           number;
+  score?:          number | null;
   certUid:         string;
   issuedDate:      string;
   verifyUrl:       string;
   domain?:         string;   // 'rema' | 'webdev' | 'cloud' | 'crypto' | null
+  certType?:       CertType; // defaults to 'mcq' — every pre-Phase-3 cert is this shape
   instructorName?: string;
   logoDataUri?:    string;   // kept for backward compatibility, not used
 }
@@ -298,6 +309,7 @@ export function CertificateDocument({
   issuedDate,
   verifyUrl,
   domain,
+  certType = 'mcq',
   instructorName = 'Ashish Revar',
 }: CertificateData) {
   // Resolve domain club logo if available
@@ -357,15 +369,17 @@ export function CertificateDocument({
           <Text style={styles.studentName}>{studentName}</Text>
           <View style={styles.nameUnderline} />
 
-          <Text style={styles.forCompletion}>has successfully completed the assessment</Text>
+          <Text style={styles.forCompletion}>{COMPLETION_PHRASE[certType]}</Text>
           <Text style={styles.testTitle}>{testTitle}</Text>
 
-          <Text style={styles.scoreLine}>
-            with a score of <Text style={styles.scoreValue}>{score}%</Text>
-          </Text>
+          {score != null && (
+            <Text style={styles.scoreLine}>
+              with a score of <Text style={styles.scoreValue}>{score}%</Text>
+            </Text>
+          )}
 
           <Text style={styles.appreciation}>
-            Your effort and curiosity in pursuing this assessment is recognised and appreciated.
+            Your effort and dedication in pursuing this {certType === 'overall' ? 'certification' : certType === 'mcq' ? 'assessment' : certType} is recognised and appreciated.
           </Text>
         </View>
 

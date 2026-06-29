@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { maybeIssueModuleCertificate } from '@/lib/certificates';
 
 const schema = z.object({
   attempt_id: z.string().uuid(),
@@ -188,6 +189,15 @@ export async function POST(req: NextRequest) {
         cert_uid = data.cert_uid;
       } else {
         console.error('cert generation failed:', await certRes.text());
+      }
+
+      // Module/overall certs — awaited like the per-test cert above so the
+      // PDF/email actually completes before the function returns, but
+      // failures here must never break the test result response.
+      try {
+        await maybeIssueModuleCertificate(attempt.test_id, attempt.email, attempt.full_name);
+      } catch (err) {
+        console.error('module cert check failed:', err);
       }
     }
 
