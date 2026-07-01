@@ -122,12 +122,12 @@ export function ReelPlayer({
   }
 
   return (
-    <div className="relative mx-auto" style={{ maxWidth: 320, width: '100%' }}>
-      <div className="relative rounded-2xl overflow-hidden"
+    <div className="relative" style={{ width: '100%', height: '100%' }}>
+      <div className="relative overflow-hidden"
         style={{
-          aspectRatio: '9/16',
+          width: '100%',
+          height: '100%',
           background: '#000',
-          border: '1px solid hsl(var(--border))',
         }}>
         <div id={uid.current} className="absolute inset-0 w-full h-full" />
 

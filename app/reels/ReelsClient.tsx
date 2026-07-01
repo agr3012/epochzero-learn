@@ -180,44 +180,42 @@ export function ReelsClient({
           )}
 
           {/*
-            Modal card:
-            – Desktop: side-by-side. Left = 9:16 player. Right = same fixed height, scrollable.
-            – Mobile: stacked full-screen column (player top, info below).
-            Fixed height on desktop: 640px. Player width = 640 * 9/16 = 360px. Right panel = 360px.
+            Desktop: two equal 360×640 panels, rounded-2xl outer box, centred.
+            Mobile: stacked full-screen (player fills width at 9:16, info scrolls below).
           */}
           <div
             onClick={e => e.stopPropagation()}
-            className="relative flex flex-col sm:flex-row w-full sm:w-auto overflow-hidden sm:rounded-2xl"
-            style={{
-              maxWidth: 760,
-              /* mobile: full viewport height; desktop: capped */
-              height: '100dvh',
-            }}>
+            className="relative flex flex-col sm:flex-row overflow-hidden rounded-none sm:rounded-2xl w-full sm:w-auto"
+            style={{ background: '#000' }}
+          >
+            {/* ── Mobile: portrait player at top ── */}
+            <div className="sm:hidden w-full" style={{ aspectRatio: '9/16', maxHeight: '55dvh', background: '#000', position: 'relative' }}>
+              <ReelPlayer
+                youtubeId={openReel.youtube_id}
+                reelId={openReel.id}
+                durationSeconds={openReel.duration_seconds}
+                initialCompleted={watched.has(openReel.id)}
+                layout="portrait"
+              />
+            </div>
 
-            {/* Desktop height override via a wrapper trick */}
-            <style>{`@media (min-width: 640px) { .reel-modal-inner { height: 640px !important; } }`}</style>
+            {/* ── Desktop: two 360×640 panels ── */}
+            {/* Left: 9:16 player */}
+            <div className="hidden sm:block shrink-0" style={{ width: 360, height: 640, position: 'relative', background: '#000' }}>
+              <ReelPlayer
+                youtubeId={openReel.youtube_id}
+                reelId={openReel.id}
+                durationSeconds={openReel.duration_seconds}
+                initialCompleted={watched.has(openReel.id)}
+                layout="portrait"
+              />
+            </div>
 
-            <div className="reel-modal-inner flex flex-col sm:flex-row w-full h-full">
-
-              {/* Left: Portrait player */}
-              <div className="sm:shrink-0 bg-black flex items-center justify-center"
-                style={{ aspectRatio: '9/16' }}
-                /* On mobile, cap the player height so info panel is visible */
-                >
-                <div className="w-full h-full relative">
-                  <ReelPlayer
-                    youtubeId={openReel.youtube_id}
-                    reelId={openReel.id}
-                    durationSeconds={openReel.duration_seconds}
-                    initialCompleted={watched.has(openReel.id)}
-                    layout="portrait"
-                  />
-                </div>
-              </div>
-
-              {/* Right: Info panel — same height as player on desktop */}
-              <div className="flex flex-col flex-1 overflow-y-auto p-6 sm:p-8 gap-4"
-                style={{ background: 'hsl(var(--card))', minWidth: 0 }}>
+            {/* Right: Info panel — 360×640 on desktop, full-width scrollable on mobile */}
+            <div className="flex flex-col overflow-y-auto p-6 gap-4 sm:shrink-0 sm:w-[360px] sm:h-[640px]"
+              style={{ background: 'hsl(var(--card))' }}
+            >
+              <div className="flex flex-col gap-4 h-full">
 
                 {(() => {
                   const meta = DOMAIN_META[openReel.domain] ?? DOMAIN_META.rema;
