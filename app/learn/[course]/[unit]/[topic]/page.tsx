@@ -377,6 +377,8 @@ export default async function TopicPage({
                   title={v.title}
                   durationSeconds={v.duration_seconds}
                   initialCompleted={videoProgress[v.id]?.completed ?? false}
+                  initialWatchedSeconds={videoProgress[v.id]?.watched_seconds ?? 0}
+                  initialPositionSeconds={videoProgress[v.id]?.last_position_seconds ?? 0}
                 />
               ))}
             </div>
