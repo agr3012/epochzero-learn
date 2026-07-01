@@ -16,7 +16,6 @@ import {
   Target,
   CheckCircle2,
   Lock,
-  Zap,
 } from 'lucide-react'
 import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
@@ -24,7 +23,7 @@ import { getCurrentAccount } from '@/lib/auth'
 import { getVideoProgress, getArticleReadSet, isUnitComplete, getReelWatchedSet, type VideoProgressRow } from '@/lib/progress'
 import { SignInBanner } from '@/components/SignInBanner'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { ReelPlayer } from '@/components/ReelPlayer'
+import { QuickBiteCard } from '@/components/QuickBiteCard'
 
 export const dynamic = 'force-dynamic';
 
@@ -369,49 +368,6 @@ export default async function TopicPage({
             color={QUADRANT_COLORS.tutorial}
           />
 
-          {topicReel && (
-            <div className="card overflow-hidden" style={{ borderLeft: `3px solid #facc15` }}>
-              <div className="flex items-center gap-2 px-5 pt-4 pb-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                <Zap className="w-4 h-4" style={{ color: '#facc15' }} />
-                <span className="font-sans text-xs font-bold uppercase tracking-widest" style={{ color: '#ca8a04' }}>
-                  Quick Bite · {topicReel.duration_seconds}s
-                </span>
-                {reelWatched && (
-                  <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(27,124,62,0.12)', color: '#22c55e' }}>
-                    <CheckCircle2 className="w-3 h-3" /> Watched · +5 pts
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-col sm:flex-row gap-0">
-                {/* 9:16 player — fixed width on desktop, full-width on mobile */}
-                <div className="w-full sm:w-[180px] shrink-0 relative" style={{ aspectRatio: '9/16', background: '#000' }}>
-                  <ReelPlayer
-                    youtubeId={topicReel.youtube_id}
-                    reelId={topicReel.id}
-                    durationSeconds={topicReel.duration_seconds}
-                    initialCompleted={reelWatched}
-                    layout="portrait"
-                  />
-                </div>
-                {/* Info */}
-                <div className="flex flex-col justify-center gap-3 p-5">
-                  <p className="font-display font-bold text-base leading-snug" style={{ color: 'hsl(var(--foreground))' }}>
-                    {topicReel.title}
-                  </p>
-                  {topicReel.description && (
-                    <p className="font-serif text-sm leading-relaxed" style={{ color: 'hsl(var(--foreground-muted))' }}>
-                      {topicReel.description}
-                    </p>
-                  )}
-                  <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
-                    Watch this {topicReel.duration_seconds}s summary before diving into the full video.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {videos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {videos.map((v) => (
@@ -465,6 +421,37 @@ export default async function TopicPage({
             <p className="text-sm italic font-serif" style={{ color: 'hsl(var(--foreground-muted))' }}>
               Video content coming soon.
             </p>
+          )}
+
+          {/* Quick Bite — portrait thumbnail, opens theater modal on click */}
+          {topicReel && (
+            <div className="flex items-start gap-4 pt-2">
+              <QuickBiteCard
+                youtubeId={topicReel.youtube_id}
+                reelId={topicReel.id}
+                title={topicReel.title}
+                description={topicReel.description}
+                durationSeconds={topicReel.duration_seconds}
+                initialWatched={reelWatched}
+              />
+              <div className="hidden sm:flex flex-col justify-center gap-2 pt-4">
+                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: '#ca8a04' }}>
+                  Quick Bite
+                </p>
+                <p className="font-display font-semibold text-sm leading-snug max-w-xs" style={{ color: 'hsl(var(--foreground))' }}>
+                  {topicReel.title}
+                </p>
+                <p className="font-serif text-xs" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                  A {topicReel.duration_seconds}s visual summary of this topic. Click to watch.
+                </p>
+                {reelWatched && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold w-fit px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(27,124,62,0.12)', color: '#22c55e' }}>
+                    <CheckCircle2 className="w-3 h-3" /> Watched · +5 pts
+                  </span>
+                )}
+              </div>
+            </div>
           )}
         </section>
 
