@@ -16,12 +16,15 @@ import {
   Target,
   CheckCircle2,
   Lock,
+  Zap,
 } from 'lucide-react'
 import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
 import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 import { getCurrentAccount } from '@/lib/auth'
-import { getVideoProgress, getArticleReadSet, isUnitComplete, type VideoProgressRow } from '@/lib/progress'
+import { getVideoProgress, getArticleReadSet, isUnitComplete, getReelWatchedSet, type VideoProgressRow } from '@/lib/progress'
 import { SignInBanner } from '@/components/SignInBanner'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { ReelPlayer } from '@/components/ReelPlayer'
 
 export const dynamic = 'force-dynamic';
 
@@ -209,6 +212,15 @@ export default async function TopicPage({
 
   const q3Total = resources.length + links.length
 
+  // ── Quick Bite reel for this topic ────────────────────────────────────
+  const { data: topicReel } = await createAdminClient()
+    .from('reels')
+    .select('id, youtube_id, title, description, duration_seconds')
+    .eq('topic_slug', params.topic)
+    .eq('is_published', true)
+    .limit(1)
+    .maybeSingle()
+
   // ── Phase 2: account-aware completion state ────────────────────────────
   const account = await getCurrentAccount()
   const [videoProgress, readArticleIds, unitComplete]: [Record<string, VideoProgressRow>, Set<string>, boolean] = account
@@ -218,6 +230,10 @@ export default async function TopicPage({
         isUnitComplete(account.id, unit.id),
       ])
     : [{}, new Set<string>(), false]
+
+  const reelWatched = (topicReel && account)
+    ? (await getReelWatchedSet(account.id, [topicReel.id])).has(topicReel.id)
+    : false
 
   return (
     <div className="container py-12 lg:py-16">
@@ -352,6 +368,49 @@ export default async function TopicPage({
             title="Video lectures and walkthroughs"
             color={QUADRANT_COLORS.tutorial}
           />
+
+          {topicReel && (
+            <div className="card overflow-hidden" style={{ borderLeft: `3px solid #facc15` }}>
+              <div className="flex items-center gap-2 px-5 pt-4 pb-3" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                <Zap className="w-4 h-4" style={{ color: '#facc15' }} />
+                <span className="font-sans text-xs font-bold uppercase tracking-widest" style={{ color: '#ca8a04' }}>
+                  Quick Bite · {topicReel.duration_seconds}s
+                </span>
+                {reelWatched && (
+                  <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(27,124,62,0.12)', color: '#22c55e' }}>
+                    <CheckCircle2 className="w-3 h-3" /> Watched · +5 pts
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-0">
+                {/* 9:16 player — fixed width on desktop, full-width on mobile */}
+                <div className="w-full sm:w-[180px] shrink-0 relative" style={{ aspectRatio: '9/16', background: '#000' }}>
+                  <ReelPlayer
+                    youtubeId={topicReel.youtube_id}
+                    reelId={topicReel.id}
+                    durationSeconds={topicReel.duration_seconds}
+                    initialCompleted={reelWatched}
+                    layout="portrait"
+                  />
+                </div>
+                {/* Info */}
+                <div className="flex flex-col justify-center gap-3 p-5">
+                  <p className="font-display font-bold text-base leading-snug" style={{ color: 'hsl(var(--foreground))' }}>
+                    {topicReel.title}
+                  </p>
+                  {topicReel.description && (
+                    <p className="font-serif text-sm leading-relaxed" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                      {topicReel.description}
+                    </p>
+                  )}
+                  <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                    Watch this {topicReel.duration_seconds}s summary before diving into the full video.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {videos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
