@@ -2,6 +2,11 @@
 -- Add the missing columns and seed the 14 YouTube Shorts reels.
 -- Run this in Supabase SQL Editor instead of (or after) 014_reels.sql.
 
+-- ── Relax old NOT NULL constraints from the Instagram-era schema ─────────────
+
+alter table public.reels
+  alter column instagram_url drop not null;
+
 -- ── Add missing columns to existing reels table ───────────────────────────────
 
 alter table public.reels
