@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { X, Play, Zap, CheckCircle2 } from 'lucide-react';
+import { X, Play, Zap, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ReelPlayer } from '@/components/ReelPlayer';
 
 type Reel = {
@@ -31,26 +31,38 @@ export function ReelsClient({
   watchedIds: Set<string>;
   initialDomain?: string;
 }) {
-  const [domain, setDomain] = useState<string>(initialDomain);
-  const [openReel, setOpenReel] = useState<Reel | null>(null);
-  const [watched, setWatched] = useState<Set<string>>(watchedIds);
+  const [domain, setDomain]     = useState<string>(initialDomain);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [watched, setWatched]   = useState<Set<string>>(watchedIds);
 
   const filtered = useMemo(() =>
     domain === 'all' ? reels : reels.filter(r => r.domain === domain),
     [reels, domain]
   );
 
-  // Close modal on Escape
+  const openReel = openIndex !== null ? (filtered[openIndex] ?? null) : null;
+  const hasPrev  = openIndex !== null && openIndex > 0;
+  const hasNext  = openIndex !== null && openIndex < filtered.length - 1;
+
+  const goNext = useCallback(() => setOpenIndex(i => (i !== null && i < filtered.length - 1 ? i + 1 : i)), [filtered.length]);
+  const goPrev = useCallback(() => setOpenIndex(i => (i !== null && i > 0 ? i - 1 : i)), []);
+  const close  = useCallback(() => setOpenIndex(null), []);
+
+  // Keyboard nav + scroll lock
   useEffect(() => {
-    if (!openReel) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenReel(null); };
+    if (openIndex === null) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape')      close();
+      if (e.key === 'ArrowRight')  goNext();
+      if (e.key === 'ArrowLeft')   goPrev();
+    };
     document.addEventListener('keydown', handler);
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', handler);
       document.body.style.overflow = '';
     };
-  }, [openReel]);
+  }, [openIndex, close, goNext, goPrev]);
 
   function domainStyle(d: string): React.CSSProperties {
     const isActive = domain === d;
@@ -70,8 +82,8 @@ export function ReelsClient({
           Learn in 30 seconds.
         </h1>
         <p className="font-serif text-lg text-[hsl(var(--foreground-muted))] max-w-2xl leading-relaxed">
-          Each Quick Bite is a punchy, 20–30 second technical masterclass paired
-          to a full article. Watch them all — each one earns you 5 points on the leaderboard.
+          Each Quick Bite is a punchy 20–30 second masterclass paired to a full article.
+          Watch them all — each one earns +5 points on the leaderboard.
         </p>
       </div>
 
@@ -85,147 +97,210 @@ export function ReelsClient({
         ))}
       </div>
 
-      {/* ── Grid ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {filtered.map(r => {
-          const meta = DOMAIN_META[r.domain] ?? DOMAIN_META.rema;
-          const isWatched = watched.has(r.id);
-          return (
-            <button key={r.id}
-              onClick={() => setOpenReel(r)}
-              className="group relative text-left rounded-2xl overflow-hidden transition-transform hover:scale-[1.02] focus:outline-none focus:ring-2"
-              style={{ aspectRatio: '9/16', background: '#111', border: '1px solid hsl(var(--border))' }}>
-
-              {/* Thumbnail */}
-              <Image
-                src={`https://i.ytimg.com/vi/${r.youtube_id}/hqdefault.jpg`}
-                alt={r.title}
-                fill
-                sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 20vw"
-                className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-              />
-
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-              {/* Play button */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
-                  <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
-                </div>
-              </div>
-
-              {/* Watched badge */}
-              {isWatched && (
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
-                  style={{ background: 'rgba(27,124,62,0.85)' }}>
-                  <CheckCircle2 className="w-3 h-3" /> Watched
-                </div>
-              )}
-
-              {/* Domain badge + title */}
-              <div className="absolute bottom-0 left-0 right-0 p-3 space-y-1.5">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
-                  style={{ background: meta.bg, color: meta.color, backdropFilter: 'blur(4px)' }}>
-                  {meta.label}
-                </span>
-                <p className="font-display text-xs font-semibold text-white leading-snug line-clamp-3">
-                  {r.title}
-                </p>
-                <p className="font-mono text-[10px] text-white/60">{r.duration_seconds}s</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {filtered.length === 0 && (
-        <div className="card p-12 text-center mt-4">
+      {/* ── Portrait grid ── */}
+      {filtered.length === 0 ? (
+        <div className="card p-12 text-center">
           <Zap className="w-8 h-8 mx-auto mb-3" style={{ color: 'hsl(var(--foreground-subtle))' }} />
           <p className="text-sm" style={{ color: 'hsl(var(--foreground-muted))' }}>
             No Quick Bites for this domain yet.
           </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {filtered.map((r, idx) => {
+            const meta = DOMAIN_META[r.domain] ?? DOMAIN_META.rema;
+            const isWatched = watched.has(r.id);
+            return (
+              <button key={r.id} onClick={() => setOpenIndex(idx)}
+                className="group relative text-left rounded-2xl overflow-hidden transition-transform hover:scale-[1.02] focus:outline-none"
+                style={{ aspectRatio: '9/16', background: '#111', border: '1px solid hsl(var(--border))' }}>
+                <Image
+                  src={`https://i.ytimg.com/vi/${r.youtube_id}/hqdefault.jpg`}
+                  alt={r.title} fill
+                  sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 20vw"
+                  className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
+                    <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                  </div>
+                </div>
+                {isWatched && (
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
+                    style={{ background: 'rgba(27,124,62,0.85)' }}>
+                    <CheckCircle2 className="w-3 h-3" />
+                  </div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-3 space-y-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    style={{ background: meta.bg, color: meta.color }}>
+                    {meta.label}
+                  </span>
+                  <p className="font-display text-xs font-semibold text-white leading-snug line-clamp-3">
+                    {r.title}
+                  </p>
+                  <p className="font-mono text-[10px] text-white/60">{r.duration_seconds}s</p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* ── Modal ── */}
       {openReel && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}
-          onClick={() => setOpenReel(null)}>
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)' }}
+          onClick={close}>
 
-          {/* Close button */}
-          <button
-            className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-10"
-            style={{ background: 'rgba(255,255,255,0.12)', color: 'white' }}
-            onClick={() => setOpenReel(null)}>
+          {/* Close */}
+          <button onClick={close}
+            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
             <X className="w-5 h-5" />
           </button>
 
+          {/* Prev / Next — desktop side arrows */}
+          {hasPrev && (
+            <button onClick={e => { e.stopPropagation(); goPrev(); }}
+              className="hidden sm:flex absolute left-4 z-10 w-10 h-10 rounded-full items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          {hasNext && (
+            <button onClick={e => { e.stopPropagation(); goNext(); }}
+              className="hidden sm:flex absolute right-4 z-10 w-10 h-10 rounded-full items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
+
+          {/*
+            Modal card:
+            – Desktop: side-by-side. Left = 9:16 player. Right = same fixed height, scrollable.
+            – Mobile: stacked full-screen column (player top, info below).
+            Fixed height on desktop: 640px. Player width = 640 * 9/16 = 360px. Right panel = 360px.
+          */}
           <div
-            className="flex flex-col lg:flex-row items-start gap-0 overflow-hidden rounded-2xl max-w-full max-h-[95vh]"
-            style={{ maxWidth: 780 }}
-            onClick={e => e.stopPropagation()}>
+            onClick={e => e.stopPropagation()}
+            className="relative flex flex-col sm:flex-row w-full sm:w-auto overflow-hidden sm:rounded-2xl"
+            style={{
+              maxWidth: 760,
+              /* mobile: full viewport height; desktop: capped */
+              height: '100dvh',
+            }}>
 
-            {/* Portrait player */}
-            <div className="shrink-0" style={{ width: 320 }}>
-              <ReelPlayer
-                youtubeId={openReel.youtube_id}
-                reelId={openReel.id}
-                durationSeconds={openReel.duration_seconds}
-                initialCompleted={watched.has(openReel.id)}
-              />
-            </div>
+            {/* Desktop height override via a wrapper trick */}
+            <style>{`@media (min-width: 640px) { .reel-modal-inner { height: 640px !important; } }`}</style>
 
-            {/* Info panel */}
-            <div className="flex-1 p-6 lg:p-8 overflow-y-auto"
-              style={{ background: 'hsl(var(--card))', minWidth: 0, maxHeight: 'calc(9/16 * 320px)' }}>
-              {(() => {
-                const meta = DOMAIN_META[openReel.domain] ?? DOMAIN_META.rema;
-                return (
-                  <>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold mb-4"
-                      style={{ background: meta.bg, color: meta.color }}>
-                      {meta.label}
-                    </span>
+            <div className="reel-modal-inner flex flex-col sm:flex-row w-full h-full">
 
-                    <h2 className="font-display text-lg font-bold mb-3 leading-snug"
-                      style={{ color: 'hsl(var(--foreground))' }}>
-                      {openReel.title}
-                    </h2>
+              {/* Left: Portrait player */}
+              <div className="sm:shrink-0 bg-black flex items-center justify-center"
+                style={{ aspectRatio: '9/16' }}
+                /* On mobile, cap the player height so info panel is visible */
+                >
+                <div className="w-full h-full relative">
+                  <ReelPlayer
+                    youtubeId={openReel.youtube_id}
+                    reelId={openReel.id}
+                    durationSeconds={openReel.duration_seconds}
+                    initialCompleted={watched.has(openReel.id)}
+                    layout="portrait"
+                  />
+                </div>
+              </div>
 
-                    {openReel.description && (
-                      <p className="font-serif text-sm leading-relaxed mb-4"
-                        style={{ color: 'hsl(var(--foreground-muted))' }}>
-                        {openReel.description}
-                      </p>
-                    )}
+              {/* Right: Info panel — same height as player on desktop */}
+              <div className="flex flex-col flex-1 overflow-y-auto p-6 sm:p-8 gap-4"
+                style={{ background: 'hsl(var(--card))', minWidth: 0 }}>
 
-                    <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
-                      <span className="flex items-center gap-1">
-                        <Zap className="w-3 h-3" style={{ color: '#facc15' }} />
-                        {openReel.duration_seconds}s · Quick Bite
+                {(() => {
+                  const meta = DOMAIN_META[openReel.domain] ?? DOMAIN_META.rema;
+                  return (
+                    <>
+                      {/* Domain badge */}
+                      <span className="self-start inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                        style={{ background: meta.bg, color: meta.color }}>
+                        {meta.label}
                       </span>
-                      {watched.has(openReel.id) && (
-                        <span className="flex items-center gap-1" style={{ color: '#22c55e' }}>
-                          <CheckCircle2 className="w-3 h-3" /> Watched · +5 pts earned
-                        </span>
-                      )}
-                    </div>
 
-                    {openReel.topic_slug && (
-                      <a href={`/articles/${openReel.topic_slug}`}
-                        className="mt-6 inline-flex items-center gap-2 text-sm font-medium transition-colors hover:underline"
-                        style={{ color: 'hsl(var(--primary))' }}
-                        onClick={() => setOpenReel(null)}>
-                        Read the full article →
-                      </a>
-                    )}
-                  </>
-                );
-              })()}
+                      {/* Title */}
+                      <h2 className="font-display text-xl font-bold leading-snug"
+                        style={{ color: 'hsl(var(--foreground))' }}>
+                        {openReel.title}
+                      </h2>
+
+                      {/* Description */}
+                      {openReel.description && (
+                        <p className="font-serif text-sm leading-relaxed"
+                          style={{ color: 'hsl(var(--foreground-muted))' }}>
+                          {openReel.description}
+                        </p>
+                      )}
+
+                      {/* Meta */}
+                      <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                        <span className="flex items-center gap-1">
+                          <Zap className="w-3 h-3" style={{ color: '#facc15' }} />
+                          {openReel.duration_seconds}s · Quick Bite
+                        </span>
+                        {watched.has(openReel.id) && (
+                          <span className="flex items-center gap-1" style={{ color: '#22c55e' }}>
+                            <CheckCircle2 className="w-3 h-3" /> Watched · +5 pts
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Article link */}
+                      {openReel.topic_slug && (
+                        <a href={`/articles/${openReel.topic_slug}`}
+                          onClick={close}
+                          className="text-sm font-medium transition-colors hover:underline"
+                          style={{ color: 'hsl(var(--primary))' }}>
+                          Read the full article →
+                        </a>
+                      )}
+
+                      {/* Spacer pushes nav to bottom */}
+                      <div className="flex-1" />
+
+                      {/* Prev / Next — inside info panel (visible on all sizes) */}
+                      <div className="flex items-center gap-3 pt-4"
+                        style={{ borderTop: '1px solid hsl(var(--border))' }}>
+                        <button
+                          disabled={!hasPrev}
+                          onClick={goPrev}
+                          className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-30"
+                          style={{
+                            background: hasPrev ? 'hsl(var(--muted))' : 'transparent',
+                            color: 'hsl(var(--foreground-muted))',
+                          }}>
+                          <ChevronLeft className="w-4 h-4" /> Prev
+                        </button>
+                        <span className="text-xs flex-1 text-center"
+                          style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                          {(openIndex ?? 0) + 1} / {filtered.length}
+                        </span>
+                        <button
+                          disabled={!hasNext}
+                          onClick={goNext}
+                          className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-30"
+                          style={{
+                            background: hasNext ? 'hsl(var(--muted))' : 'transparent',
+                            color: 'hsl(var(--foreground-muted))',
+                          }}>
+                          Next <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </div>

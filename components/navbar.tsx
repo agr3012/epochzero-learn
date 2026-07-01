@@ -40,6 +40,8 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
       { label: 'All Quick Bites', href: '/reels' },
       { label: 'REMA',            href: '/reels?domain=rema' },
       { label: 'Cloud Security',  href: '/reels?domain=cloud-security' },
+      { label: 'Cryptography',    href: '/reels?domain=crypto',  soon: true },
+      { label: 'Web Dev',         href: '/reels?domain=webdev',  soon: true },
     ],
   },
   {

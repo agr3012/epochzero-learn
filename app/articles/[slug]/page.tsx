@@ -47,8 +47,9 @@ export default async function ArticleDetailPage({ params }: Props) {
   const account = await getCurrentAccount();
   const alreadyRead = account ? (await getArticleReadSet(account.id, [article.id])).has(article.id) : false;
 
-  // Quick Bite: look for a reel that supplements this article
-  const { data: articleReel } = await supabase
+  // Quick Bite: look for a reel that supplements this article.
+  // Use admin client so RLS on the reels table never blocks the fetch.
+  const { data: articleReel } = await createAdminClient()
     .from('reels')
     .select('id, youtube_id, title, description, duration_seconds')
     .eq('topic_slug', params.slug)
