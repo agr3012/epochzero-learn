@@ -2,7 +2,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   BookOpen,
   Play,
@@ -18,12 +17,12 @@ import {
   Lock,
 } from 'lucide-react'
 import { DOMAIN_COLOR, QUADRANT_COLORS } from '@/lib/colors'
-import { formatDuration, getYouTubeThumbnail } from '@/lib/utils'
 import { getCurrentAccount } from '@/lib/auth'
 import { getVideoProgress, getArticleReadSet, isUnitComplete, getReelWatchedSet, type VideoProgressRow } from '@/lib/progress'
 import { SignInBanner } from '@/components/SignInBanner'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { QuickBiteCard } from '@/components/QuickBiteCard'
+import { VideoTheaterCard } from '@/components/VideoTheaterCard'
 
 export const dynamic = 'force-dynamic';
 
@@ -371,50 +370,14 @@ export default async function TopicPage({
           {videos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {videos.map((v) => (
-                <Link key={v.id} href={`/videos/${v.slug}`} className="group">
-                  <div
-                    className="relative aspect-video overflow-hidden rounded-lg"
-                    style={{ border: '1px solid hsl(var(--border))' }}
-                  >
-                    <Image
-                      src={getYouTubeThumbnail(v.youtube_id, 'hq')}
-                      alt={v.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-xl"
-                        style={{ background: QUADRANT_COLORS.tutorial }}
-                      >
-                        <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
-                      </div>
-                    </div>
-                    {v.duration_seconds && (
-                      <span
-                        className="absolute bottom-2 right-2 font-mono text-[10px] px-1.5 py-0.5 rounded text-white"
-                        style={{ background: 'rgba(0,0,0,0.75)' }}
-                      >
-                        {formatDuration(v.duration_seconds)}
-                      </span>
-                    )}
-                    {videoProgress[v.id]?.completed && (
-                      <span
-                        className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white"
-                        style={{ background: 'rgba(27,124,62,0.85)' }}
-                      >
-                        <CheckCircle2 className="w-3 h-3" /> Watched
-                      </span>
-                    )}
-                  </div>
-                  <p
-                    className="mt-3 text-sm font-medium leading-snug line-clamp-2 transition-colors group-hover:text-[hsl(var(--primary))]"
-                    style={{ color: 'hsl(var(--foreground))' }}
-                  >
-                    {v.title}
-                  </p>
-                </Link>
+                <VideoTheaterCard
+                  key={v.id}
+                  videoId={v.id}
+                  youtubeId={v.youtube_id}
+                  title={v.title}
+                  durationSeconds={v.duration_seconds}
+                  initialCompleted={videoProgress[v.id]?.completed ?? false}
+                />
               ))}
             </div>
           ) : (
@@ -468,7 +431,7 @@ export default async function TopicPage({
           {articles.length > 0 ? (
             <div className="space-y-3">
               {articles.map((a) => (
-                <Link key={a.id} href={`/articles/${a.slug}`} className="card card-interactive p-5 group flex items-start gap-4">
+                <Link key={a.id} href={`/articles/${a.slug}`} target="_blank" rel="noopener noreferrer" className="card card-interactive p-5 group flex items-start gap-4">
                   {a.category && <span className="badge badge-tag mt-0.5 shrink-0">{a.category}</span>}
                   <div className="flex-1 min-w-0 space-y-1">
                     <p
@@ -524,7 +487,7 @@ export default async function TopicPage({
               </p>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {resources.map((r) => (
-                  <Link key={r.id} href={`/resources/${r.slug}`} className="card card-interactive p-4 group flex flex-col gap-3">
+                  <Link key={r.id} href={`/resources/${r.slug}`} target="_blank" rel="noopener noreferrer" className="card card-interactive p-4 group flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-2">
                       <div
                         className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white"
@@ -658,7 +621,7 @@ export default async function TopicPage({
                 return locked ? (
                   <div key={t.id} className={cardClass}>{inner}</div>
                 ) : (
-                  <Link key={t.id} href={`/tests/${t.slug}`} className={cardClass}>{inner}</Link>
+                  <Link key={t.id} href={`/tests/${t.slug}`} target="_blank" rel="noopener noreferrer" className={cardClass}>{inner}</Link>
                 )
               })}
             </div>
