@@ -3,13 +3,14 @@
 // for why awarding is idempotent (ON CONFLICT DO NOTHING on account_id+reason+ref_id).
 import { createAdminClient } from '@/lib/supabase/admin';
 
-export type PointReason = 'video' | 'article' | 'exam' | 'forum';
+export type PointReason = 'video' | 'article' | 'exam' | 'forum' | 'reel';
 
 export const POINT_VALUES: Record<PointReason, number> = {
   video: 10,
   article: 5,
   exam: 20,
   forum: 3,
+  reel: 5,
 };
 
 /** Returns true only if this call actually awarded new points (i.e. this

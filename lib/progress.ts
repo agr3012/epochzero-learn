@@ -36,6 +36,18 @@ export async function getVideoProgress(
   return map;
 }
 
+export async function getReelWatchedSet(accountId: string, reelIds: string[]): Promise<Set<string>> {
+  if (reelIds.length === 0) return new Set();
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from('reel_progress')
+    .select('reel_id')
+    .eq('account_id', accountId)
+    .eq('completed', true)
+    .in('reel_id', reelIds);
+  return new Set((data ?? []).map((r) => r.reel_id as string));
+}
+
 export async function getArticleReadSet(accountId: string, articleIds: string[]): Promise<Set<string>> {
   if (articleIds.length === 0) return new Set();
   const admin = createAdminClient();

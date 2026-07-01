@@ -13,9 +13,10 @@ import rehypeSlug from 'rehype-slug';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getCurrentAccount } from '@/lib/auth';
-import { getArticleReadSet } from '@/lib/progress';
+import { getArticleReadSet, getReelWatchedSet } from '@/lib/progress';
 import { formatDate } from '@/lib/utils';
 import { ArticleMarkReadButton } from '@/components/article-mark-read-button';
+import { ReelPlayer } from '@/components/ReelPlayer';
 
 export const dynamic = 'force-dynamic';
 interface Props { params: { slug: string } }
@@ -45,6 +46,18 @@ export default async function ArticleDetailPage({ params }: Props) {
 
   const account = await getCurrentAccount();
   const alreadyRead = account ? (await getArticleReadSet(account.id, [article.id])).has(article.id) : false;
+
+  // Quick Bite: look for a reel that supplements this article
+  const { data: articleReel } = await supabase
+    .from('reels')
+    .select('id, youtube_id, title, description, duration_seconds')
+    .eq('topic_slug', params.slug)
+    .eq('is_published', true)
+    .limit(1)
+    .maybeSingle();
+  const reelWatched = (articleReel && account)
+    ? (await getReelWatchedSet(account.id, [articleReel.id])).has(articleReel.id)
+    : false;
 
   const { data: topicRow } = await supabase
     .from('topics').select('id')
@@ -152,6 +165,47 @@ export default async function ArticleDetailPage({ params }: Props) {
         <div className="relative aspect-video mb-10 rounded-xl overflow-hidden"
           style={{ border: '1px solid hsl(var(--border))' }}>
           <Image src={article.cover_image} alt={article.title} fill className="object-cover" />
+        </div>
+      )}
+
+      {/* ── Quick Bite reel (if one exists for this article) ── */}
+      {articleReel && (
+        <div className="mb-10 rounded-2xl overflow-hidden"
+          style={{ border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}>
+          <div className="flex flex-col sm:flex-row gap-0">
+            {/* Portrait player */}
+            <div className="shrink-0 p-4 flex items-center justify-center"
+              style={{ background: 'hsl(var(--muted) / 0.4)' }}>
+              <ReelPlayer
+                youtubeId={articleReel.youtube_id}
+                reelId={articleReel.id}
+                durationSeconds={articleReel.duration_seconds}
+                initialCompleted={reelWatched}
+                layout="portrait"
+              />
+            </div>
+            {/* Info */}
+            <div className="p-5 sm:p-6 flex flex-col gap-3 justify-center">
+              <p className="font-sans font-semibold text-[10px] uppercase tracking-[0.12em]"
+                style={{ color: 'hsl(var(--primary))' }}>
+                ⚡ Quick Bite · {articleReel.duration_seconds}s
+              </p>
+              <h3 className="font-display text-base font-bold leading-snug"
+                style={{ color: 'hsl(var(--foreground))' }}>
+                {articleReel.title}
+              </h3>
+              {articleReel.description && (
+                <p className="font-serif text-sm leading-relaxed"
+                  style={{ color: 'hsl(var(--foreground-muted))' }}>
+                  {articleReel.description}
+                </p>
+              )}
+              <p className="text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                Watch this {articleReel.duration_seconds}-second summary before diving into the full article.
+                {!account && ' Sign in to earn 5 leaderboard points.'}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

@@ -35,6 +35,14 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
     ],
   },
   {
+    heading: 'Quick Bites', href: '/reels',
+    items: [
+      { label: 'All Quick Bites', href: '/reels' },
+      { label: 'REMA',            href: '/reels?domain=rema' },
+      { label: 'Cloud Security',  href: '/reels?domain=cloud-security' },
+    ],
+  },
+  {
     heading: 'Podcast', href: '/podcast',
     items: [
       { label: 'All Episodes',    href: '/podcast' },
@@ -52,7 +60,6 @@ const LEARN_COLS: Array<{ heading: string; href: string; items: LearnItem[] }> =
       { label: 'Question Banks',  href: '/resources?type=question-bank' },
       { label: 'MCQ Banks',       href: '/resources?type=mcq-bank' },
       { label: 'Cheatsheets',     href: '/resources?type=cheatsheet' },
-      { label: 'Research Papers', href: '/resources?type=research-paper', soon: true },
     ],
   },
 ];
@@ -285,7 +292,7 @@ export function Navbar() {
           {/* ── Learn mega menu ── */}
           {openKey === 'learn' && (
             <div onMouseEnter={() => enter('learn')} onMouseLeave={leave}
-              className="absolute top-full right-0 w-[700px] z-50 rounded-xl overflow-hidden"
+              className="absolute top-full right-0 w-[860px] z-50 rounded-xl overflow-hidden"
               style={{
                 background: 'hsl(var(--card))',
                 boxShadow: 'var(--shadow-dropdown)',
@@ -294,7 +301,7 @@ export function Navbar() {
               }}>
 
               {/* Content columns */}
-              <div className="grid grid-cols-4 divide-x"
+              <div className="grid grid-cols-5 divide-x"
                 style={{ '--tw-divide-opacity': '1' } as React.CSSProperties}>
                 {LEARN_COLS.map(col => (
                   <div key={col.heading} className="py-4">
@@ -378,7 +385,7 @@ export function Navbar() {
                   mobileExp === 'learn' && 'rotate-180')} />
               </button>
               {mobileExp === 'learn' && (
-                <div className="pb-2 grid grid-cols-2 pl-2">
+                <div className="pb-2 grid grid-cols-2 sm:grid-cols-3 pl-2">
                   {LEARN_COLS.map(col => (
                     <div key={col.heading} className="px-3 pb-3">
                       <Link href={col.href} onClick={() => setMobileOpen(false)}
