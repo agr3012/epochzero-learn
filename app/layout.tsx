@@ -74,7 +74,13 @@ export const metadata: Metadata = {
 
 /* ── Root Layout ──────────────────────────────────────────────── */
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
@@ -117,6 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navbar />
           </Suspense>
           <main className="flex-1">{children}</main>
+          {modal}
           <Footer />
           <Toaster
             position="bottom-right"
