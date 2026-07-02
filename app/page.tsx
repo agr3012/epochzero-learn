@@ -1,17 +1,18 @@
-// app/page.tsx — EpochZero Learn Homepage v2.2
-// Layout: bento features, editorial articles, feed forum, gradient cards, rings
+// app/page.tsx — EpochZero Learn Homepage v2.3
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   MessageSquare, ArrowRight, BookOpen, Video,
   GraduationCap, FileText, Award, Mic, Terminal,
-  Calendar, Users, Shield, Zap, CheckCircle,
+  Calendar, Users, Zap, CheckCircle, Play,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
-import { formatDate, getYouTubeThumbnail } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { DOMAIN_COLOR } from '@/lib/colors';
 import { StatCounter } from '@/components/StatCounter';
 import { FadeIn } from '@/components/FadeIn';
+import { VideoTheaterCard } from '@/components/VideoTheaterCard';
+import { QuickBiteCard } from '@/components/QuickBiteCard';
 
 export const revalidate = 3600;
 
@@ -23,13 +24,14 @@ const CLUB_COLOR: Record<string, string> = {
 async function getHomeData() {
   const supabase = createClient();
   const [
-    articlesRes, videosRes, testsRes, coursesRes,
+    articlesRes, videosRes, reelsRes, testsRes, coursesRes,
     videoCountRes, testCountRes, questionCountRes,
-    articleCountRes, podcastCountRes, forumCountRes,
+    articleCountRes, podcastCountRes, forumCountRes, reelCountRes,
     clubsRes, eventsRes, forumThreadsRes,
   ] = await Promise.all([
     supabase.from('articles').select('id, slug, title, excerpt, category, published_at, reading_time').eq('is_published', true).order('published_at', { ascending: false }).limit(3),
-    supabase.from('videos').select('id, slug, youtube_id, title, episode_label, domain, published_at').eq('is_published', true).order('order_index', { ascending: false }).limit(3),
+    supabase.from('videos').select('id, slug, youtube_id, title, episode_label, domain, duration_seconds, published_at').eq('is_published', true).order('order_index', { ascending: false }).limit(4),
+    supabase.from('reels').select('id, youtube_id, title, description, duration_seconds').eq('is_published', true).order('created_at', { ascending: false }).limit(6),
     supabase.from('tests').select('id, slug, title, malware_family, duration_minutes, total_questions').eq('is_published', true).order('created_at', { ascending: false }).limit(3),
     supabase.from('courses').select('id, title, slug, short_title, units(id)').eq('is_published', true).order('created_at', { ascending: true }),
     supabase.from('videos').select('*',         { count: 'exact', head: true }).eq('is_published', true),
@@ -38,17 +40,19 @@ async function getHomeData() {
     supabase.from('articles').select('*',       { count: 'exact', head: true }).eq('is_published', true),
     supabase.from('podcasts').select('*',       { count: 'exact', head: true }).eq('is_published', true),
     supabase.from('forum_threads').select('*',  { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('reels').select('*',          { count: 'exact', head: true }).eq('is_published', true),
     supabase.from('clubs').select('id, slug, name, short_name, tagline, logo_url').eq('is_active', true).order('order_index'),
     supabase.from('club_events').select('id, slug, title, event_type, event_date, participants_count, clubs(short_name, slug)').eq('is_published', true).neq('slug', 'digital-hygiene-drive-2025').order('event_date', { ascending: false }).limit(4),
     supabase.from('forum_threads').select('id, title, domain, author_name, reply_count, created_at').eq('status', 'published').order('created_at', { ascending: false }).limit(5),
   ]);
   return {
-    articles:     articlesRes.data    ?? [],
-    videos:       videosRes.data      ?? [],
-    tests:        testsRes.data       ?? [],
-    courses:      coursesRes.data     ?? [],
-    clubs:        clubsRes.data       ?? [],
-    events:       eventsRes.data      ?? [],
+    articles:     articlesRes.data     ?? [],
+    videos:       videosRes.data       ?? [],
+    reels:        reelsRes.data        ?? [],
+    tests:        testsRes.data        ?? [],
+    courses:      coursesRes.data      ?? [],
+    clubs:        clubsRes.data        ?? [],
+    events:       eventsRes.data       ?? [],
     forumThreads: forumThreadsRes.data ?? [],
     stats: {
       videos:    videoCountRes.count    ?? 0,
@@ -57,12 +61,13 @@ async function getHomeData() {
       articles:  articleCountRes.count  ?? 0,
       podcasts:  podcastCountRes.count  ?? 0,
       forum:     forumCountRes.count    ?? 0,
+      reels:     reelCountRes.count     ?? 0,
     },
   };
 }
 
 export default async function HomePage() {
-  const { articles, videos, tests, courses, clubs, events, stats, forumThreads } = await getHomeData();
+  const { articles, videos, reels, tests, courses, clubs, events, stats, forumThreads } = await getHomeData();
   const totalContent = stats.videos + stats.articles + stats.tests;
 
   return (
@@ -156,12 +161,12 @@ export default async function HomePage() {
         <div className="container py-0">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              { icon: Video,         label: 'Video Lessons',   value: stats.videos,    color: '#8B5E1A' },
-              { icon: BookOpen,      label: 'Articles',         value: stats.articles,  color: '#1B5FA8' },
-              { icon: Award,         label: 'MCQ Tests',        value: stats.tests,     color: '#6B3AD4' },
-              { icon: Zap,           label: 'MCQ Questions',    value: stats.questions, color: '#1B7C3E' },
-              { icon: MessageSquare, label: 'Forum Threads',    value: stats.forum,     color: '#8B5E1A' },
-              { icon: Mic,           label: 'Podcast Episodes', value: stats.podcasts,  color: '#1B5FA8' },
+              { icon: Video,         label: 'Video Lessons',  value: stats.videos,    color: '#8B5E1A' },
+              { icon: Zap,           label: 'Quick Bites',    value: stats.reels,     color: '#ca8a04' },
+              { icon: BookOpen,      label: 'Articles',        value: stats.articles,  color: '#1B5FA8' },
+              { icon: Award,         label: 'MCQ Tests',       value: stats.tests,     color: '#6B3AD4' },
+              { icon: MessageSquare, label: 'Forum Threads',   value: stats.forum,     color: '#1B7C3E' },
+              { icon: Mic,           label: 'Podcasts',        value: stats.podcasts,  color: '#8B5E1A' },
             ].map(({ icon: Icon, label, value, color }, i) => (
               <div key={label}
                 className="group flex flex-col items-center py-4 px-4 text-center cursor-default select-none transition-colors duration-200"
@@ -456,48 +461,147 @@ export default async function HomePage() {
       )}
 
       {/* ══════════════════════════════════════════════════════
-          VIDEOS — 3-col grid (thumbnails work best here)
+          WATCH & LEARN — Videos (theater) + Quick Bites (reels)
           ══════════════════════════════════════════════════════ */}
-      {videos.length > 0 && (
-        <section className="container py-14" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-          <FadeIn>
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <p className="eyebrow mb-2">Recent lessons</p>
-                <h2 className="font-display text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>Video lessons</h2>
+      {(videos.length > 0 || reels.length > 0) && (
+        <section className="py-14" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+          <div className="container">
+            <FadeIn>
+              <div className="mb-10">
+                <p className="eyebrow mb-2">Watch &amp; Learn</p>
+                <h2 className="font-display text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
+                  Video lessons &amp; Quick Bites
+                </h2>
+                <p className="text-sm mt-1.5" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                  Full lessons open in a theater — no page leave. Quick Bites are under 90&nbsp;s.
+                </p>
               </div>
-              <Link href="/videos" className="hidden md:inline-flex items-center gap-2 font-sans text-sm font-medium hover:gap-3 transition-all" style={{ color: 'hsl(var(--primary))' }}>
-                All videos <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </FadeIn>
-          <div className="grid md:grid-cols-3 gap-5">
-            {videos.map((v, i) => {
-              const c = DOMAIN_COLOR[v.domain ?? 'rema'] ?? '#8B5E1A';
-              return (
-                <FadeIn key={v.id} delay={i * 0.1}>
-                  <Link href={`/videos/${v.slug}`} className="group block">
-                    <div className="relative aspect-video overflow-hidden rounded-lg"
-                      style={{ border: '1px solid hsl(var(--border))' }}>
-                      <Image src={getYouTubeThumbnail(v.youtube_id, 'maxres')} alt={v.title}
-                        fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                      {v.episode_label && (
-                        <span className="absolute bottom-3 left-3 font-mono text-[9px] uppercase tracking-wider px-2 py-1 text-white rounded"
-                          style={{ background: c }}>
-                          {v.episode_label}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-display text-base font-semibold mt-3 leading-snug
-                      group-hover:text-[hsl(var(--primary))] transition-colors"
-                      style={{ color: 'hsl(var(--foreground))' }}>
-                      {v.title}
-                    </h3>
+            </FadeIn>
+
+            {/* ── VIDEO LESSONS ── */}
+            {videos.length > 0 && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 rounded-full" style={{ background: 'hsl(var(--primary))' }} />
+                    <span className="font-display font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>
+                      Video Lessons
+                    </span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-mono"
+                      style={{ background: 'hsl(var(--surface))', color: 'hsl(var(--foreground-muted))', border: '1px solid hsl(var(--border))' }}>
+                      {stats.videos}+
+                    </span>
+                  </div>
+                  <Link href="/videos" className="hidden md:inline-flex items-center gap-1.5 font-sans text-xs font-medium hover:gap-2.5 transition-all"
+                    style={{ color: 'hsl(var(--primary))' }}>
+                    All videos <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
-                </FadeIn>
-              );
-            })}
+                </div>
+
+                {/* 1 featured (wide) + 3 smaller — responsive */}
+                <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-4 mb-12">
+                  {videos.slice(0, 1).map((v) => {
+                    const c = DOMAIN_COLOR[v.domain ?? 'rema'] ?? '#8B5E1A';
+                    return (
+                      <FadeIn key={v.id} className="lg:col-span-2 lg:row-span-1">
+                        <div className="relative">
+                          <VideoTheaterCard
+                            videoId={v.id}
+                            youtubeId={v.youtube_id}
+                            title={v.title}
+                            durationSeconds={v.duration_seconds ?? null}
+                            initialCompleted={false}
+                            initialWatchedSeconds={0}
+                            initialPositionSeconds={0}
+                          />
+                          {v.episode_label && (
+                            <span className="absolute top-2 left-2 pointer-events-none font-mono text-[9px] uppercase tracking-wider px-2 py-1 text-white rounded z-10"
+                              style={{ background: c }}>
+                              {v.episode_label}
+                            </span>
+                          )}
+                        </div>
+                      </FadeIn>
+                    );
+                  })}
+                  {videos.slice(1, 4).map((v, i) => {
+                    const c = DOMAIN_COLOR[v.domain ?? 'rema'] ?? '#8B5E1A';
+                    return (
+                      <FadeIn key={v.id} delay={0.05 + i * 0.07}>
+                        <div className="relative">
+                          <VideoTheaterCard
+                            videoId={v.id}
+                            youtubeId={v.youtube_id}
+                            title={v.title}
+                            durationSeconds={v.duration_seconds ?? null}
+                            initialCompleted={false}
+                            initialWatchedSeconds={0}
+                            initialPositionSeconds={0}
+                          />
+                          {v.episode_label && (
+                            <span className="absolute top-2 left-2 pointer-events-none font-mono text-[9px] uppercase tracking-wider px-2 py-1 text-white rounded z-10"
+                              style={{ background: c }}>
+                              {v.episode_label}
+                            </span>
+                          )}
+                        </div>
+                      </FadeIn>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* ── QUICK BITES ── */}
+            {reels.length > 0 && (
+              <FadeIn delay={0.1}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 rounded-full" style={{ background: '#ca8a04' }} />
+                    <span className="font-display font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>
+                      Quick Bites
+                    </span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-mono"
+                      style={{ background: 'rgba(202,138,4,0.1)', color: '#ca8a04', border: '1px solid rgba(202,138,4,0.25)' }}>
+                      {stats.reels}+
+                    </span>
+                  </div>
+                  <span className="hidden md:block text-xs" style={{ color: 'hsl(var(--foreground-subtle))' }}>
+                    Short focused recaps · counts toward your watch hours
+                  </span>
+                </div>
+
+                {/* Horizontal scroll strip — portrait 9:16 cards */}
+                <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {reels.map((r, i) => (
+                    <div key={r.id} className="shrink-0">
+                      <QuickBiteCard
+                        youtubeId={r.youtube_id}
+                        reelId={r.id}
+                        title={r.title}
+                        description={r.description ?? null}
+                        durationSeconds={r.duration_seconds ?? 60}
+                        initialWatched={false}
+                      />
+                    </div>
+                  ))}
+
+                  {/* "See all" card */}
+                  <Link href="/videos?tab=reels"
+                    className="shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors hover:bg-white/8"
+                    style={{ aspectRatio: '9/16', width: 140, background: 'hsl(var(--surface))', border: '1px dashed hsl(var(--border))' }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(202,138,4,0.15)' }}>
+                      <Play className="w-4 h-4" style={{ color: '#ca8a04' }} />
+                    </div>
+                    <span className="text-xs font-semibold text-center px-3 leading-snug" style={{ color: 'hsl(var(--foreground-muted))' }}>
+                      See all Quick Bites
+                    </span>
+                  </Link>
+                </div>
+              </FadeIn>
+            )}
           </div>
         </section>
       )}
