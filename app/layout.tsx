@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { JetBrains_Mono, Fraunces, Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from 'sonner';
-import { Navbar } from '@/components/navbar';
 import { Suspense } from 'react';
-import { Footer } from '@/components/footer';
-import { ScrollToTop } from '@/components/ScrollToTop';
+import { SiteChrome } from '@/components/SiteChrome';
 import { ThemeProvider } from '@/components/theme-provider';
 import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
@@ -111,20 +109,20 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col antialiased">
         <ThemeProvider>
-          <Suspense fallback={<div className="h-16 bg-[hsl(var(--surface))]" />}>
-            <NextTopLoader
-              color="#E8A020"
-              height={2}
-              showSpinner={false}
-              shadow={false}
-              speed={200}
-              crawlSpeed={200}
-            />
-            <Navbar />
+          <NextTopLoader
+            color="#E8A020"
+            height={2}
+            showSpinner={false}
+            shadow={false}
+            speed={200}
+            crawlSpeed={200}
+          />
+          <Suspense fallback={null}>
+            <SiteChrome>
+              <main className="flex-1">{children}</main>
+              {modal}
+            </SiteChrome>
           </Suspense>
-          <main className="flex-1">{children}</main>
-          {modal}
-          <Footer />
           <Toaster
             position="bottom-right"
             theme="system"
@@ -133,7 +131,6 @@ export default function RootLayout({
                 'font-sans text-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--foreground))]',
             }}
           />
-          <ScrollToTop />
         </ThemeProvider>
       </body>
     </html>
